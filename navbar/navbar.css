@@ -1,0 +1,61 @@
+/* =====================================================================
+   S.D — NAVBAR (navbar.css)
+   Exceção de menu: fundo vinho com texto branco.
+   Depende dos tokens de configuracoes/base.css.
+   ===================================================================== */
+.navbar { position: sticky; top: 0; z-index: 50; background: var(--cor-menu-fundo); color: var(--cor-menu-texto); }
+.navbar-conteudo {
+  max-width: var(--largura-conteudo); margin: 0 auto; padding: .625rem 1rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+/* Marca (também usada no rodapé) */
+.marca { display: flex; align-items: center; gap: .5rem; color: #FFFFFF; text-decoration: none; line-height: 1.05; flex: none; }
+.marca svg { width: 2.25rem; height: 2.25rem; }
+.marca-texto { font-weight: 700; font-size: .95rem; }
+.marca:focus-visible { outline: 3px solid #FFFFFF; outline-offset: 3px; border-radius: 6px; }
+
+.menu { display: flex; align-items: center; gap: .125rem; list-style: none; margin: 0; padding: 0; flex: 1; }
+.menu a {
+  display: flex; align-items: center; gap: .3rem;
+  padding: .5rem .625rem; color: #FFFFFF; text-decoration: none;
+  border-radius: 6px; font-size: .9375rem; font-weight: 500; white-space: nowrap;
+}
+.menu a:hover, .menu a:focus-visible { background: var(--cor-vinho-escuro); outline: none; text-decoration: underline; }
+.menu a[aria-current="page"] { background: var(--cor-vinho-escuro); box-shadow: inset 0 -2px 0 #FFFFFF; }
+.menu .cadeado { width: .9rem; height: .9rem; opacity: .9; }
+
+.nav-direita { display: flex; align-items: center; gap: .5rem; margin-left: auto; flex: none; }
+.nav-btn {
+  display: inline-flex; align-items: center; gap: .375rem;
+  min-height: 2.5rem; padding: .375rem .75rem;
+  font: inherit; font-size: .875rem; font-weight: 600; white-space: nowrap;
+  color: #FFFFFF; background: transparent;
+  border: 1px solid rgba(255, 255, 255, .7); border-radius: 8px;
+  cursor: pointer; text-decoration: none;
+}
+.nav-btn:hover { background: var(--cor-vinho-escuro); border-color: #FFFFFF; }   /* hover #5C0000 com contorno branco */
+.nav-btn:focus-visible { outline: 3px solid #FFFFFF; outline-offset: 2px; }
+.nav-btn[aria-current="page"] { background: var(--cor-vinho-escuro); border-color: #FFFFFF; }
+.nav-btn svg { width: 1.125rem; height: 1.125rem; }
+.nav-btn-destaque { background: #FFFFFF; color: var(--cor-vinho); border-color: #FFFFFF; }
+.nav-btn-destaque:hover { background: var(--cor-vinho-escuro); color: #FFFFFF; }
+.btn-menu { display: none; }
+
+/* Menu compacto (3 riscos) abaixo de 1260px */
+@media (max-width: 78.74rem) {
+  .navbar-conteudo { position: relative; }
+  .btn-menu { display: inline-flex; }
+  .menu {
+    display: none; position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; align-items: stretch; gap: .125rem;
+    padding: .5rem 1rem 1rem; background: var(--cor-menu-fundo);
+    border-top: 1px solid rgba(255, 255, 255, .25);
+  }
+  .menu.aberto { display: flex; }
+  .menu a { padding: .75rem; }
+}
+@media (max-width: 47.99rem) {
+  .rotulo-oculto-celular { display: none; }   /* textos longos viram só ícone */
+  .nav-direita { gap: .375rem; }
+  .nav-btn { padding: .375rem .5rem; }
+}

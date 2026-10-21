@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Título da página — S.D Serviços Digitais</title>
+<!-- Padrão do site (mesma ordem em todas as páginas) -->
+<link rel="stylesheet" href="../configuracoes/base.css">
+<link rel="stylesheet" href="../navbar/navbar.css">
+<link rel="stylesheet" href="../rodape/rodape.css">
+<script src="../configuracoes/config.js" defer></script>
+<script src="../navbar/navbar.js" defer></script>
+<script src="../rodape/rodape.js" defer></script>
+<!-- Arquivos desta página (ficam na mesma pasta) -->
+<!-- <link rel="stylesheet" href="NOME-DA-PAGINA.css"> -->
+<!-- <script src="NOME-DA-PAGINA.js" defer></script> -->
+</head>
+<!-- data-pagina: id do item do menu (inicio, servicos, clientes, prestador, sobre, politicas, suporte, perfil)
+     data-logado: "sim" quando o usuário estiver logado (o servidor deve preencher); "nao" para visitantes
+     data-raiz:   "../" porque cada página fica dentro da sua pasta -->
+<body data-pagina="inicio" data-logado="nao" data-raiz="../">
+<!-- NavBar e Rodapé são montados por navbar/navbar.js e rodape/rodape.js -->
+<header id="sd-navbar"></header>
+<main id="conteudo">
+  <!-- Conteúdo da página aqui -->
+</main>
+<footer id="sd-rodape"></footer>
+</body>
+</html>
