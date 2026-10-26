@@ -3,21 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meu perfil — S.D Serviços Digitais</title>
+<title>Meu perfil (Administrador) — S.D Serviços Digitais</title>
 <meta name="robots" content="noindex">
-<!-- Padrão do site (mesma ordem em todas as páginas) -->
+<!-- Padrão do site -->
 <link rel="stylesheet" href="../configuracoes/base.css">
 <link rel="stylesheet" href="../navbar/navbar.css">
 <link rel="stylesheet" href="../rodape/rodape.css">
+<!-- Base comum dos perfis + o que é exclusivo do administrador -->
+<link rel="stylesheet" href="../componentes/formulario/formulario.css">
+<link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
+<link rel="stylesheet" href="perfil-adm.css">
+<script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
-<!-- Arquivos desta página -->
-<link rel="stylesheet" href="perfil.css">
-<script src="perfil.js" defer></script>
+<script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/perfil-base/perfil-base.js" defer></script>
+<script src="perfil-adm.js" defer></script>
 </head>
-<body data-pagina="perfil" data-logado="sim" data-raiz="../">
-<!-- NavBar e Rodapé são montados por navbar/navbar.js e rodape/rodape.js -->
+<!-- data-logado/data-tipo: o SERVIDOR preenche. Aqui ficam fixos para demonstração. -->
+<body data-pagina="perfil" data-logado="sim" data-tipo="adm" data-raiz="../">
 <header id="sd-navbar"></header>
 <main class="pagina-perfil" id="conteudo">
 
@@ -29,11 +34,11 @@
 
   <section class="perfil-cartao" aria-label="Perfil do administrador">
 
-    <!-- Abas no canto superior esquerdo; o conteúdo também rola arrastando para os lados -->
+    <!-- ===== ABAS (também troca arrastando para os lados) ===== -->
     <div class="perfil-abas">
       <div class="abas-lista" role="tablist" aria-label="Seções do perfil">
-        <button class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
-        <button class="btn aba" role="tab" id="aba-admin" aria-controls="painel-admin" aria-selected="false" tabindex="-1">Administração</button>
+        <button type="button" class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
+        <button type="button" class="btn aba" role="tab" id="aba-admin" aria-controls="painel-admin" aria-selected="false" tabindex="-1">Administração</button>
       </div>
     </div>
 
@@ -43,6 +48,7 @@
       <div class="painel painel-perfil" role="tabpanel" id="painel-perfil" aria-labelledby="aba-perfil" tabindex="0">
 
         <div class="perfil-dados">
+          <!-- Dados da conta (preenchidos pelo perfil-adm.js) -->
           <table class="tabela-dados">
             <caption>Dados da conta</caption>
             <tbody>
@@ -94,16 +100,14 @@
               </tr>
               <tr>
                 <th scope="row">Avaliações</th>
-                <td>
-                  <!-- Hiperlink para a área de avaliações (endereço definido pelo perfil.js) -->
-                  <a class="link estrelas" href="../avaliacoes/index.html" id="link-avaliacoes"></a>
-                </td>
+                <!-- Hiperlink para a página de avaliações (pasta avaliacoes/) -->
+                <td><a class="link estrelas" href="../avaliacoes/index.html" id="link-avaliacoes">Ver avaliações</a></td>
               </tr>
               <tr>
                 <th scope="row">Senha</th>
                 <td>
                   <div class="senha-linha">
-                    <span class="senha-mascara" id="senha-mascara">••••••••</span>
+                    <span class="senha-mascara">••••••••</span>
                     <button type="button" class="btn-olho btn-olho-linha" id="btn-ver-senha" aria-label="Visualizar senha" aria-pressed="false" aria-controls="aviso-senha"></button>
                   </div>
                   <p class="nota" id="aviso-senha" hidden>Por segurança, a senha é guardada criptografada e não pode ser exibida — nem para administradores. Para trocá-la, use <strong>Editar perfil</strong>.</p>
@@ -127,7 +131,7 @@
 
           <div class="mensagem" id="msg-geral" role="status" aria-live="polite"></div>
 
-          <!-- ===== Sanfona: formulário de edição (o texto digitado é mantido ao fechar) ===== -->
+          <!-- ===== SANFONA: formulário de edição (o texto digitado é mantido ao fechar) ===== -->
           <div class="sanfona" id="sanfona-editar" hidden>
             <h2>Editar perfil</h2>
             <p class="nota">Preencha somente o que deseja alterar. Campos vazios mantêm o valor atual.</p>
@@ -136,22 +140,22 @@
               <div class="form-grade">
                 <div class="campo">
                   <label for="f-login">Login</label>
-                  <input id="f-login" name="login" autocomplete="username" aria-describedby="e-login" maxlength="30">
+                  <input type="text" id="f-login" name="login" data-mascara="login" autocomplete="username" aria-describedby="e-login" maxlength="30">
                   <span class="campo-erro" id="e-login"></span>
                 </div>
                 <div class="campo">
                   <label for="f-nome">Nome completo</label>
-                  <input id="f-nome" name="nome" autocomplete="name" aria-describedby="e-nome" maxlength="120">
+                  <input type="text" id="f-nome" name="nome" autocomplete="name" aria-describedby="e-nome" maxlength="120">
                   <span class="campo-erro" id="e-nome"></span>
                 </div>
                 <div class="campo">
                   <label for="f-email">E-mail</label>
-                  <input id="f-email" name="email" type="email" autocomplete="email" aria-describedby="e-email" maxlength="254">
+                  <input type="email" id="f-email" name="email" autocomplete="email" aria-describedby="e-email" maxlength="254">
                   <span class="campo-erro" id="e-email"></span>
                 </div>
                 <div class="campo">
                   <label for="f-telefone">WhatsApp/Telefone principal</label>
-                  <input id="f-telefone" name="telefone" type="tel" inputmode="numeric" autocomplete="tel" aria-describedby="e-telefone">
+                  <input type="tel" id="f-telefone" name="telefone" data-mascara="telefone" inputmode="numeric" autocomplete="tel" aria-describedby="e-telefone">
                   <span class="campo-erro" id="e-telefone"></span>
                 </div>
 
@@ -160,24 +164,24 @@
                   <div class="grade-local-form">
                     <div class="campo f-endereco">
                       <label for="f-endereco">Endereço</label>
-                      <input id="f-endereco" name="endereco" autocomplete="address-line1" maxlength="150">
+                      <input type="text" id="f-endereco" name="endereco" autocomplete="address-line1" maxlength="150">
                     </div>
                     <div class="campo f-numero">
                       <label for="f-numero">Número</label>
-                      <input id="f-numero" name="numero" maxlength="10" aria-describedby="e-numero">
+                      <input type="text" id="f-numero" name="numero" maxlength="10" aria-describedby="e-numero">
                       <span class="campo-erro" id="e-numero"></span>
                     </div>
                     <div class="campo f-compl">
                       <label for="f-complemento">Complemento</label>
-                      <input id="f-complemento" name="complemento" autocomplete="address-line2" maxlength="60">
+                      <input type="text" id="f-complemento" name="complemento" autocomplete="address-line2" maxlength="60">
                     </div>
                     <div class="campo f-bairro">
                       <label for="f-bairro">Bairro</label>
-                      <input id="f-bairro" name="bairro" maxlength="80">
+                      <input type="text" id="f-bairro" name="bairro" maxlength="80">
                     </div>
                     <div class="campo f-cep">
                       <label for="f-cep">CEP</label>
-                      <input id="f-cep" name="cep" inputmode="numeric" autocomplete="postal-code" aria-describedby="e-cep">
+                      <input type="text" id="f-cep" name="cep" data-mascara="cep" inputmode="numeric" autocomplete="postal-code" aria-describedby="e-cep">
                       <span class="campo-erro" id="e-cep"></span>
                     </div>
                   </div>
@@ -186,7 +190,7 @@
                 <div class="campo">
                   <label for="f-senha">Nova senha</label>
                   <div class="senha-caixa">
-                    <input id="f-senha" name="senha" type="password" autocomplete="new-password" aria-describedby="d-senha e-senha">
+                    <input type="password" id="f-senha" name="senha" autocomplete="new-password" aria-describedby="d-senha e-senha">
                     <button type="button" class="btn-olho" data-alvo="f-senha" aria-label="Mostrar senha" aria-pressed="false"></button>
                   </div>
                   <span class="nota" id="d-senha">Mínimo de 8 caracteres, com letras e números.</span>
@@ -195,7 +199,7 @@
                 <div class="campo">
                   <label for="f-senha2">Confirmar nova senha</label>
                   <div class="senha-caixa">
-                    <input id="f-senha2" name="senha2" type="password" autocomplete="new-password" aria-describedby="e-senha2">
+                    <input type="password" id="f-senha2" name="senha2" autocomplete="new-password" aria-describedby="e-senha2">
                     <button type="button" class="btn-olho" data-alvo="f-senha2" aria-label="Mostrar senha" aria-pressed="false"></button>
                   </div>
                   <span class="campo-erro" id="e-senha2"></span>
@@ -210,10 +214,10 @@
           </div>
         </div>
 
-        <!-- Foto de perfil e galeria (à direita) -->
+        <!-- ===== FOTO DE PERFIL E GALERIA (à direita; no celular vai para cima) ===== -->
         <aside class="perfil-foto" aria-label="Foto de perfil e galeria">
           <div class="foto-moldura">
-            <img id="foto-perfil" src="" alt="Foto de perfil" width="200" height="200">
+            <img id="foto-perfil" src="data:," alt="Foto de perfil" width="200" height="200">
           </div>
           <div class="foto-botoes">
             <button type="button" class="btn btn-pequeno" id="btn-foto">Editar foto de perfil</button>
@@ -243,7 +247,7 @@
   </section>
 </main>
 
-<!-- Pop-up de confirmação de exclusão -->
+<!-- ===== POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO ===== -->
 <dialog class="modal" id="modal-excluir" aria-labelledby="modal-titulo" aria-describedby="modal-texto">
   <div class="modal-icone" aria-hidden="true">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
