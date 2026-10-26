@@ -1,54 +1,61 @@
 /* =====================================================================
-   S.D — RODAPÉ / FOOTER (rodape.js)
-   Monta o rodapé a partir da configuração única.
-   Depende de configuracoes/config.js (carregar antes).
-   Na página: <footer id="sd-rodape"></footer>
+   S.D — RODAPÉ (rodape/rodape.js)
+   Monta o rodapé a partir de configuracoes/config.js (window.SD).
+   Precisa de: <footer id="sd-rodape"></footer> na página.
    ===================================================================== */
 (function () {
   "use strict";
-  const { CONFIG, ICONE, url, ehApp, htmlItem, marcaHTML, aoCarregar } = window.SD;
 
-  function montarRodape() {
+  if (!window.SD) {
+    console.error("[S.D] rodape.js: carregue configuracoes/config.js antes deste arquivo.");
+    return;
+  }
+  const SD = window.SD;
+  const I = SD.icones;
+  const C = SD.config;
+
+  // Coluna "Baixe o app" (não aparece dentro do app)
+  function htmlLojas() {
+    if (SD.ehApp()) return "";
+    const lojas = C.lojas.map((l) => l.href
+      ? `<a class="loja" href="${SD.esc(l.href)}" target="_blank" rel="noopener noreferrer">${I.celular}<span>${SD.esc(l.nome)}</span></a>`
+      : `<a class="loja" role="link" aria-disabled="true" aria-label="${SD.esc(l.nome)} — em breve">${I.celular}<span><small>Em breve</small>${SD.esc(l.nome)}</span></a>`
+    ).join("");
+    return `<div><h2>Baixe o app</h2><div class="lojas">${lojas}</div></div>`;
+  }
+
+  function montar() {
     const alvo = document.getElementById("sd-rodape");
     if (!alvo) return;
-    alvo.className = "rodape";
-    const p = CONFIG.paginas;
-    const itens = CONFIG.rodapeLinks.map((id) => CONFIG.menu.find((m) => m.id === id)).filter(Boolean);
-    // "Baixe o app" só aparece no SITE (no app fica oculto)
-    const lojas = ehApp() ? "" : `
-      <div>
-        <h2>Baixe o app</h2>
-        <div class="lojas">
-          ${CONFIG.lojas.map((l) => l.href
-            ? `<a class="loja" href="${l.href}" rel="noopener">${ICONE.celular}<span>${l.nome}</span></a>`
-            : `<a class="loja" aria-disabled="true" role="link" aria-label="${l.nome} — em breve">${ICONE.celular}<span><small>Em breve</small>${l.nome}</span></a>`).join("")}
-        </div>
-      </div>`;
+    alvo.classList.add("rodape");
+
+    const itens = C.rodapeLinks.map((id) => C.menu.find((m) => m.id === id)).filter(Boolean).filter(SD.itemVisivel);
 
     alvo.innerHTML = `
       <div class="rodape-conteudo">
         <div class="rodape-colunas">
           <div class="rodape-marca">
-            ${marcaHTML()}
-            <p>${CONFIG.descricao}</p>
+            <a class="marca" href="${SD.esc(SD.urlPagina("inicio"))}" aria-label="${SD.esc(C.nome)} — página inicial">${I.logo}<span class="marca-texto" aria-hidden="true">Serviços<br>Digitais</span></a>
+            <p>${SD.esc(C.descricao)}</p>
           </div>
-          <div>
+          <nav aria-label="Navegação do rodapé">
             <h2>Navegação</h2>
-            <ul>${itens.map((i) => `<li>${htmlItem(i, false)}</li>`).join("")}</ul>
-          </div>
+            <ul>${itens.map((i) => `<li>${SD.linkMenu(i, false)}</li>`).join("")}</ul>
+          </nav>
           <div>
             <h2>Políticas</h2>
-            <ul>${CONFIG.rodapePoliticas.map((x) => `<li><a href="${url(x.href)}">${x.texto}</a></li>`).join("")}</ul>
+            <ul>${C.rodapePoliticas.map((p) => `<li><a href="${SD.esc(SD.caminho(p.href))}">${SD.esc(p.texto)}</a></li>`).join("")}</ul>
           </div>
-          ${lojas}
+          ${htmlLojas()}
         </div>
         <p class="rodape-aviso"><strong>Suporte</strong> é exclusivo para erros e melhorias da plataforma. Não é canal de reclamação sobre prestadores ou clientes.</p>
         <div class="rodape-base">
-          <span>© ${new Date().getFullYear()} S.D Serviços Digitais</span>
-          <span><a href="${url(p.termos)}">Termos</a> · <a href="${url(p.privacidade)}">Privacidade</a></span>
+          <span>© ${new Date().getFullYear()} ${SD.esc(C.nome)}</span>
+          <span><a href="${SD.esc(SD.urlPagina("termos"))}">Termos</a> · <a href="${SD.esc(SD.urlPagina("privacidade"))}">Privacidade</a></span>
         </div>
       </div>`;
   }
 
-  aoCarregar(montarRodape);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", montar);
+  else montar();
 })();

@@ -1,116 +1,186 @@
 /* =====================================================================
-   S.D SERVIÇOS DIGITAIS — CONFIGURAÇÕES DAS PÁGINAS (config.js)
-   Carregar ANTES de navbar.js e rodape.js em todas as páginas.
-   Aqui fica a configuração ÚNICA do site: endereços das páginas, itens do
-   menu, links do rodapé, lojas e ícones compartilhados.
+   S.D SERVIÇOS DIGITAIS — CONFIGURAÇÃO ÚNICA (configuracoes/config.js)
+   Ordem dos scripts em TODA página (todos com "defer"):
+     1. ../seguranca/acesso.js   → regras de quem vê o quê
+     2. ../configuracoes/config.js (este arquivo)
+     3. ../navbar/navbar.js  e  ../rodape/rodape.js
+     4. componentes e o script da própria página
+   Aqui ficam: caminhos das páginas, menu, rodapé, lojas, ícones,
+   sessão de demonstração e funções usadas pela NavBar e pelo Rodapé.
 
    Cada página informa no <body>:
-     data-pagina → id do item atual do menu (inicio, servicos, clientes, prestador, sobre, politicas, suporte, perfil)
-     data-logado → "sim" libera as opções com cadeado; "nao" (padrão) mantém bloqueadas
-     data-raiz   → caminho até a pasta SDOnline (páginas dentro de uma pasta usam "../")
-   ATENÇÃO: data-logado só muda a TELA. O bloqueio real tem de ser feito no servidor.
+     data-pagina="inicio"   → id do item do menu que fica destacado
+     data-logado="nao|sim"  → o SERVIDOR preenche (só muda a TELA)
+     data-tipo="cliente-cpf|cliente-cnpj|prestador|adm" (quando logado)
+     data-raiz="../"        → caminho até a pasta SDOnline
+   ATENÇÃO: esconder/mostrar na tela NÃO é segurança. O controle de
+   acesso real tem de ser feito no servidor.
    ===================================================================== */
 (function () {
   "use strict";
 
-  /* ---------- 1. ENDEREÇOS DAS PÁGINAS (relativos à pasta SDOnline) ---------- */
-  const PAGINAS = {
-    home:                "home/index.html",
-    sobre:               "home/sobre.html",
-    login:               "login-cadastro/index.html",
-    cadastro:            "login-cadastro/index.html?acao=criar-conta",
-    sair:                "login-cadastro/index.html?sair=1",
-    perfilAdm:           "perfil-adm/index.html",
-    perfilCpf:           "perfil-cliente-cpf/index.html",
-    perfilCnpj:          "perfil-cliente-cnpj/index.html",
-    inicioLogado:        "inicio-logado/index.html",
-    localizarPrestador:  "localizar-prestador/index.html",
-    localizarCondominio: "localizar-condominios/index.html",
-    solicitacao:         "solicitacao/index.html",
-    avaliacoes:          "avaliacoes/index.html",
-    suporte:             "suporte/index.html",
-    politicas:           "politica-privacidade/index.html",
-    termos:              "politica-privacidade/termos.html",
-    responsabilidade:    "politica-privacidade/responsabilidade.html",
-    privacidade:         "politica-privacidade/privacidade.html"
-  };
+  /* ---------- 1. CONFIGURAÇÃO (editar aqui) ---------- */
+  const CONFIG = {
+    nome: "S.D Serviços Digitais",
+    descricao: "Conectando clientes a prestadores de serviço.",
+    logo: "fotos/marca/logo.svg",            // usado como ícone da aba
 
-  /* ---------- 2. CONFIGURAÇÃO ÚNICA DO SITE (editar aqui) ---------- */
-  const SD_CONFIG = {
-    paginas: PAGINAS,
-    urlPerfil: PAGINAS.perfilAdm,   // depois: página conforme o tipo de usuário
-    // Itens da NavBar (7). requerLogin: mostra cadeado e leva ao login até a pessoa entrar.
+    // DEMONSTRAÇÃO (sem servidor): o login de teste fica guardado só nesta aba
+    // do navegador (sessionStorage) para dar para navegar logado entre as páginas.
+    // Quando o servidor existir: trocar para false.
+    modoDemonstracao: true,
+
+    // Caminhos a partir da pasta SDOnline (cada página = <pasta>/index.html)
+    paginas: {
+      inicio:      "home/index.html",
+      login:       "login-cadastro/index.html",
+      cadastro:    "login-cadastro/index.html?acao=criar-conta",
+      sair:        "login-cadastro/index.html?sair=1",
+      avaliacoes:  "avaliacoes/index.html",
+      privacidade: "politica-privacidade/index.html",
+      termos:      "termos/index.html"
+    },
+
+    // "Meu perfil" abre a página do tipo de usuário (data-tipo no <body>)
+    perfilPorTipo: {
+      "adm":          "perfil-adm/index.html",
+      "cliente-cpf":  "perfil-cliente-cpf/index.html",
+      "cliente-cnpj": "perfil-cliente-cnpj/index.html",
+      "prestador":    "perfil-prestador/index.html"
+    },
+
+    // Itens da NavBar (7). requerLogin: cadeado + vai ao login até a pessoa entrar.
+    // Depois do login, o item só aparece se seguranca/acesso.js permitir.
     menu: [
-      { id: "inicio",    texto: "Início",            href: PAGINAS.home },
-      { id: "servicos",  texto: "Serviços",          href: PAGINAS.home + "#servicos" },
-      { id: "clientes",  texto: "Para clientes",     href: PAGINAS.localizarPrestador,  requerLogin: true, destino: "localizar-prestador",   perfil: "cliente" },
-      { id: "prestador", texto: "Seja um prestador", href: PAGINAS.localizarCondominio, requerLogin: true, destino: "localizar-condominios", perfil: "prestador" },
-      { id: "sobre",     texto: "Sobre nós",         href: PAGINAS.sobre },
-      { id: "politicas", texto: "Políticas",         href: PAGINAS.politicas },
-      { id: "suporte",   texto: "Suporte",           href: PAGINAS.suporte }
+      { id: "inicio",    texto: "Início",            href: "home/index.html" },
+      { id: "servicos",  texto: "Serviços",          href: "home/index.html#servicos" },
+      { id: "clientes",  texto: "Para clientes",     href: "localizar-prestador/index.html",   requerLogin: true },
+      { id: "prestador", texto: "Seja um prestador", href: "localizar-condominios/index.html", requerLogin: true },
+      { id: "sobre",     texto: "Sobre nós",         href: "sobre/index.html" },
+      { id: "politicas", texto: "Políticas",         href: "politicas/index.html" },
+      { id: "suporte",   texto: "Suporte",           href: "suporte/index.html" }
     ],
+
     // Rodapé
     rodapeLinks: ["servicos", "clientes", "prestador", "sobre", "suporte"],
     rodapePoliticas: [
-      { texto: "Política da empresa",       href: PAGINAS.politicas },
-      { texto: "Termos de uso",             href: PAGINAS.termos },
-      { texto: "Termo de responsabilidade", href: PAGINAS.responsabilidade }
+      { texto: "Política da empresa",       href: "politicas/index.html" },
+      { texto: "Termos de uso",             href: "termos/index.html" },
+      { texto: "Termo de responsabilidade", href: "responsabilidade/index.html" }
     ],
-    // Lojas: sem link até o app ser publicado (aparece "Em breve")
+    // Lojas: deixar href vazio até o app ser publicado (mostra "Em breve")
     lojas: [
       { nome: "Google Play", href: "" },
       { nome: "App Store",   href: "" }
-    ],
-    descricao: "Conectando clientes a prestadores de serviço."
+    ]
   };
 
-  /* ---------- 3. ÍCONES COMPARTILHADOS ---------- */
-  const ICONE = {
-    logo: '<svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="2.4" aria-hidden="true"><circle cx="24" cy="29" r="9"/><circle cx="24" cy="29" r="3.5"/><path d="M24 16v3M24 39v3M11 29h3M34 29h3M14.8 19.8l2.1 2.1M31.1 36.1l2.1 2.1M14.8 38.2l2.1-2.1M31.1 21.9l2.1-2.1"/><path d="M12 15a12 9 0 0 1 24 0Z" fill="#fff" stroke="none"/><path d="M9 15.5h30"/></svg>',
-    cadeado: '<svg class="cadeado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-    lua: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>',
-    sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-    usuario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
-    sair: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
-    entrar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>',
-    menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
-    fechar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-    celular: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>'
+  /* ---------- 2. ÍCONES (SVG, cor herdada) ---------- */
+  const svg = (conteudo, traco = 2) =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${traco}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${conteudo}</svg>`;
+  const ICONES = {
+    // Logo provisória: engrenagem com capacete (trocar pelo arquivo oficial)
+    logo: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true" focusable="false"><circle cx="24" cy="29" r="9"/><circle cx="24" cy="29" r="3.5"/><path d="M24 16v3M24 39v3M11 29h3M34 29h3M14.8 19.8l2.1 2.1M31.1 36.1l2.1 2.1M14.8 38.2l2.1-2.1M31.1 21.9l2.1-2.1"/><path d="M12 15a12 9 0 0 1 24 0Z" fill="currentColor" stroke="none"/><path d="M9 15.5h30"/></svg>',
+    cadeado: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', 2.2).replace("<svg ", '<svg class="cadeado" '),
+    lua:     svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>'),
+    sol:     svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+    usuario: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+    sair:    svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'),
+    entrar:  svg('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>'),
+    menu:    svg('<path d="M4 6h16M4 12h16M4 18h16"/>', 2.2),
+    fechar:  svg('<path d="M18 6 6 18M6 6l12 12"/>', 2.2),
+    celular: svg('<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>')
   };
 
-  /* ---------- 4. FUNÇÕES COMPARTILHADAS (usadas pela NavBar e pelo Rodapé) ---------- */
-  const corpo = document.body;
-  const raiz = () => corpo.dataset.raiz || "";          // "../" nas páginas dentro de pastas
-  const url = (caminho) => raiz() + caminho;             // monta o link a partir da pasta SDOnline
-  const logado = () => corpo.dataset.logado === "sim";
-  const paginaAtual = () => corpo.dataset.pagina || "";
-  // App instalado/aberto pelo app → esconde "Baixe o app"
-  const ehApp = () => new URLSearchParams(location.search).get("plataforma") === "app" ||
-    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  /* ---------- 3. SESSÃO DE DEMONSTRAÇÃO (sem servidor) ----------
+     Guarda só { tipo, nome } nesta aba do navegador. NUNCA guarda senha.
+     Na versão final quem diz se a pessoa está logada é o SERVIDOR. */
+  const CHAVE_SESSAO = "sd-sessao-demonstracao";
+  const acesso = window.SD_ACESSO;
+  const sessaoDemo = {
+    ler() {
+      if (!CONFIG.modoDemonstracao) return null;
+      try {
+        const s = JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || "null");
+        return s && acesso && acesso.perfilValido(s.tipo) && s.tipo !== "visitante" ? s : null;
+      } catch (_) { return null; }
+    },
+    entrar(tipo, nome) {
+      if (!CONFIG.modoDemonstracao) return false;
+      try { sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ tipo, nome: String(nome || "").slice(0, 60) })); return true; }
+      catch (_) { return false; }
+    },
+    sair() {
+      try { sessionStorage.removeItem(CHAVE_SESSAO); } catch (_) { /* navegador sem armazenamento */ }
+    }
+  };
 
-  // Link de um item: bloqueado → login com destino; liberado → página real
+  // "?sair=1" encerra a sessão ANTES de montar a NavBar (assim ela já aparece deslogada)
+  if (new URLSearchParams(location.search).get("sair") === "1") sessaoDemo.sair();
+
+  // Aplica a sessão de demonstração no <body> (como o servidor faria)
+  (function aplicarSessao() {
+    const s = sessaoDemo.ler();
+    if (!s || !document.body) return;
+    document.body.dataset.logado = "sim";
+    document.body.dataset.tipo = s.tipo;
+    if (s.nome) document.body.dataset.nome = s.nome;
+  })();
+
+  /* ---------- 4. ESTADO DA PÁGINA (lido do <body>) ---------- */
+  const corpo = () => document.body || document.createElement("body");
+  const raiz = () => corpo().dataset.raiz || "";
+  const logado = () => corpo().dataset.logado === "sim";
+  const paginaAtual = () => corpo().dataset.pagina || "";
+  const tipoUsuario = () => (logado() ? corpo().dataset.tipo || "" : "visitante");
+  // Aberto pelo app (?plataforma=app) ou instalado (standalone) → esconde "Baixe o app"
+  const ehApp = () =>
+    new URLSearchParams(location.search).get("plataforma") === "app" ||
+    (typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches);
+
+  /* ---------- 5. FUNÇÕES DE APOIO ---------- */
+  // Escapa texto antes de colocar no HTML (evita injeção)
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Monta o caminho a partir da raiz do site (links externos e data:/blob: ficam iguais)
+  const caminho = (rel) => (/^(https?:|mailto:|tel:|data:|blob:|#)/i.test(rel) ? rel : raiz() + rel);
+
+  const urlPagina = (nome) => caminho(CONFIG.paginas[nome] || CONFIG.paginas.inicio);
+  const urlPerfil = () => caminho(CONFIG.perfilPorTipo[tipoUsuario()] || CONFIG.perfilPorTipo["cliente-cpf"]);
+  // Pode ver o recurso? (usa seguranca/acesso.js; sem o arquivo, mostra tudo)
+  const pode = (recurso) => (acesso ? acesso.pode(tipoUsuario(), recurso) : true);
+
+  // Item bloqueado → login com destino; liberado → página real
   function hrefItem(item) {
     if (item.requerLogin && !logado()) {
-      return `${url(PAGINAS.login)}?destino=${encodeURIComponent(item.destino)}&perfil=${encodeURIComponent(item.perfil)}`;
+      return `${urlPagina("login")}?destino=${encodeURIComponent(item.id)}`;
     }
-    return url(item.href);
+    return caminho(item.href);
   }
-  function htmlItem(item, comCurrent) {
+  // Itens que aparecem: visitante vê todos (os bloqueados com cadeado);
+  // logado vê só os permitidos para o seu tipo (ex.: prestador não vê "Para clientes").
+  const itemVisivel = (item) => !logado() || pode(item.id);
+
+  // <a> de um item do menu (usado na NavBar e no Rodapé)
+  function linkMenu(item, marcarAtual) {
     const bloqueado = item.requerLogin && !logado();
-    const atual = comCurrent && item.id === paginaAtual() ? ' aria-current="page"' : "";
-    const rotulo = bloqueado ? ` aria-label="${item.texto} (requer login)" title="Disponível após entrar na conta"` : "";
-    return `<a href="${hrefItem(item)}"${atual}${rotulo}>${bloqueado ? ICONE.cadeado : ""}<span>${item.texto}</span></a>`;
-  }
-  function marcaHTML() {
-    return `<a class="marca" href="${url(PAGINAS.home)}" aria-label="S.D Serviços Digitais — página inicial">${ICONE.logo}<span class="marca-texto">Serviços<br>Digitais</span></a>`;
-  }
-  // Executa a função quando a página terminar de carregar
-  function aoCarregar(fn) {
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
+    const atual = marcarAtual && item.id === paginaAtual() ? ' aria-current="page"' : "";
+    const extra = bloqueado ? ` aria-label="${esc(item.texto)} (requer login)" title="Disponível após entrar na conta"` : "";
+    return `<a href="${esc(hrefItem(item))}"${atual}${extra}>${bloqueado ? ICONES.cadeado : ""}<span>${esc(item.texto)}</span></a>`;
   }
 
-  // Disponível para navbar.js, rodape.js e as páginas
-  window.SD_CONFIG = SD_CONFIG;
-  window.SD = { CONFIG: SD_CONFIG, ICONE, url, logado, paginaAtual, ehApp, hrefItem, htmlItem, marcaHTML, aoCarregar };
+  // Ícone da aba do navegador (se a página não tiver um)
+  if (!document.querySelector('link[rel~="icon"]') && document.head) {
+    const icone = document.createElement("link");
+    icone.rel = "icon";
+    icone.type = "image/svg+xml";
+    icone.href = caminho(CONFIG.logo);
+    document.head.appendChild(icone);
+  }
+
+  /* ---------- 6. EXPORTA PARA navbar.js, rodape.js e páginas ---------- */
+  window.SD = Object.freeze({
+    config: CONFIG, icones: ICONES, sessaoDemo,
+    esc, caminho, urlPagina, urlPerfil, hrefItem, linkMenu, itemVisivel, pode,
+    logado, paginaAtual, tipoUsuario, ehApp
+  });
 })();
