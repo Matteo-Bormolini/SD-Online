@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suporte — S.D Serviços Digitais</title>
+<meta name="description" content="Suporte da plataforma S.D: dúvidas, sugestões de melhoria, assistente e e-mails da equipe.">
+<!-- Padrão do site (mesma ordem em todas as páginas) -->
+<link rel="stylesheet" href="../configuracoes/base.css">
+<link rel="stylesheet" href="../navbar/navbar.css">
+<link rel="stylesheet" href="../rodape/rodape.css">
+<link rel="stylesheet" href="suporte.css">
+<script src="../seguranca/acesso.js" defer></script>
+<script src="../configuracoes/config.js" defer></script>
+<script src="../navbar/navbar.js" defer></script>
+<script src="../rodape/rodape.js" defer></script>
+<!-- Página: assistente (respostas) antes do suporte.js (telas) -->
+<script src="assistente.js" defer></script>
+<script src="suporte.js" defer></script>
+</head>
+<!-- Página pública. data-logado, data-tipo e data-nome: o SERVIDOR preenche. -->
+<body data-pagina="suporte" data-logado="nao" data-tipo="" data-nome="" data-raiz="../">
+<header id="sd-navbar"></header>
+
+<main id="conteudo" class="pagina sup">
+
+  <!-- ===== 1. CABEÇALHO ===== -->
+  <section class="sup-topo" aria-labelledby="sup-titulo">
+    <h1 id="sup-titulo">Suporte</h1>
+    <p class="sup-intro">Dúvidas sobre a plataforma ou ideias para melhorá-la? Estamos aqui para ajudar.</p>
+    <p class="sup-nota">Assuntos de um serviço contratado são tratados direto com o prestador. Nunca envie senhas.</p>
+  </section>
+
+  <!-- ===== 2. DÚVIDAS E SUGESTÕES (botões unidos, largura total) ===== -->
+  <section class="sup-bloco" aria-labelledby="sup-escrever-titulo">
+    <h2 id="sup-escrever-titulo" class="visualmente-oculto">Enviar dúvida ou sugestão</h2>
+
+    <div class="sup-abas">
+      <button type="button" class="sup-aba" id="sup-btn-duvidas" aria-expanded="false" aria-controls="sup-painel-duvidas">Dúvidas</button>
+      <button type="button" class="sup-aba" id="sup-btn-sugestoes" aria-expanded="false" aria-controls="sup-painel-sugestoes">Sugestões</button>
+    </div>
+
+    <!-- Balão de DÚVIDAS (o texto é mantido ao fechar) -->
+    <div class="sup-painel" id="sup-painel-duvidas" data-tipo="duvidas" role="region" aria-labelledby="sup-btn-duvidas">
+      <div class="sup-painel-interno">
+        <form class="sup-balao sup-balao-esq" novalidate>
+          <label for="sup-texto-duvidas">Sua dúvida</label>
+          <textarea id="sup-texto-duvidas" rows="5" maxlength="1000"
+                    placeholder="Ex.: Não encontro onde editar meu telefone."
+                    aria-describedby="sup-cont-duvidas"></textarea>
+          <div class="sup-balao-rodape">
+            <button type="button" class="sup-lixo" data-acao="excluir" aria-label="Excluir todo o texto da dúvida" title="Excluir texto">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>
+            </button>
+            <span class="sup-contador" id="sup-cont-duvidas">0/1000</span>
+            <button type="submit" class="btn sup-redondo">Enviar</button>
+          </div>
+          <p class="mensagem" role="status"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Balão de SUGESTÕES (o texto é mantido ao fechar) -->
+    <div class="sup-painel" id="sup-painel-sugestoes" data-tipo="sugestoes" role="region" aria-labelledby="sup-btn-sugestoes">
+      <div class="sup-painel-interno">
+        <form class="sup-balao sup-balao-dir" novalidate>
+          <label for="sup-texto-sugestoes">Sua sugestão</label>
+          <textarea id="sup-texto-sugestoes" rows="5" maxlength="1000"
+                    placeholder="Ex.: Filtrar prestadores por horário de atendimento."
+                    aria-describedby="sup-cont-sugestoes"></textarea>
+          <div class="sup-balao-rodape">
+            <button type="button" class="sup-lixo" data-acao="excluir" aria-label="Excluir todo o texto da sugestão" title="Excluir texto">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>
+            </button>
+            <span class="sup-contador" id="sup-cont-sugestoes">0/1000</span>
+            <button type="submit" class="btn sup-redondo">Enviar</button>
+          </div>
+          <p class="mensagem" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. ASSISTENTE ===== -->
+  <section class="sup-bloco sup-chat" aria-labelledby="sup-chat-titulo">
+    <div class="sup-chat-topo">
+      <!-- Robô com capacete de obra -->
+      <span class="sup-chat-icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path class="sup-preenchido" d="M6.5 8.5a5.5 4.5 0 0 1 11 0Z"/>
+          <path d="M4.5 8.6h15M12 4v1.6"/>
+          <rect x="6.5" y="10.5" width="11" height="8.5" rx="2.2"/>
+          <path d="M10 13.6h.01M14 13.6h.01M10.2 16.6h3.6M4.5 13.5v2.5M19.5 13.5v2.5"/>
+        </svg>
+      </span>
+      <div class="sup-chat-titulos">
+        <h2 id="sup-chat-titulo">Assistente S.D</h2>
+        <p>Dúvidas da plataforma e cálculos rápidos.</p>
+      </div>
+      <span class="selo-demo" id="sup-chat-selo">Demonstração</span>
+    </div>
+
+    <!-- Conversa: rola com o dedo/mouse; a alça abaixo aumenta ou diminui a área -->
+    <div class="sup-chat-log" id="sup-chat-log" role="log" aria-live="polite" aria-label="Conversa com o assistente" tabindex="0"></div>
+    <div class="sup-chat-alca" id="sup-chat-alca" role="separator" aria-orientation="horizontal" tabindex="0"
+         aria-controls="sup-chat-log" aria-label="Arraste para aumentar ou diminuir a conversa" title="Arraste para aumentar ou diminuir">
+      <span aria-hidden="true"></span>
+    </div>
+
+    <form class="sup-chat-form" id="sup-chat-form" novalidate>
+      <button type="button" class="sup-lixo" id="sup-chat-limpar" aria-label="Apagar conversa" title="Apagar conversa">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>
+      </button>
+      <label for="sup-chat-texto" class="visualmente-oculto">Mensagem para o assistente</label>
+      <textarea id="sup-chat-texto" rows="1" maxlength="300" placeholder="Digite sua pergunta…"></textarea>
+      <button type="submit" class="sup-chat-enviar" aria-label="Enviar mensagem" title="Enviar">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12 20 4l-4 16-4-6-8-2Z"/><path d="m12 14 8-10"/></svg>
+      </button>
+    </form>
+
+    <p class="sup-chat-rodape">
+      <span>Conversa temporária</span>
+      <em>Em desenvolvimento: envio de áudios e fotos.</em>
+    </p>
+  </section>
+
+  <!-- ===== 4. E-MAILS DA EQUIPE (preenchidos pelo suporte.js) ===== -->
+  <section class="sup-bloco" aria-labelledby="sup-contatos-titulo">
+    <h2 id="sup-contatos-titulo" class="sup-titulo-secao">Fale com a equipe</h2>
+    <p class="sup-nota sup-centro">Prefere e-mail? Escolha o assunto.</p>
+    <ul class="sup-contatos" id="sup-contatos"></ul>
+  </section>
+</main>
+
+<footer id="sd-rodape"></footer>
+
+<!-- ===== POPUPS (dialog nativo: Esc fecha, foco preso dentro) ===== -->
+
+<!-- Confirmação genérica (excluir texto / apagar conversa) -->
+<dialog class="sup-popup" id="sup-dlg-confirmar" role="alertdialog" aria-labelledby="sup-dlg-confirmar-titulo" aria-describedby="sup-dlg-confirmar-texto">
+  <form method="dialog">
+    <h2 id="sup-dlg-confirmar-titulo">Confirmar</h2>
+    <p id="sup-dlg-confirmar-texto"></p>
+    <div class="sup-popup-botoes">
+      <button class="btn sup-redondo" value="nao" autofocus>Cancelar</button>
+      <button class="btn sup-redondo sup-perigo" value="sim" id="sup-dlg-confirmar-sim">Excluir</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Assistente não conseguiu ajudar: duas saídas -->
+<dialog class="sup-popup" id="sup-dlg-ajuda" aria-labelledby="sup-dlg-ajuda-titulo" aria-describedby="sup-dlg-ajuda-texto">
+  <form method="dialog">
+    <h2 id="sup-dlg-ajuda-titulo">Não consegui ajudar</h2>
+    <p id="sup-dlg-ajuda-texto">Sua dúvida é sobre a plataforma ou sobre outro assunto?</p>
+    <div class="sup-popup-opcoes">
+      <button class="sup-opcao" value="plataforma">
+        <strong>Sobre a plataforma</strong>
+        <span>Enviar o resumo da conversa para a equipe.</span>
+      </button>
+      <button class="sup-opcao" value="externa">
+        <strong>Dúvida externa</strong>
+        <span>Assunto fora da plataforma. A conversa é mantida.</span>
+      </button>
+    </div>
+    <div class="sup-popup-botoes">
+      <button class="btn sup-redondo" value="voltar">Voltar à conversa</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Saída 1: sobre a plataforma (usuário vê só o resumo e quem envia) -->
+<dialog class="sup-popup sup-popup-largo" id="sup-dlg-plataforma" aria-labelledby="sup-dlg-plataforma-titulo">
+  <form method="dialog">
+    <h2 id="sup-dlg-plataforma-titulo">Enviar para a equipe</h2>
+    <dl class="sup-resumo" id="sup-resumo">
+      <dt>Enviado por</dt><dd id="sup-resumo-quem"></dd>
+      <dt>Resumo da conversa</dt><dd id="sup-resumo-texto"></dd>
+    </dl>
+    <p class="mensagem" id="sup-resumo-msg" role="status"></p>
+    <div class="sup-popup-botoes">
+      <button class="btn sup-redondo" value="voltar">Voltar</button>
+      <button type="button" class="btn sup-redondo sup-perigo" id="sup-resumo-deletar">Deletar</button>
+      <button type="button" class="btn sup-redondo" id="sup-resumo-enviar">Enviar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Saída 2: dúvida externa -->
+<dialog class="sup-popup" id="sup-dlg-externa" aria-labelledby="sup-dlg-externa-titulo">
+  <form method="dialog">
+    <h2 id="sup-dlg-externa-titulo">Assunto fora da plataforma</h2>
+    <p>Ainda não temos conhecimento sobre este assunto. Sua conversa foi mantida.</p>
+    <div class="sup-popup-botoes">
+      <button class="btn sup-redondo" value="voltar" autofocus>Voltar à conversa</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>
