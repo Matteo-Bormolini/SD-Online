@@ -405,7 +405,10 @@
     $("#btn-ver-como-cliente").addEventListener("click", () => definirVisao("cliente", true));
     $("#btn-voltar-edicao").addEventListener("click", () => definirVisao("dono", true));
     const pedida = new URLSearchParams(location.search).get("visao");
-    definirVisao(pedida === "cliente" ? "cliente" : "dono", false);
+    // Só o dono (ou o adm) pode voltar para a edição; o cliente vê só a versão pública
+    const dono = window.SD.pode("perfil-prestador");
+    if (!dono) $("#btn-voltar-edicao").hidden = true;
+    definirVisao(pedida === "cliente" || !dono ? "cliente" : "dono", false);
   }
 
   /* ---------- 8. FORMULÁRIO: campos e regras exclusivas do Prestador ---------- */

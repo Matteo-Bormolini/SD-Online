@@ -41,7 +41,12 @@
     "perfil-adm":          ["adm"],
     "perfil-cliente-cpf":  ["cliente-cpf", "adm"],
     "perfil-cliente-cnpj": ["cliente-cnpj", "adm"],
-    "perfil-prestador":    ["prestador", "adm"]
+    "perfil-prestador":    ["prestador", "adm"],
+    // Perfil do prestador visto pelo CLIENTE (só dados públicos, ?visao=cliente)
+    "perfil-prestador-publico": ["cliente-cpf", "cliente-cnpj", "adm"],
+    // Pedir orçamento e avaliações
+    "solicitacao": ["cliente-cpf", "cliente-cnpj", "adm"],
+    "avaliacoes":  LOGADOS
   };
 
   /* ---------- 3. FUNÇÕES ---------- */

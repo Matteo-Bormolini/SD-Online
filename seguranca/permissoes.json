@@ -1,23 +1,85 @@
 {
   "descricao": "Regras de acesso da S.D para o SERVIDOR. Manter igual a seguranca/acesso.js (versão da tela).",
-  "versao": 2,
+  "versao": 3,
   "regra_padrao": "negar",
-  "perfis": ["visitante", "cliente-cpf", "cliente-cnpj", "prestador", "adm"],
+  "perfis": [
+    "visitante",
+    "cliente-cpf",
+    "cliente-cnpj",
+    "prestador",
+    "adm"
+  ],
   "recursos": {
-    "inicio":              ["*"],
-    "servicos":            ["*"],
-    "sobre":               ["*"],
-    "politicas":           ["*"],
-    "suporte":             ["*"],
-    "clientes":            ["cliente-cpf", "cliente-cnpj", "adm"],
-    "prestador":           ["prestador", "adm"],
-    "login-cadastro":      ["visitante"],
-    "meu-perfil":          ["cliente-cpf", "cliente-cnpj", "prestador", "adm"],
-    "sair":                ["cliente-cpf", "cliente-cnpj", "prestador", "adm"],
-    "perfil-adm":          ["adm"],
-    "perfil-cliente-cpf":  ["cliente-cpf", "adm"],
-    "perfil-cliente-cnpj": ["cliente-cnpj", "adm"],
-    "perfil-prestador":    ["prestador", "adm"]
+    "inicio": [
+      "*"
+    ],
+    "servicos": [
+      "*"
+    ],
+    "sobre": [
+      "*"
+    ],
+    "politicas": [
+      "*"
+    ],
+    "suporte": [
+      "*"
+    ],
+    "clientes": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "adm"
+    ],
+    "prestador": [
+      "prestador",
+      "adm"
+    ],
+    "login-cadastro": [
+      "visitante"
+    ],
+    "meu-perfil": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "prestador",
+      "adm"
+    ],
+    "sair": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "prestador",
+      "adm"
+    ],
+    "perfil-adm": [
+      "adm"
+    ],
+    "perfil-cliente-cpf": [
+      "cliente-cpf",
+      "adm"
+    ],
+    "perfil-cliente-cnpj": [
+      "cliente-cnpj",
+      "adm"
+    ],
+    "perfil-prestador": [
+      "prestador",
+      "adm"
+    ],
+    "perfil-prestador-publico": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "adm"
+    ],
+    "solicitacao": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "adm"
+    ],
+    "avaliacoes": [
+      "cliente-cpf",
+      "cliente-cnpj",
+      "prestador",
+      "adm"
+    ]
   },
   "dados": {
     "cliente-cpf": {
@@ -26,7 +88,11 @@
       "prestador": "primeiro nome e bairro, somente se autorizado e com pedido de serviço aberto",
       "visitante": "nenhum",
       "adm": "todos os campos, exceto a senha",
-      "nunca_publico": ["cpf", "telefone", "endereco_completo"]
+      "nunca_publico": [
+        "cpf",
+        "telefone",
+        "endereco_completo"
+      ]
     },
     "cliente-cnpj": {
       "proprio": "todos os campos",

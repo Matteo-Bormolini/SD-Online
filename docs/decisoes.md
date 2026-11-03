@@ -1,6 +1,6 @@
-# Site/App S.D — decisões (atualizado 20/10/2026)
+# Site/App S.D — decisões de marca, visual e perfis
 
-## Estrutura (20/10/2026)
+## Estrutura
 - Projeto reunido na pasta **SDOnline**, uma pasta por parte (ver README.md da raiz).
 - O antigo `global.css` foi dividido em `configuracoes/base.css`, `navbar/navbar.css` e `rodape/rodape.css`.
 - O antigo `global.js` foi dividido em `configuracoes/config.js` (configuração única e links), `navbar/navbar.js` e `rodape/rodape.js`.
@@ -33,14 +33,8 @@
 - Busca de prestadores por: proximidade/localização, avaliação, contato, recomendações/avaliações (recomendações pagas = destaque) e busca normal.
 - Destaques pagos devem aparecer identificados.
 
-## Fluxo do cliente
-1. Seleciona o que precisa e descreve o caso.
-2. Marca se precisa ir ao local (se sim: data em dia útil ou só ir e falar com o zelador responsável).
-3. Recebe os 3 primeiros orçamentos; se nenhum servir, vê a lista de todos.
-4. Escolhe o prestador e negocia por WhatsApp ou telefone.
-
-## Ideia futura (sem alterar páginas ainda)
-- Prestadores verem as demandas dos clientes e enviarem cotação; um prestador não vê a cotação do outro (modelo 99Freelas). Em avaliação — preocupação com segurança.
+## Fluxo do pedido
+- Versão aprovada e completa: `docs/backlog.md`, seção 3 (até 4 orçamentos por pedido; contato por WhatsApp ou e-mail liberado pelo prestador).
 
 ## Visual
 - Fundo principal #F2ECE6. Sempre abre no tema claro; escuro só se o usuário escolher.
@@ -62,8 +56,4 @@
 - Base: © ano S.D Serviços Digitais · Termos · Privacidade.
 
 ## Pendências
-- Incluir os arquivos originais da Home e do login.html.
-- Tema escuro: links #800000 com contraste insuficiente. Provisório: link ganha fundo claro #F2ECE6 no escuro. Aguardando decisão.
-- Controle de acesso real (logado, tipo de usuário) e gravação dos dados: servidor.
-- Links das lojas: "Em breve" até o app ser publicado.
-- Próximos perfis: Cliente CPF, Cliente CNPJ, Prestador.
+- Ver `docs/backlog.md` (Sprints e decisões em aberto).

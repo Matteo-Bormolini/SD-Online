@@ -20,37 +20,21 @@
 - Perguntar só quando faltar algo essencial.
 - Concluir uma parte antes de começar a próxima.
 
-## 3. Estrutura de pastas (uma pasta por parte)
-| Pasta | Parte | Situação |
-|---|---|---|
-| `configuracoes/` | `config.js` (links, menu, ícones), `base.css` (cores, botões), `modelo-pagina.html` | Pronta |
-| `navbar/` | `navbar.js` + `navbar.css` | Pronta |
-| `rodape/` | `rodape.js` + `rodape.css` | Pronto |
-| `home/` | `index.html` (Home) + `sobre.html` | Em construção |
-| `login-cadastro/` | Login e cadastro | Em construção |
-| `perfil-adm/` | `index.html`, `perfil.css`, `perfil.js` | Pronta (demonstração) |
-| `perfil-cliente-cpf/` | Perfil cliente CPF | A criar |
-| `perfil-cliente-cnpj/` | Perfil cliente CNPJ | A criar |
-| `inicio-logado/` | Tela inicial dos logados | A criar |
-| `localizar-prestador/` | Cliente busca prestadores | A criar |
-| `localizar-condominios/` | Prestador vê onde ficam os condomínios que está orçando | A criar |
-| `solicitacao/` | Pedido de serviço | A criar |
-| `avaliacoes/` | Avaliações | A criar |
-| `suporte/` | Suporte | A criar |
-| `politica-privacidade/` | Políticas, termos, privacidade | A criar |
-| `base-de-dados/` | Banco de dados | A definir |
-| `chaves-api/` | Só o modelo `.env.example` (nunca chaves reais) | Modelo |
-| `seguranca/` | Regras de segurança | Regras iniciais |
-| `fotos/` | Logo e imagens do site | Logo provisório |
-| `docs/decisoes.md` | **Todas as decisões detalhadas** | Atualizado |
+## 3. Onde está cada coisa
+- **Plano do produto (macro-objetivo, épicos, histórias, MoSCoW, Sprints):** `docs/backlog.md`. Leia antes de propor qualquer coisa nova.
+- **Visão geral e mapa das pastas:** `README.md` da raiz.
+- **Regras técnicas:** `docs/guia-tecnico.md`.
+- **Cada pasta tem um README** no formato de entrega de Sprint (status, histórias, "Pronto quando").
+- **Decisões antigas (até 20/10/2026):** `docs/decisoes.md`.
 
 ## 4. Regras técnicas obrigatórias
-- Toda página nova nasce de `configuracoes/modelo-pagina.html`, salva como `<pasta>/index.html`.
-- Toda página carrega, nesta ordem: `../configuracoes/base.css`, `../navbar/navbar.css`, `../rodape/rodape.css`, `../configuracoes/config.js`, `../navbar/navbar.js`, `../rodape/rodape.js` e depois os arquivos da própria página.
-- `<body data-pagina="..." data-logado="sim|nao" data-raiz="../">`, `<header id="sd-navbar">` e `<footer id="sd-rodape">` vazios. Navbar e rodapé são montados por JS. **Nunca escrever navbar/rodapé à mão.**
-- Links entre páginas: usar `SD.url(SD.CONFIG.paginas.<nome>)`. Para mudar um link, editar só `configuracoes/config.js`.
+- Toda página nova nasce de `modelo-pagina/index.html`, salva como `<pasta>/index.html`.
+- Ordem dos scripts: `../seguranca/acesso.js` → `../configuracoes/config.js` → `../navbar/navbar.js` → `../rodape/rodape.js` → componentes → arquivo da página. CSS: `base.css` → `navbar.css` → `rodape.css` → componentes → página.
+- `<body data-pagina="..." data-logado="sim|nao" data-tipo="..." data-raiz="../">`, `<header id="sd-navbar">` e `<footer id="sd-rodape">` vazios. Navbar e rodapé são montados por JS. **Nunca escrever navbar/rodapé à mão.**
+- Links entre páginas: ficam só em `configuracoes/config.js`.
 - Usar os tokens de cor do `base.css` (`var(--cor-...)`). Não criar cores novas sem autorização.
 - Segurança: senha só com hash no servidor (ninguém vê, nem o adm). Bloqueio de acesso real é feito no servidor; `data-logado` só muda a tela. Chaves e fotos de usuários nunca vão para o GitHub.
+- A S.D **não faz pagamentos**: cliente e prestador combinam entre eles. No futuro o prestador só informa como cobra.
 
 ## 5. Padrão visual
 - Fundo `#F2ECE6`. Abre sempre no tema claro; o escuro só ativa se o usuário escolher.
@@ -61,15 +45,16 @@
 - Marca: "Serviços" em cima, "Digitais" embaixo; logo = engrenagem com capacete (provisório).
 - Números sem gráficos e sem emojis.
 
-## 6. Fluxo do cliente
-1. Seleciona o que precisa e descreve o caso.
-2. Marca se precisa ir ao local (data em dia útil, ou falar com o zelador).
-3. Recebe os 3 primeiros orçamentos; se nenhum servir, vê a lista completa.
-4. Escolhe o prestador e negocia por WhatsApp ou telefone.
+## 6. Fluxo do pedido (aprovado)
+Resumo abaixo; versão completa em `docs/backlog.md`, seção 3.
+1. Cliente escolhe a área e vê os prestadores do mais perto ao mais longe (mapa centrado nele).
+2. Na página do prestador, escolhe o serviço e pede orçamento (a quantos quiser).
+3. Pedido entra na coluna "A orçar" do prestador (aviso no site e por e-mail); ele decide se atende.
+4. Prestador envia orçamento padrão (serviço, materiais, mão de obra, valores, datas).
+5. Cliente compara até 4 orçamentos por pedido (os extras ficam guardados, com aviso).
+6. Cliente aceita (com confirmação), recusa (sem motivo; prestador vê em vermelho; arquivado após 30 dias) ou faz contraproposta.
+7. Prestador libera WhatsApp (verde) e/ou e-mail (vinho); cinza = não liberado.
+8. Prestador vê só a região aproximada do cliente. A S.D não faz pagamentos.
 
-## 7. Próximos passos sugeridos
-1. Incluir a Home original e o login.html do Marco (adaptando ao padrão: remover navbar/rodapé escritos à mão).
-2. Perfil Cliente CPF e Perfil Cliente CNPJ (partindo do perfil-adm).
-3. Solicitação → Localizar prestador → Localizar condomínios.
-4. Avaliações, Suporte e textos legais (revisar com advogado, LGPD).
-5. Servidor e banco de dados (login real, gravação, fotos).
+## 7. Próximos passos
+Seguir a Sprint atual em `docs/backlog.md` (seção 5). Concluir a Sprint antes de começar a próxima.

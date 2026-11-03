@@ -127,6 +127,34 @@
     if (s.nome) document.body.dataset.nome = s.nome;
   })();
 
+  /* ---------- 3b. PROTEÇÃO DAS PÁGINAS (só no modo demonstração) ----------
+     A página diz no <body> qual regra de seguranca/acesso.js ela usa:
+       data-recurso="perfil-adm"                        → regra da página
+       data-recurso-publico="perfil-prestador-publico"  → (opcional) versão pública
+     Sem permissão: visitante vai para o login; quem já entrou vai para o início.
+     No site real quem bloqueia é o SERVIDOR, antes de enviar a página. */
+  (function protegerPagina() {
+    const b = document.body;
+    if (!CONFIG.modoDemonstracao || !b || !acesso || !b.dataset.recurso) return;
+    const s = sessaoDemo.ler();
+    const tipo = s ? s.tipo : "visitante";
+    if (acesso.pode(tipo, b.dataset.recurso)) return;
+    const publico = b.dataset.recursoPublico;
+    if (publico && acesso.pode(tipo, publico)) {
+      b.dataset.visao = "cliente";                       // abre só a versão pública
+      const url = new URL(location.href);
+      if (url.searchParams.get("visao") !== "cliente") {
+        url.searchParams.set("visao", "cliente");
+        location.replace(url.href);
+      }
+      return;
+    }
+    const destino = tipo === "visitante"
+      ? `${CONFIG.paginas.login}?destino=${encodeURIComponent(b.dataset.recurso)}`
+      : CONFIG.paginas.inicio;
+    location.replace((b.dataset.raiz || "") + destino);
+  })();
+
   /* ---------- 4. ESTADO DA PÁGINA (lido do <body>) ---------- */
   const corpo = () => document.body || document.createElement("body");
   const raiz = () => corpo().dataset.raiz || "";
