@@ -1,8 +1,8 @@
 # S.D Serviços Digitais
 
-**Quebrou, vazou ou parou? A gente conecta você a quem resolve.**
+**Quebrou, vazou ou parou? Conectamos você a quem resolve.**
 
-A S.D é um site (e, no futuro, um app) que liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
+A S.D é uma plataforma que liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
 Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o prestador.
 
 > **Situação atual:** versão de **demonstração**. Dá para ver e testar as telas,
@@ -15,19 +15,19 @@ Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o 
 | Quem | Exemplo | O que ganha |
 |---|---|---|
 | **Pessoa** (Cliente CPF) | Casas e apartamentos | Encontra quem resolve, perto de casa. |
-| **Empresa ou condomínio** (Cliente CNPJ) | Empresas, condomínios e MEI | Organiza as manutenções do local. |
+| **Empresa ou condomínio** (Cliente CNPJ) | Empresas, condomínios | Organiza as manutenções do local. |
 | **Prestador** (com CNPJ ou MEI) | Eletricista, encanador, pintor... | Mais clientes perto dele e um perfil que passa confiança. |
 | **Administrador** | Equipe S.D | Dá suporte e cuida da plataforma. Nunca vê senhas. |
 
 ## Como funciona
 
 1. **Escolha o serviço** (ex.: encanador) e veja os prestadores mais perto de você.
-2. **Peça orçamento** a quantos prestadores quiser.
+2. **Peça orçamento** a quantos prestadores precisar, limitado a 4.
 3. **Compare até 4 orçamentos** e decida: aceitar, recusar ou fazer uma contraproposta.
 4. **Combine direto** pelo WhatsApp ou e-mail. O prestador decide quando mostrar esses contatos.
 5. **Avalie** o serviço e ajude o próximo cliente a escolher.
 
-> 💬 **A S.D não faz pagamentos.** Valor e forma de pagamento são combinados entre você e o prestador.
+> 💬 **A S.D não faz pagamentos.** Valor e forma de pagamento são combinados entre cliente e prestador.
 
 ## O que já dá para ver
 
@@ -57,7 +57,8 @@ Não. Você paga direto ao prestador, do jeito que combinarem.
 Ainda está sendo definido. Nada é cobrado na demonstração.
 
 **O prestador vai saber onde eu moro?**
-Antes de vocês combinarem, ele vê só a região aproximada. O endereço é você quem passa, se quiser.
+Antes de vocês combinarem, ele vê só a região aproximada. O endereço é autorizado caso aceite a compartilhar no site.
+Tudo sobre o perfil vai estar bloqueado para outros verem a menos que autorize a compartilhar.
 
 **Meu CPF e meu telefone aparecem para outras pessoas?**
 Não ficam públicos. Só aparecem para quem você autorizar e para a equipe S.D, quando precisar dar suporte.
@@ -75,7 +76,7 @@ Hoje, só quem tem CNPJ ou MEI. Se você trabalha sem CNPJ e quer que isso mude,
 Sim. Em **Meu perfil → Excluir perfil**.
 
 **Quem vê a minha senha?**
-Ninguém, nem a equipe S.D.
+Ninguém! nem mesmo a equipe S.D.
 
 ---
 
@@ -103,9 +104,9 @@ Este projeto é tocado como uma pequena empresa ágil (Scrum), só que com **uma
 
 | Papel | Quem | O que faz |
 |---|---|---|
-| **Product Owner** | Marco | Decide o que entra no produto e em que ordem. |
-| **Scrum Master** | Marco | Planeja, revisa e melhora o trabalho a cada Sprint. |
-| **Time de desenvolvimento** | Marco, com apoio de IA | Cria, testa e entrega. |
+| **Product Owner** | Matteo | Decide o que entra no produto e em que ordem. |
+| **Scrum Master** | Matteo | Planeja, revisa e melhora o trabalho a cada Sprint. |
+| **Time de desenvolvimento** | Matteo, com apoio de IA | Cria, testa e entrega. |
 
 ### Macro-objetivo
 
@@ -115,15 +116,15 @@ Este projeto é tocado como uma pequena empresa ágil (Scrum), só que com **uma
 
 | Épico | O que resolve | Status |
 |---|---|---|
-| E1 · Base do site | Mesma aparência, menu e rodapé em todas as páginas | ✅ |
+| E1 · Base do site | Mesma aparência, menu e rodapé em todas as páginas | ✅ finalizado |
 | E2 · Conta | Criar conta, entrar e sair | 🟡 Tela pronta |
 | E3 · Perfis | Dados, fotos e confiança de cada usuário | 🟡 Quase pronto |
-| E4 · Encontrar | Prestadores por área, do mais perto ao mais longe | ⬜ |
-| E5 · Pedir e negociar | Pedido, orçamento, comparar até 4 e decidir | ⬜ |
-| E6 · Contato e localização | WhatsApp e e-mail liberados pelo prestador; mapa aproximado | ⬜ |
-| E7 · Acompanhar e avaliar | Etapas do serviço, histórico e estrelas | 🟡 |
-| E8 · Ajuda e confiança | Suporte, Sobre nós, termos e privacidade | 🟡 |
-| E9 · Servidor, segurança e LGPD | Dados guardados com segurança e direitos do usuário | 🟡 |
+| E4 · Encontrar | Prestadores por área, do mais perto ao mais longe | ⬜ Planejando |
+| E5 · Pedir e negociar | Pedido, orçamento, comparar até 4 e decidir | ⬜ Planejando |
+| E6 · Contato e localização | WhatsApp e e-mail liberados pelo prestador; mapa aproximado | ⬜ Planejando |
+| E7 · Acompanhar e avaliar | Etapas do serviço, histórico e estrelas | 🟡 Em andamento |
+| E8 · Ajuda e confiança | Suporte, Sobre nós, termos e privacidade | 🟡 Em andamento |
+| E9 · Servidor, segurança e LGPD | Dados guardados com segurança e direitos do usuário | 🟡 Em andamento |
 
 O caminho completo do pedido e todas as histórias estão no **[Backlog do produto](docs/backlog.md)**.
 
