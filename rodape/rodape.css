@@ -1,7 +1,8 @@
 /* =====================================================================
    S.D — RODAPÉ (rodape/rodape.css)
-   Fundo vinho, texto branco. 4 colunas no computador, 2 no tablet,
-   1 no celular. A classe .marca vem de navbar/navbar.css.
+   Fundo vinho, texto branco. Computador: uma faixa baixa e espalhada
+   (como a NavBar). Tablet: 2 colunas. Celular: 1 coluna.
+   A classe .marca vem de navbar/navbar.css.
    ===================================================================== */
 .rodape { background: var(--cor-menu-fundo); color: var(--cor-menu-texto); font-size: .875rem; margin-top: auto; }
 .rodape a { color: #FFFFFF; text-underline-offset: .2em; }
@@ -37,5 +38,26 @@
   margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, .25);
 }
 
+/* Computador (992px ou mais): faixa compacta, itens espalhados de ponta a ponta */
+@media (min-width: 62rem) {
+  .rodape { font-size: .8125rem; }
+  .rodape-conteudo { padding: 1rem 1rem .625rem; }
+  .rodape-colunas { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem 2rem; }
+  .rodape-marca { flex: none; }
+  .rodape-marca .marca svg { width: 2rem; height: 2rem; }
+  .rodape-marca p { margin-top: .375rem; max-width: 15rem; font-size: .75rem; }
+  .rodape h2 { font-size: .75rem; margin-bottom: .375rem; }
+  .rodape ul { gap: .125rem; }
+  .rodape-colunas > nav { flex: 1 1 20rem; max-width: 24rem; }
+  .rodape-politicas { flex: 1 1 15rem; max-width: 19rem; }
+  /* Links lado a lado (em até 2 linhas), como os itens da NavBar */
+  .rodape-colunas ul { display: flex; flex-wrap: wrap; gap: .125rem 1.25rem; }
+  .rodape li a { min-height: 1.375rem; }
+  .lojas { flex-direction: row; gap: .5rem; }
+  .loja { min-height: 2.25rem; padding: .25rem .625rem; white-space: nowrap; line-height: 1.2; }
+  .loja small { font-size: .625rem; }
+  .rodape-aviso { margin-top: .75rem; padding: .375rem .75rem; font-size: .75rem; }
+  .rodape-base { margin-top: .5rem; padding-top: .5rem; font-size: .75rem; }
+}
 @media (max-width: 61.99rem) { .rodape-colunas { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 35.99rem) { .rodape-colunas { grid-template-columns: 1fr; gap: 1.5rem; } }

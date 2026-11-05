@@ -105,8 +105,9 @@ O visitante vê os itens com cadeado e é levado ao login ao clicar.
 | Hover de botões, links e setas | `#800000` |
 | Menu e rodapé | `#800000` (hover do menu `#5C0000`) |
 | Fundo (tema escuro) | `#161312` |
+| Destaque pago (contorno e etiqueta) | `#E00000` (escuro: `#FF4545`) |
 
-O site sempre abre no tema claro. O escuro só aparece se a pessoa escolher.
+O site abre no tema claro. Se a pessoa escolher o escuro, ele fica salvo no navegador e continua em todas as páginas até ela clicar de novo.
 Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mestre-padrao-visual.md`](prompt-mestre-padrao-visual.md).
 
 ## 8. Segurança
@@ -137,7 +138,26 @@ Uma ou duas frases dizendo o que é, em linguagem simples.
 ## Parte técnica
 ```
 
-## 10. Publicar no GitHub Pages
+## 10. Destaque pago (tag `destaque`)
+
+- No banco/API o prestador recebe a tag: `tags: ["destaque"]`.
+- No HTML: `data-tag="destaque"` → o `base.css` pinta o contorno de vermelho em qualquer elemento.
+- Etiqueta visível: `<span class="tag-destaque">Destaque pago</span>` (nunca esconder: é anúncio pago).
+- Em JS: `SD.ehDestaque(item)`. Nome da tag e texto ficam em `config.js` → `destaque`.
+- Quem liga e desliga: o administrador (página futura com filtros).
+
+## 11. Serviços gratuitos (regra: grátis e sem prazo de validade)
+
+| Para quê | Serviço | Situação (conferido em 05/11/2026) |
+|---|---|---|
+| Mapa | MapLibre GL (biblioteca, BSD) + OpenFreeMap (mapas) | Sem chave, sem cadastro, sem limite de visualizações, uso comercial liberado. Sem garantia de funcionamento (SLA). |
+| Rota até um endereço | Links do Google Maps e do Waze | Sem chave. **Não usado** em Localizar prestador (decisão de 05/11). |
+| Distância | Cálculo próprio (Haversine) | Sem serviço externo. |
+| Hospedagem de teste | GitHub Pages | Grátis, mas os termos **não permitem** usar como site de negócio. Serve só para testes. |
+| Lançamento (a decidir na Sprint 5) | Cloudflare (Pages/Workers + banco D1) | Plano grátis sem prazo: D1 com 5 GB, 5 milhões de leituras e 100 mil gravações por dia. |
+| Alternativas de banco | Firebase Spark / Supabase Free | Firebase: grátis sem prazo, com cotas diárias. Supabase: o projeto **pausa após 1 semana sem uso**. |
+
+## 12. Publicar no GitHub Pages
 
 1. Envie o conteúdo do projeto para a raiz do repositório.
 2. No GitHub: **Settings → Pages → Source: Deploy from a branch** → branch `main`, pasta `/ (root)`.

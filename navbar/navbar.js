@@ -1,7 +1,7 @@
 /* =====================================================================
    S.D — NAVBAR (navbar/navbar.js)
    Monta a barra do topo a partir de configuracoes/config.js (window.SD),
-   controla o tema claro/escuro e o menu compacto.
+   controla o tema claro/escuro (escolha salva) e o menu compacto.
    Itens do menu: visitante vê todos (com cadeado nos que pedem login);
    logado vê só os liberados para o seu tipo (seguranca/acesso.js).
    Precisa de: <header id="sd-navbar"></header> na página.
@@ -47,18 +47,25 @@
     return true;
   }
 
-  /* ---------- 2. TEMA (sempre abre no claro; escuro só se o usuário escolher) ---------- */
+  /* ---------- 2. TEMA (claro é o padrão; a escolha fica salva até clicar de novo) ----------
+     config.js já aplicou o tema salvo no <html>; aqui só ajusta o botão e salva a troca. */
   function iniciarTema() {
     const btn = document.getElementById("sd-btn-tema");
     if (!btn) return;
     const html = document.documentElement;
-    html.setAttribute("data-tema", "claro");
-    btn.addEventListener("click", () => {
-      const escuro = html.getAttribute("data-tema") !== "escuro";
+    const mostrar = (escuro) => {
       html.setAttribute("data-tema", escuro ? "escuro" : "claro");
       btn.innerHTML = escuro ? I.sol : I.lua;
       btn.setAttribute("aria-pressed", String(escuro));
       btn.setAttribute("aria-label", escuro ? "Ativar tema claro" : "Ativar tema escuro");
+    };
+    mostrar(html.getAttribute("data-tema") === "escuro");
+    btn.addEventListener("click", () => {
+      const escuro = html.getAttribute("data-tema") !== "escuro";
+      mostrar(escuro);
+      SD.tema.salvar(escuro ? "escuro" : "claro");
+      // Avisa as páginas (ex.: mapa) que o tema mudou
+      document.dispatchEvent(new CustomEvent("sd:tema", { detail: { escuro } }));
     });
   }
 

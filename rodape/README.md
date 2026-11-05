@@ -26,6 +26,6 @@ Para todos os visitantes e usuários.
 | Arquivo | Para que serve |
 |---|---|
 | `rodape.js` | Monta as colunas do rodapé. |
-| `rodape.css` | Aparência do rodapé. |
+| `rodape.css` | Aparência do rodapé. No computador é uma faixa baixa e espalhada (como a NavBar); no tablet, 2 colunas; no celular, 1. |
 
 **Onde mudar os links e as lojas:** `configuracoes/config.js` (não aqui).

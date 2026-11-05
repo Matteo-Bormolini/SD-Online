@@ -77,7 +77,7 @@ O produto cumpre o objetivo quando:
 
 | Nº | História | Prioridade | Sprint | Status |
 |---|---|---|---|---|
-| US11 | Como cliente, quero escolher a área do serviço e ver os prestadores do mais perto ao mais longe, com um mapa centrado em mim. | M | 3 | ⬜ |
+| US11 | Como cliente, quero escolher a área do serviço e ver os prestadores do mais perto ao mais longe, com um mapa centrado em mim. | M | 3 | 🟡 Tela pronta (demonstração) |
 | US12 | Como cliente, quero filtrar também por nome e por avaliação. | C | Futuro | ⬜ |
 
 ### E5 · Pedir e negociar orçamentos
@@ -91,7 +91,7 @@ O produto cumpre o objetivo quando:
 | US17 | Como cliente, quero aceitar (com confirmação), recusar (sem explicar o motivo) ou fazer uma contraproposta. | M | 4 | ⬜ |
 | US18 | Como prestador, quero ver os orçamentos recusados em vermelho e que eles vão para "Arquivados" depois de 30 dias, podendo apagá-los. | S | 4 | ⬜ |
 | US19 | Como cliente, quero pedir um novo orçamento ao mesmo prestador, vendo um aviso vermelho se já existir uma negociação em andamento. | S | 4 | ⬜ |
-| US20 | Como cliente, quero voltar à lista de prestadores sem perder os filtros, para pedir outros orçamentos. | S | 4 | ⬜ |
+| US20 | Como cliente, quero voltar à lista de prestadores sem perder os filtros, para pedir outros orçamentos. | S | 4 | 🟡 Tela pronta (demonstração) |
 | US21 | Como cliente, quero uma comparação automática dos orçamentos (o que é igual, o que é diferente e o que não combina com meu pedido). Só eu vejo. | C | Futuro | ⬜ |
 
 ### E6 · Contato e localização
@@ -133,7 +133,10 @@ O produto cumpre o objetivo quando:
 |---|---|---|
 | US35 | Como administrador, quero um painel com números, liga/desliga de recursos e edição de contas. | C |
 | US36 | Como prestador, quero **informar** como cobro (Pix, dinheiro, cartão...), só como informação para o cliente. | C |
-| US37 | Como prestador, quero pagar por um destaque, que aparece identificado como "Destaque". | C |
+| US37 | Como prestador, quero pagar por um destaque, que aparece identificado como "Destaque pago" (contorno vermelho, tag `destaque`). | C |
+| US42 | Como usuário, quero ligar ou desligar o uso da minha localização no perfil; desligado, não apareço em mapas e listas. | M |
+| US43 | Como prestador, quero escolher se meu WhatsApp aparece na busca (desligado: botão cinza até o orçamento). | S |
+| US44 | Como administrador, quero uma página com filtros para ligar e desligar o destaque dos prestadores. | C |
 | US38 | Como cliente, quero comparar preços de equipamentos (ex.: TV de monitoramento). | C |
 | US39 | Como usuário, quero o app nas lojas, entrar com a digital e receber avisos também pelo telefone. | C |
 | US40 | Como usuário, quero que o Assistente do Suporte responda com inteligência artificial. | C |
@@ -172,6 +175,9 @@ Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que
 
 - ✅ Suporte com dúvidas, sugestões e assistente.
 - ✅ README de todas as pastas e este backlog.
+- ✅ Fim dos links quebrados: "Sobre nós" em `home/sobre.html`; os 4 documentos legais juntos em `politica-privacidade/`; páginas sem conteúdo mostram "Esta página ainda está em desenvolvimento.".
+- ✅ Ajustes de 05/11: tema escuro salvo entre páginas; rodapé do computador mais baixo e espalhado; destaque pago em vermelho brilhante com a tag `destaque`.
+- ✅ Adiantado da Sprint 3: tela de **Localizar prestador** (demonstração).
 - ✅ Faxina técnica:
   - um só modelo de página (`modelo-pagina/`);
   - arquivos de versões antigas removidos;
@@ -185,12 +191,23 @@ Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que
 
 | Decisão | Opções | Até a Sprint |
 |---|---|---|
+| Onde publicar o site no lançamento (grátis e sem prazo) | Cloudflare (recomendado) · Firebase · outra | 5 |
 | O que a página "Seja um prestador" (`localizar-condominios/`) mostra, já que o mapa do cliente agora aparece dentro do pedido | Apresentar a S.D para novos prestadores **ou** mapa com os pedidos que o prestador já recebeu **ou** remover a página | 3 |
 | Onde ficam "Sobre nós" e as páginas legais | Uma pasta por página (`sobre/`, `termos/`...) **ou** manter `home/sobre.html` e a pasta `politica-privacidade/` e ajustar os links | 2 |
 | Quanto custa usar a S.D (cliente e prestador) | Grátis, plano pago ou só destaque pago | 5 |
 | A S.D confere o CNPJ e as certificações do prestador antes de mostrá-lo? | Conferir no cadastro (selo "Verificado") **ou** não conferir e deixar claro nos Termos | 5 |
 
 ---
+
+### Decisões tomadas em 05/11/2026 (Localizar prestador)
+
+- Caixas por tipo de serviço (mesma lista da Home) → lista + mapa ao lado → cartão abaixo do mapa.
+- Cartão: logo, nome, serviços (3 + "+N"), WhatsApp e **Fazer orçamento** (abre o perfil do prestador).
+- Ordem por distância; o destaque **não** muda a posição, só ganha contorno vermelho e etiqueta.
+- Localização vem do endereço do perfil, com botão ligar/desligar. Prestador desligado não aparece. Cliente desligado vê a lista em ordem alfabética, com aviso.
+- WhatsApp só se o prestador ligar a opção; se não, botão cinza "liberado após o orçamento".
+- Sem botões de rota (Maps/Waze).
+- Mapa: MapLibre + OpenFreeMap (grátis, sem chave).
 
 ## 8. Definição de Pronto (vale para toda entrega)
 

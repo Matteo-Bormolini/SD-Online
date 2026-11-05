@@ -26,7 +26,7 @@ Para todos: visitantes e quem já entrou na conta.
 
 | Arquivo | Para que serve |
 |---|---|
-| `navbar.js` | Monta a barra, o botão de tema e o menu compacto. |
+| `navbar.js` | Monta a barra, o botão de tema (a escolha fica salva) e o menu compacto. |
 | `navbar.css` | Aparência da barra. |
 
 **Onde mudar os itens do menu:** `configuracoes/config.js` (não aqui).

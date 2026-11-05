@@ -2,7 +2,8 @@
    S.D SERVIÇOS DIGITAIS — BASE DO PADRÃO (configuracoes/base.css)
    Usado por TODAS as páginas, sempre antes de navbar.css e rodape.css.
    Aqui ficam: tokens de cores (claro/escuro), tipografia, botões,
-   links, setas, mensagens, selo de demonstração e acessibilidade.
+   links, setas, mensagens, selo de demonstração, destaque pago,
+   página em desenvolvimento e acessibilidade.
    Estilos de cada página ficam em <pasta>/<pagina>.css (só com tokens).
    ===================================================================== */
 
@@ -27,6 +28,10 @@
   --cor-atencao: #8A5A00;  --cor-atencao-fundo: #FBF1DC;
   --cor-erro:    #A11B1B;  --cor-erro-fundo:    #FBE7E7;
   --cor-info:    #1D4E89;  --cor-info-fundo:    #E5EEF8;
+
+  /* Destaque pago (vermelho brilhante, aprovado pelo Marco em 05/11/2026) */
+  --cor-destaque:       #E00000;
+  --cor-destaque-texto: #FFFFFF;
 
   /* NavBar e Rodapé */
   --cor-menu-fundo: #800000;
@@ -57,6 +62,7 @@
   --cor-atencao: #F0C46A;  --cor-atencao-fundo: #33280F;
   --cor-erro:    #F29A9A;  --cor-erro-fundo:    #3A1A1A;
   --cor-info:    #9CC3F0;  --cor-info-fundo:    #142A42;
+  --cor-destaque: #FF4545;  --cor-destaque-texto: #1A0000;
   --sombra-imagem: 0 2px 8px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
@@ -156,7 +162,32 @@ img { height: auto; }
   border: 1px solid currentColor; border-radius: 999px;
 }
 
-/* ---------- 7. MOVIMENTO REDUZIDO ---------- */
+/* ---------- 7. DESTAQUE PAGO (tag "destaque") ----------
+   Qualquer elemento com data-tag="destaque" ganha o contorno vermelho.
+   A etiqueta .tag-destaque mostra o texto "Destaque pago" (nunca esconder:
+   o cliente precisa saber que é um anúncio pago). */
+[data-tag~="destaque"] {
+  border-color: var(--cor-destaque) !important;
+  box-shadow: 0 0 0 1px var(--cor-destaque), 0 0 10px rgba(224, 0, 0, .25);
+}
+.tag-destaque {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  padding: .125rem .5rem; font-size: .75rem; font-weight: 700; line-height: 1.4;
+  color: var(--cor-destaque-texto); background: var(--cor-destaque);
+  border: 1px solid var(--cor-destaque); border-radius: 999px;
+}
+
+/* ---------- 8. PÁGINA EM DESENVOLVIMENTO ----------
+   Páginas ainda sem conteúdo: NavBar + rodapé e um cartão no meio da tela. */
+.pagina-construcao { display: grid; place-items: center; padding: 3rem 1rem; }
+.pagina-construcao .cartao {
+  width: 100%; max-width: 32rem; padding: 2rem 1.5rem; text-align: center;
+  background: var(--cor-superficie); border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+}
+.pagina-construcao h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
+.pagina-construcao p { margin: 0; color: var(--cor-texto-secundario); }
+
+/* ---------- 9. MOVIMENTO REDUZIDO ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

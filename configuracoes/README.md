@@ -9,7 +9,8 @@ Mudou aqui, muda em todas as páginas de uma vez.
 Para quem cuida do site. O usuário não vê esta pasta, mas sente o resultado: tudo com a mesma cara.
 
 ## O que entrega
-- Cores oficiais nos temas claro e escuro.
+- Cores oficiais nos temas claro e escuro (o escuro fica salvo até a pessoa trocar).
+- Lista única de tipos de serviço (Home e Localizar prestador), destaque pago (tag `destaque`, vermelho) e endereço do mapa grátis.
 - Botões, links e mensagens com o mesmo visual em todo lugar.
 - Um lugar só para os links das páginas, do menu e do rodapé.
 - O modo demonstração: permite testar o site "logado" sem servidor e protege as páginas de cada tipo de conta.

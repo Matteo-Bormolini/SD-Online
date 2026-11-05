@@ -21,7 +21,7 @@
       ? `<a class="loja" href="${SD.esc(l.href)}" target="_blank" rel="noopener noreferrer">${I.celular}<span>${SD.esc(l.nome)}</span></a>`
       : `<a class="loja" role="link" aria-disabled="true" aria-label="${SD.esc(l.nome)} — em breve">${I.celular}<span><small>Em breve</small>${SD.esc(l.nome)}</span></a>`
     ).join("");
-    return `<div><h2>Baixe o app</h2><div class="lojas">${lojas}</div></div>`;
+    return `<div class="rodape-lojas"><h2>Baixe o app</h2><div class="lojas">${lojas}</div></div>`;
   }
 
   function montar() {
@@ -42,7 +42,7 @@
             <h2>Navegação</h2>
             <ul>${itens.map((i) => `<li>${SD.linkMenu(i, false)}</li>`).join("")}</ul>
           </nav>
-          <div>
+          <div class="rodape-politicas">
             <h2>Políticas</h2>
             <ul>${C.rodapePoliticas.map((p) => `<li><a href="${SD.esc(SD.caminho(p.href))}">${SD.esc(p.texto)}</a></li>`).join("")}</ul>
           </div>

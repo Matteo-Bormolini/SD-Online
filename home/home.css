@@ -172,10 +172,7 @@ body:not([data-logado="sim"]) [data-visivel="logado"] { display: none !important
 .prestador-area { margin: 0; font-size: .8125rem; color: var(--cor-texto-secundario); }
 .prestador-info { display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin: 0; padding: 0; list-style: none; font-size: .8125rem; color: var(--cor-texto-secundario); }
 .prestador .btn { margin-top: auto; align-self: flex-start; }
-.tag-destaque {
-  align-self: flex-start; padding: .125rem .5rem; font-size: .75rem; font-weight: 700;
-  color: var(--cor-info); background: var(--cor-info-fundo); border: 1px solid currentColor; border-radius: 999px;
-}
+/* .tag-destaque (Destaque pago) fica em configuracoes/base.css, seção 7 */
 
 /* Estrelas */
 .estrelas { display: inline-flex; align-items: center; gap: .125rem; }

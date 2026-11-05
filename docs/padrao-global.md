@@ -34,7 +34,7 @@ Regra: toda página nova parte de `modelo-pagina/index.html`. NÃO recriar NavBa
 
 ## Cores
 - Fundo claro #F2ECE6 · botões #FFFFFF borda #000000 · hover/links/setas #800000 · menu hover #5C0000.
-- Tema escuro só se o usuário escolher. Fundo #161312, superfície #221E1C.
+- Tema escuro só se o usuário escolher (a escolha fica salva entre as páginas). Fundo #161312, superfície #221E1C.
 - Sombra de imagens: 0 2px 8px rgba(0,0,0,.10). Cartões raio 12px, botões 8px.
 
 ## Componentes globais

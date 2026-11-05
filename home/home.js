@@ -26,20 +26,9 @@
     perfilPrestador:   SD.caminho("perfil-prestador/index.html")        // abre com ?visao=cliente
   };
 
-  /* ---------- 2. CATEGORIAS EM FOCO (manutenções + itens) ----------
-     Categorias guardadas para o futuro (NÃO excluir, só ocultas):
-     Serviços domésticos, Aulas, Eventos, Beleza e bem-estar, Automóveis, Pets. */
-  const CATEGORIAS = [
-    { id: "eletrica",      nome: "Elétrica",                        desc: "Tomadas, quadros e iluminação",    icone: "raio" },
-    { id: "hidraulica",    nome: "Hidráulica",                      desc: "Vazamentos, canos e bombas",       icone: "gota" },
-    { id: "infiltracao",   nome: "Infiltração e impermeabilização", desc: "Lajes, paredes e telhados",        icone: "telhado" },
-    { id: "pintura",       nome: "Pintura",                         desc: "Interna, externa e fachadas",      icone: "pincel" },
-    { id: "climatizacao",  nome: "Ar-condicionado",                 desc: "Instalação, limpeza e reparo",     icone: "floco" },
-    { id: "portoes",       nome: "Portões e interfones",            desc: "Motores, fechaduras e interfonia", icone: "portao" },
-    { id: "monitoramento", nome: "Câmeras e monitoramento",         desc: "CFTV, TVs e gravadores",           icone: "camera" },
-    { id: "reparos",       nome: "Reparos gerais",                  desc: "Alvenaria, marcenaria e serralheria", icone: "chave" },
-    { id: "equipamentos",  nome: "Comprar equipamentos",            desc: "Compare preços do mercado",        icone: "carrinho" }
-  ];
+  /* ---------- 2. CATEGORIAS EM FOCO ----------
+     A lista fica em configuracoes/config.js (a mesma de Localizar prestador). */
+  const CATEGORIAS = SD.config.categorias;
 
   /* ---------- 3. DADOS DE DEMONSTRAÇÃO ----------
      Substituir pela resposta da API (ex.: GET /api/inicio) quando o
@@ -52,12 +41,12 @@
       { valor: "85",    rotulo: "condomínios atendidos" }
     ],
     prestadores: [
-      { id: "p1", nome: "Alfa Elétrica",          area: "Elétrica",            bairro: "Centro",        km: 1.2, nota: 4.9, qtd: 128, concluidos: 310, destaque: true },
-      { id: "p2", nome: "Beta Hidráulica",        area: "Hidráulica",          bairro: "Vila Nova",     km: 2.8, nota: 4.8, qtd: 94,  concluidos: 205, destaque: false },
-      { id: "p3", nome: "Gama Impermeabilizações", area: "Infiltração",        bairro: "Jardim América", km: 3.5, nota: 4.7, qtd: 61, concluidos: 140, destaque: false },
-      { id: "p4", nome: "Delta Climatização",     area: "Ar-condicionado",     bairro: "Bela Vista",    km: 4.1, nota: 4.9, qtd: 77,  concluidos: 182, destaque: true },
-      { id: "p5", nome: "Épsilon Portões",        area: "Portões e interfones", bairro: "Santa Cecília", km: 5.0, nota: 4.6, qtd: 39,  concluidos: 88,  destaque: false },
-      { id: "p6", nome: "Zeta Pinturas",          area: "Pintura",             bairro: "Mooca",         km: 6.3, nota: 4.8, qtd: 52,  concluidos: 117, destaque: false }
+      { id: "p1", nome: "Alfa Elétrica",          area: "Elétrica",            bairro: "Centro",        km: 1.2, nota: 4.9, qtd: 128, concluidos: 310, tags: ["destaque"] },
+      { id: "p2", nome: "Beta Hidráulica",        area: "Hidráulica",          bairro: "Vila Nova",     km: 2.8, nota: 4.8, qtd: 94,  concluidos: 205, tags: [] },
+      { id: "p3", nome: "Gama Impermeabilizações", area: "Infiltração",        bairro: "Jardim América", km: 3.5, nota: 4.7, qtd: 61, concluidos: 140, tags: [] },
+      { id: "p4", nome: "Delta Climatização",     area: "Ar-condicionado",     bairro: "Bela Vista",    km: 4.1, nota: 4.9, qtd: 77,  concluidos: 182, tags: ["destaque"] },
+      { id: "p5", nome: "Épsilon Portões",        area: "Portões e interfones", bairro: "Santa Cecília", km: 5.0, nota: 4.6, qtd: 39,  concluidos: 88,  tags: [] },
+      { id: "p6", nome: "Zeta Pinturas",          area: "Pintura",             bairro: "Mooca",         km: 6.3, nota: 4.8, qtd: 52,  concluidos: 117, tags: [] }
     ],
     avaliacoes: [
       { nota: 5, texto: "Chegaram no horário combinado com o zelador e resolveram a infiltração da garagem em dois dias.", servico: "Impermeabilização", prestador: "Gama Impermeabilizações", cliente: "Cliente CNPJ · Condomínio residencial" },
@@ -81,21 +70,15 @@
   };
 
   /* ---------- 4. ÍCONES (traço, cor herdada) ---------- */
+  // Ícones das categorias vêm de config.js; aqui ficam só os exclusivos da Home
   const P = {
-    raio:     '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
-    gota:     '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/>',
-    telhado:  '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
-    pincel:   '<path d="M4 4h12v5H4z"/><path d="M16 6h3v5h-7v3"/><path d="M11 14h2v6h-2z"/>',
-    floco:    '<path d="M12 2v20M3.5 7l17 10M20.5 7l-17 10"/><path d="m9 4 3 2 3-2M9 20l3-2 3 2"/>',
-    portao:   '<path d="M3 21V8l9-5 9 5v13"/><path d="M7 21V11h10v10M10 11v10M14 11v10"/>',
-    camera:   '<path d="M3 7h12l5-3v10l-5-3H3z"/><path d="M7 11v5M5 20h8"/>',
-    chave:    '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.8-2.8 2.4-2.8Z"/>',
-    carrinho: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5l2-8H6.2"/>',
+    ...SD.iconesCategoria,
     lupa:     '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     esquerda: '<path d="m15 18-6-6 6-6"/>',
     direita:  '<path d="m9 18 6-6-6-6"/>',
     local:    '<path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/>'
   };
+
   const icone = (nome, extra = "") =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${P[nome] || ""}</svg>`;
   const ESTRELA = '<path d="m12 2.8 2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3L2.8 9.5l6.4-.9Z"/>';
@@ -181,8 +164,8 @@
         </div>
         <ul class="faixa-lista" id="lista-prestadores" tabindex="0" aria-label="Lista de prestadores (role para o lado)">
           ${DEMO.prestadores.map((p) => `
-            <li><article class="prestador">
-              ${p.destaque ? '<span class="tag-destaque">Destaque pago</span>' : ""}
+            <li><article class="prestador"${SD.ehDestaque(p) ? ` data-tag="${SD.config.destaque.tag}"` : ""}>
+              ${SD.ehDestaque(p) ? `<span class="tag-destaque">${esc(SD.config.destaque.rotulo)}</span>` : ""}
               <div class="prestador-topo">
                 <span class="prestador-logo" aria-hidden="true">${esc(iniciais(p.nome))}</span>
                 <div><h3>${esc(p.nome)}</h3><p class="prestador-area">${esc(p.area)}</p></div>

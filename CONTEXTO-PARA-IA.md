@@ -9,6 +9,7 @@
 - Foco atual: **manutenções** e itens que o cliente precisa (ex.: infiltração no teto → prestador; TV de monitoramento quebrada → comparar preços).
 - 4 tipos de usuário: **Administrador**, **Cliente CPF** (casas), **Cliente CNPJ** (empresas/condomínios), **Prestador**.
 - Diferencial: busca por proximidade, avaliação, contato e recomendações. Destaques pagos aparecem identificados.
+- **Tudo tem de ser grátis e sem prazo de validade** (APIs, mapas, banco, hospedagem), inclusive no lançamento. Lista conferida: `docs/guia-tecnico.md`, seção 11.
 
 ## 2. Como a IA deve trabalhar (regras do Marco)
 - Responder em português, simples, direto e resumido. Poucos emojis.
@@ -37,7 +38,8 @@
 - A S.D **não faz pagamentos**: cliente e prestador combinam entre eles. No futuro o prestador só informa como cobra.
 
 ## 5. Padrão visual
-- Fundo `#F2ECE6`. Abre sempre no tema claro; o escuro só ativa se o usuário escolher.
+- Fundo `#F2ECE6`. Abre no tema claro; se o usuário escolher o escuro, a escolha fica salva em todas as páginas.
+- Destaque pago: vermelho brilhante `#E00000` (contorno + etiqueta "Destaque pago"); tag `destaque` no banco e no HTML (`data-tag="destaque"`).
 - Navbar e rodapé vinho `#800000` com texto branco; hover `#5C0000` com contorno branco.
 - Botões brancos com borda preta; hover vinho com texto branco. Links vinho.
 - Cartões brancos com contorno fino preto e cantos arredondados.

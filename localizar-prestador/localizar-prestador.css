@@ -1,0 +1,121 @@
+/* =====================================================================
+   S.D — LOCALIZAR PRESTADOR (localizar-prestador/localizar-prestador.css)
+   Caixas dos tipos de serviço, lista + mapa lado a lado no computador
+   (um abaixo do outro no celular) e cartão do prestador.
+   Só tokens do base.css. Destaque pago: base.css, seção 7.
+   ===================================================================== */
+
+/* ---------- 1. TOPO ---------- */
+.localizar-topo h1 { margin: 0 0 .25rem; font-size: 1.75rem; line-height: 1.2; }
+.localizar-topo p { margin: 0; color: var(--cor-texto-secundario); }
+.localizar-subtitulo { margin: 1.75rem 0 .75rem; font-size: 1.125rem; }
+.localizar-subtitulo:focus { outline: none; }
+.localizar-subtitulo:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 4px; border-radius: 4px; }
+
+/* ---------- 2. CAIXAS DOS TIPOS DE SERVIÇO ---------- */
+.setores {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .75rem;
+  list-style: none; margin: 0; padding: 0;
+}
+.setor {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: .75rem; align-items: center;
+  width: 100%; height: 100%; min-height: 4.5rem; padding: .875rem 1rem; text-align: left;
+  font: inherit; color: var(--cor-texto); cursor: pointer;
+  background: var(--cor-superficie); border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+  transition: background-color .15s ease, color .15s ease;
+}
+.setor svg { grid-row: 1 / span 2; width: 1.75rem; height: 1.75rem; color: var(--cor-vinho); }
+.setor strong { font-size: .9375rem; line-height: 1.25; }
+.setor span { font-size: .8125rem; line-height: 1.3; color: var(--cor-texto-secundario); }
+.setor:hover, .setor[aria-pressed="true"] { background: var(--cor-vinho); color: #FFFFFF; border-color: var(--cor-vinho); }
+.setor:hover svg, .setor:hover span,
+.setor[aria-pressed="true"] svg, .setor[aria-pressed="true"] span { color: #FFFFFF; }
+.setor:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; }
+[data-tema="escuro"] .setor svg { color: #F2C4C4; }
+[data-tema="escuro"] .setor:hover svg, [data-tema="escuro"] .setor[aria-pressed="true"] svg { color: #FFFFFF; }
+[data-tema="escuro"] .setor:focus-visible { outline-color: #FFFFFF; }
+
+/* ---------- 3. RESULTADOS (desce ao escolher um tipo) ---------- */
+.resultados { scroll-margin-top: 4.5rem; }            /* não fica atrás da NavBar fixa */
+.resultados.abrindo { animation: lp-descer .3s ease-out; }
+@keyframes lp-descer { from { opacity: 0; transform: translateY(-.5rem); } to { opacity: 1; transform: none; } }
+
+.resultados-grade { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+.coluna-mapa { scroll-margin-top: 4.5rem; }
+.resultados-dica { margin: 0 0 .625rem; font-size: .875rem; color: var(--cor-texto-secundario); }
+
+/* Computador: lista à esquerda (rola sozinha), mapa e cartão à direita (fixos ao rolar) */
+@media (min-width: 62rem) {
+  .resultados-grade { grid-template-columns: minmax(18rem, 2fr) 3fr; align-items: start; }
+  .coluna-lista .lista-prestadores { max-height: 38rem; overflow-y: auto; padding: 4px; margin: -4px; }
+  .coluna-mapa { position: sticky; top: 4.75rem; }
+}
+
+/* ---------- 4. LISTA ---------- */
+.lista-prestadores { display: grid; gap: .625rem; list-style: none; margin: 0; padding: 0; }
+.item-prestador {
+  display: flex; align-items: center; gap: .75rem; width: 100%; padding: .75rem; text-align: left;
+  font: inherit; color: var(--cor-texto); cursor: pointer;
+  background: var(--cor-superficie); border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+}
+.item-prestador:hover { background: var(--cor-superficie-2); }
+.item-prestador:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; }
+[data-tema="escuro"] .item-prestador:focus-visible { outline-color: #FFFFFF; }
+/* Selecionado: faixa vinho à esquerda (o contorno vermelho fica para o destaque) */
+.item-prestador[aria-pressed="true"] { background: var(--cor-superficie-2); box-shadow: inset 6px 0 0 var(--cor-vinho); }
+.item-prestador[aria-pressed="true"][data-tag~="destaque"] { box-shadow: inset 6px 0 0 var(--cor-vinho), 0 0 0 1px var(--cor-destaque), 0 0 10px rgba(224, 0, 0, .25); }
+[data-tema="escuro"] .item-prestador[aria-pressed="true"] { box-shadow: inset 6px 0 0 #F2C4C4; }
+[data-tema="escuro"] .item-prestador[aria-pressed="true"][data-tag~="destaque"] { box-shadow: inset 6px 0 0 #F2C4C4, 0 0 0 1px var(--cor-destaque); }
+
+.item-logo, .cartao-logo {
+  flex: none; display: grid; place-items: center; border-radius: 50%; object-fit: cover;
+  background: var(--cor-vinho); color: #FFFFFF; font-weight: 700; box-shadow: var(--sombra-imagem);
+}
+.item-logo { width: 2.75rem; height: 2.75rem; font-size: .875rem; }
+.item-texto { display: flex; flex-direction: column; gap: .125rem; min-width: 0; }
+.item-nome { font-size: .9375rem; line-height: 1.3; }
+.item-local { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.item-texto .tag-destaque { margin-top: .25rem; }
+.lista-vazia { margin: 0; padding: 1rem; text-align: center; color: var(--cor-texto-secundario); background: var(--cor-superficie); border: 1px dashed var(--cor-campo-borda); border-radius: var(--raio-cartao); }
+
+/* ---------- 5. CARTÃO DO PRESTADOR ---------- */
+.cartao-prestador {
+  margin-top: 1rem; padding: 1.125rem;
+  background: var(--cor-superficie); border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+}
+.cartao-vazio { margin: 0; text-align: center; font-size: .875rem; color: var(--cor-texto-secundario); }
+.cartao-topo { display: flex; align-items: center; gap: .875rem; }
+.cartao-logo { width: 3.5rem; height: 3.5rem; font-size: 1.125rem; }
+.cartao-nome { margin: 0 0 .25rem; font-size: 1.125rem; line-height: 1.25; }
+.cartao-rotulo { margin: 1rem 0 .375rem; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--cor-texto-secundario); }
+.cartao-servicos { display: flex; flex-wrap: wrap; gap: .375rem; list-style: none; margin: 0; padding: 0; }
+.cartao-servicos li {
+  padding: .25rem .625rem; font-size: .8125rem;
+  background: var(--cor-superficie-2); border: 1px solid var(--cor-divisoria); border-radius: 999px;
+}
+.cartao-servicos .cartao-mais { font-weight: 700; cursor: help; }
+.cartao-acoes { display: flex; flex-wrap: wrap; gap: .625rem; margin-top: 1.125rem; }
+.cartao-acoes .btn { flex: 1 1 12rem; }
+
+/* WhatsApp: verde quando liberado; cinza quando ainda não liberado (fluxo aprovado) */
+.btn-whatsapp { background: var(--cor-sucesso); color: #FFFFFF; border-color: var(--cor-sucesso); }
+.btn-whatsapp:hover { background: #14502B; color: #FFFFFF; }
+[data-tema="escuro"] .btn-whatsapp { color: #0E2416; }
+[data-tema="escuro"] .btn-whatsapp:hover { background: #A6E3BA; color: #0E2416; }
+.btn-whatsapp-off, .btn-whatsapp-off:hover {
+  cursor: default; font-weight: 500; font-size: .8125rem;
+  color: var(--cor-texto-secundario); background: var(--cor-superficie-2);
+  border: 1px dashed var(--cor-campo-borda);
+}
+/* Fazer orçamento: ação principal (vinho, igual ao hover padrão) */
+.btn-orcamento { background: var(--cor-vinho); color: #FFFFFF; border-color: var(--cor-vinho); }
+.btn-orcamento:hover { background: var(--cor-vinho-escuro); }
+
+/* ---------- 6. CELULAR ---------- */
+@media (max-width: 35.99rem) {
+  .localizar-topo h1 { font-size: 1.5rem; }
+  .setores { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .setor { grid-template-columns: 1fr; grid-template-rows: auto; row-gap: .25rem; padding: .75rem; }
+  .setor svg { grid-row: auto; width: 1.5rem; height: 1.5rem; }
+  .setor span { display: none; }                      /* só o nome no celular */
+}
