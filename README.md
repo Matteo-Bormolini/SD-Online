@@ -38,7 +38,8 @@ Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o 
 - **Meus serviços** (prestador): quadro com as etapas de cada serviço.
 - **Serviços realizados** (cliente): histórico com fotos.
 - **Suporte**: dúvidas, sugestões e um assistente de demonstração.
-- **Tema claro e escuro**, no celular, no computador e na TV.
+- **Localizar prestador** (cliente): tipos de serviço, lista do mais perto ao mais longe, mapa grátis e destaque pago em vermelho.
+- **Tema claro e escuro** (a escolha fica salva), no celular, no computador e na TV.
 
 ## Experimente
 
@@ -175,6 +176,7 @@ Cada pasta do projeto tem seu próprio README, escrito como **a entrega de uma S
 
 - Feito em **HTML, CSS e JavaScript puro**. Não precisa instalar nem compilar nada.
 - Menu, rodapé, cores e botões são escritos **uma vez só** e usados em todas as páginas.
+- Tudo o que vem de fora (mapa, bibliotecas, futuro banco) tem de ser **grátis e sem prazo**. Lista conferida: [guia técnico, seção 11](docs/guia-tecnico.md).
 - Toda página nova nasce do [`modelo-pagina/`](modelo-pagina/).
 
 Detalhes em **[docs/guia-tecnico.md](docs/guia-tecnico.md)**.

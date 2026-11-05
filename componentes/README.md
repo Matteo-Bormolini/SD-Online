@@ -18,6 +18,7 @@ Para quem desenvolve. O usuário vê o resultado: perfis e formulários que func
 | `carrossel/` | Galeria de fotos que passa para os lados. | Perfis CPF, CNPJ e Prestador |
 | `servicos-realizados/` | Histórico dos serviços contratados, com fotos. | Perfis CPF e CNPJ |
 | `kanban-servicos/` | Quadro "Meus serviços" com as etapas de cada serviço. | Perfil do Prestador |
+| `mapa/` | Mapa grátis (MapLibre + OpenFreeMap) com ponto "Você", prestadores e destaque em vermelho. Só baixa a biblioteca quando é usado. | Localizar prestador (e, no futuro, Localizar clientes) |
 
 ## Histórias atendidas
 - **US01** — mesmo comportamento em todas as páginas.
