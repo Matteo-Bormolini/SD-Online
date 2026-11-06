@@ -1,0 +1,21 @@
+/* =====================================================================
+   S.D — MEDIDOR DE SENHA (componentes/senha/senha.css)
+   Barra de força abaixo do campo "Senha"/"Nova senha".
+   A força também aparece em texto (não depende só da cor).
+   ===================================================================== */
+.senha-medidor { display: flex; align-items: center; gap: .625rem; min-height: 1.25rem; }
+.senha-medidor[data-nivel=""] { display: none; }
+.senha-barra {
+  flex: 1 1 auto; height: .375rem; max-width: 12rem;
+  background: var(--cor-divisoria); border-radius: 999px; overflow: hidden;
+}
+.senha-barra > span { display: block; height: 100%; width: 0; border-radius: inherit; transition: width .2s ease; }
+.senha-forca { font-size: .8125rem; font-weight: 600; }
+.senha-medidor[data-nivel="0"] .senha-barra > span,
+.senha-medidor[data-nivel="1"] .senha-barra > span { background: var(--cor-erro); }
+.senha-medidor[data-nivel="2"] .senha-barra > span { background: var(--cor-atencao); }
+.senha-medidor[data-nivel="3"] .senha-barra > span,
+.senha-medidor[data-nivel="4"] .senha-barra > span { background: var(--cor-sucesso); }
+.senha-medidor[data-nivel="0"] .senha-forca, .senha-medidor[data-nivel="1"] .senha-forca { color: var(--cor-erro); }
+.senha-medidor[data-nivel="2"] .senha-forca { color: var(--cor-atencao); }
+.senha-medidor[data-nivel="3"] .senha-forca, .senha-medidor[data-nivel="4"] .senha-forca { color: var(--cor-sucesso); }
