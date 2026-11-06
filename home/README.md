@@ -19,7 +19,8 @@
 
 **Para quem já entrou**
 - Busca de serviço ou prestador.
-- Prestadores em destaque, avaliações recentes, trabalhos e dicas de manutenção.
+- **Clientes:** prestadores em destaque, avaliações recentes, trabalhos e dicas de manutenção.
+- **Prestador:** por segurança, **não** vê a vitrine (seriam dados da concorrência). Por enquanto vê só atalhos (Seus Serviços e Meu perfil). A Home própria do prestador está em definição (US46).
 
 ## Histórias atendidas
 - **US01** e **US02** — base do site.

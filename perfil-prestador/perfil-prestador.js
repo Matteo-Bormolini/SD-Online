@@ -7,7 +7,7 @@
      - Vitrine pública (estilo LinkedIn): nome, especialidades e números.
      - LOGO OBRIGATÓRIA: sem logo, usa a foto padrão e mostra alerta urgente.
      - "Trabalhos e empresa": carrossel OPCIONAL de fotos com legenda.
-     - Avaliações recentes (públicas).
+     - Avaliações recentes (públicas e anônimas; nome só com autorização de quem avaliou).
      - "Ver como cliente": mostra o perfil como o cliente vê (sem dados privados).
      - Aba "Meus serviços": quadro Kanban (componentes/kanban-servicos).
    IMPORTANTE: demonstração — salvar, excluir, enviar fotos e buscar os
@@ -46,7 +46,6 @@
   const demo = (texto) => window.SDCarrossel.imagemDemo(texto);
 
   const perfil = {
-    login: "prestador.exemplo",
     razaoSocial: "Empresa Exemplo Manutenções Ltda.",
     nomeFantasia: "Exemplo Manutenções",
     tipoConta: "Prestador de serviços - Pessoa jurídica (CNPJ)",
@@ -69,6 +68,8 @@
     complemento: "Galpão 2",
     bairro: "Centro",
     cep: "01000000",
+    cidade: "São Paulo",
+    uf: "SP",
     sobre: "Empresa especializada em manutenção predial para condomínios e empresas. Equipe própria, uniformizada e com treinamentos de segurança. Garantia de 90 dias em todos os serviços.",
     avaliacao: { media: 4.7, total: 38 },
     servicosAnteriores: 52,                        // concluídos antes do quadro atual (histórico do servidor)
@@ -80,11 +81,14 @@
     ]
   };
 
-  // Avaliações recentes (públicas). Cliente identificado só pelo tipo (privacidade).
+  // Avaliações recentes (públicas). SEMPRE anônimas: o prestador não sabe quem avaliou.
+  // O nome só aparece se o cliente ligou "Mostrar meu nome" ao avaliar (nomeAutorizado).
+  // IMPORTANTE: o servidor só envia "nomeAutorizado" quando houver essa autorização —
+  // o nome de quem não autorizou nunca chega ao navegador.
   const avaliacoes = [
-    { data: "2026-10-12", nota: 5, cliente: "Cliente CNPJ · Condomínio residencial", texto: "Serviço rápido, equipe educada e deixou tudo limpo." },
-    { data: "2026-09-28", nota: 4, cliente: "Cliente CPF · Casa", texto: "Resolveu o vazamento. Chegou um pouco depois do combinado." },
-    { data: "2026-09-05", nota: 5, cliente: "Cliente CNPJ · Empresa / escritório", texto: "Orçamento claro e cumpriu o prazo." }
+    { data: "2026-10-12", nota: 5, nomeAutorizado: "",        texto: "Serviço rápido, equipe educada e deixou tudo limpo." },
+    { data: "2026-09-28", nota: 4, nomeAutorizado: "",        texto: "Resolveu o vazamento. Chegou um pouco depois do combinado." },
+    { data: "2026-09-05", nota: 5, nomeAutorizado: "Ana P.",  texto: "Orçamento claro e cumpriu o prazo." }
   ];
 
   // Serviços do quadro (Kanban). telefone = só aparece depois do aceite.
@@ -145,7 +149,6 @@
   function renderizarDados() {
     P.preencherCampos({
       nomeExibicao: perfil.nomeFantasia || perfil.razaoSocial,
-      login: perfil.login,
       razaoSocial: perfil.razaoSocial,
       nomeFantasia: P.ouTraco(perfil.nomeFantasia),
       tipoConta: perfil.tipoConta,
@@ -157,11 +160,7 @@
       regiao: textoRegiao(),
       horario: textoHorario(),
       sobre: perfil.sobre || "A empresa ainda não escreveu uma apresentação.",
-      endereco: P.ouTraco(perfil.endereco),
-      numero: P.ouTraco(perfil.numero),
-      complemento: P.ouTraco(perfil.complemento),
-      bairro: P.ouTraco(perfil.bairro),
-      cep: perfil.cep ? U.formatarCep(perfil.cep) : "—"
+      ...P.enderecoParaTela(perfil)
     });
 
     renderizarChips($("#vitrine-especialidades"), perfil.especialidades, "Nenhuma especialidade informada");
@@ -178,13 +177,12 @@
     $("#btn-ligar").href = "tel:+55" + tel;
 
     P.preencherPlaceholders({
-      "f-login": perfil.login, "f-razao": perfil.razaoSocial, "f-fantasia": perfil.nomeFantasia,
+      "f-razao": perfil.razaoSocial, "f-fantasia": perfil.nomeFantasia,
       "f-sobre": perfil.sobre, "f-especialidades": perfil.especialidades.join(", "), "f-certificacoes": perfil.certificacoes.join(", "),
       "f-resp-nome": perfil.responsavelNome, "f-resp-cargo": perfil.responsavelCargo, "f-inicio": perfil.anoInicio,
       "f-email": perfil.email, "f-telefone": U.formatarTelefone(principal && principal.numero),
       "f-horario": perfil.horario, "f-bairros": perfil.bairrosAtendidos,
-      "f-endereco": perfil.endereco, "f-numero": perfil.numero, "f-complemento": perfil.complemento,
-      "f-bairro": perfil.bairro, "f-cep": U.formatarCep(perfil.cep),
+      ...P.placeholdersEndereco(perfil),
       "f-senha": "Deixe vazio para manter a atual", "f-senha2": "Repita a nova senha"
     });
     P.preencherSelect($("#f-area"), perfil.areaAtuacao || "não informada", AREAS_ATUACAO);
@@ -373,7 +371,8 @@
       data.dateTime = a.data; data.textContent = U.formatarData(a.data);
       topo.append(est, data);
       const p = document.createElement("p"); p.textContent = a.texto;
-      const autor = document.createElement("span"); autor.className = "avaliacao-autor"; autor.textContent = a.cliente;
+      const autor = document.createElement("span"); autor.className = "avaliacao-autor";
+      autor.textContent = a.nomeAutorizado ? `${a.nomeAutorizado} (autorizou mostrar o nome)` : "Avaliação anônima";
       li.append(topo, p, autor);
       lista.append(li);
     });
@@ -382,7 +381,7 @@
 
   /* ---------- 7. VISÃO: DONO x CLIENTE ----------
      Só muda a TELA. Na versão final o servidor envia ao cliente somente os
-     dados públicos (nunca login, senha, endereço completo ou o quadro). */
+     dados públicos (nunca senha, endereço completo ou o quadro). */
   const visaoCliente = () => document.body.dataset.visao === "cliente";
 
   function definirVisao(visao, focar) {

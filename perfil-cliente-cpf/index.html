@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="../rodape/rodape.css">
 <!-- Base comum dos perfis + componentes (carrossel e serviços realizados) -->
 <link rel="stylesheet" href="../componentes/formulario/formulario.css">
+<link rel="stylesheet" href="../componentes/endereco/endereco.css">
+<link rel="stylesheet" href="../componentes/senha/senha.css">
 <link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
 <link rel="stylesheet" href="../componentes/carrossel/carrossel.css">
 <link rel="stylesheet" href="../componentes/servicos-realizados/servicos-realizados.css">
@@ -19,6 +21,8 @@
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/senha/senha.js" defer></script>
+<script src="../componentes/endereco/endereco.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="../componentes/carrossel/carrossel.js" defer></script>
 <script src="../componentes/servicos-realizados/servicos-realizados.js" defer></script>
@@ -56,7 +60,6 @@
           <table class="tabela-dados">
             <caption>Dados da conta</caption>
             <tbody>
-              <tr><th scope="row">Login</th><td class="valor valor-forte" data-campo="login"></td></tr>
               <tr><th scope="row">Nome completo</th><td class="valor" data-campo="nome"></td></tr>
               <tr><th scope="row">Tipo de conta</th><td class="valor" data-campo="tipoConta"></td></tr>
               <tr>
@@ -91,15 +94,23 @@
                 </td>
               </tr>
               <tr>
+                <th scope="row">Privacidade</th>
+                <td>
+                  <!-- Liga/desliga a exposição dos dados aos prestadores (LGPD: consentimento que pode ser retirado) -->
+                  <button type="button" class="interruptor" id="sw-compartilhar" role="switch" aria-checked="false" aria-describedby="d-compartilhar">
+                    <span class="interruptor-trilho" aria-hidden="true"><span class="interruptor-bola"></span></span>
+                    <span class="interruptor-texto">Mostrar meus dados aos prestadores</span>
+                    <span class="interruptor-estado" aria-hidden="true"></span>
+                  </button>
+                  <p class="nota" id="d-compartilhar">Ligado: o prestador de um pedido seu vê o seu <strong>primeiro nome</strong> e o <strong>bairro</strong>. Desligado: ele vê só a região aproximada. CPF, telefone e endereço completo nunca são exibidos.</p>
+                  <div class="mensagem" id="msg-privacidade" role="status" aria-live="polite"></div>
+                </td>
+              </tr>
+              <tr>
                 <th scope="row">Localização</th>
                 <td>
-                  <div class="grade-local">
-                    <div class="celula cel-endereco"><span class="celula-rotulo">Endereço</span><span class="valor" data-campo="endereco"></span></div>
-                    <div class="celula cel-numero"><span class="celula-rotulo">Número</span><span class="valor" data-campo="numero"></span></div>
-                    <div class="celula cel-complemento"><span class="celula-rotulo">Complemento</span><span class="valor" data-campo="complemento"></span></div>
-                    <div class="celula cel-bairro"><span class="celula-rotulo">Bairro</span><span class="valor" data-campo="bairro"></span></div>
-                    <div class="celula cel-cep"><span class="celula-rotulo">CEP</span><span class="valor" data-campo="cep"></span></div>
-                  </div>
+                  <!-- CEP | Endereço · Número | Complemento | Bairro · Cidade | UF (componentes/endereco) -->
+                  <div data-endereco="exibir"></div>
                 </td>
               </tr>
               <tr>
@@ -138,11 +149,6 @@
             <form id="form-editar" novalidate>
               <div class="form-grade">
                 <div class="campo">
-                  <label for="f-login">Login</label>
-                  <input type="text" id="f-login" name="login" data-mascara="login" autocomplete="username" aria-describedby="e-login" maxlength="30">
-                  <span class="campo-erro" id="e-login"></span>
-                </div>
-                <div class="campo">
                   <label for="f-nome">Nome completo</label>
                   <input type="text" id="f-nome" name="nome" autocomplete="name" aria-describedby="e-nome" maxlength="120">
                   <span class="campo-erro" id="e-nome"></span>
@@ -158,33 +164,9 @@
                   <span class="campo-erro" id="e-telefone"></span>
                 </div>
 
-                <fieldset class="grupo largura-total">
-                  <legend>Localização</legend>
-                  <div class="grade-local-form">
-                    <div class="campo f-endereco">
-                      <label for="f-endereco">Endereço</label>
-                      <input type="text" id="f-endereco" name="endereco" autocomplete="address-line1" maxlength="150">
-                    </div>
-                    <div class="campo f-numero">
-                      <label for="f-numero">Número</label>
-                      <input type="text" id="f-numero" name="numero" maxlength="10" aria-describedby="e-numero">
-                      <span class="campo-erro" id="e-numero"></span>
-                    </div>
-                    <div class="campo f-compl">
-                      <label for="f-complemento">Complemento</label>
-                      <input type="text" id="f-complemento" name="complemento" autocomplete="address-line2" maxlength="60">
-                    </div>
-                    <div class="campo f-bairro">
-                      <label for="f-bairro">Bairro</label>
-                      <input type="text" id="f-bairro" name="bairro" maxlength="80">
-                    </div>
-                    <div class="campo f-cep">
-                      <label for="f-cep">CEP</label>
-                      <input type="text" id="f-cep" name="cep" data-mascara="cep" inputmode="numeric" autocomplete="postal-code" aria-describedby="e-cep">
-                      <span class="campo-erro" id="e-cep"></span>
-                    </div>
-                  </div>
-                </fieldset>
+                <!-- Campos do endereço montados por componentes/endereco (CEP preenche o resto) -->
+                <fieldset class="largura-total" data-endereco="formulario" data-prefixo="f" data-legenda="Localização"
+                          data-nota="Digite o novo CEP: rua, bairro, cidade e UF são preenchidos sozinhos. Ao trocar o CEP, o endereço inteiro é substituído."></fieldset>
 
                 <div class="campo">
                   <label for="f-senha">Nova senha</label>
@@ -192,7 +174,8 @@
                     <input type="password" id="f-senha" name="senha" autocomplete="new-password" aria-describedby="d-senha e-senha">
                     <button type="button" class="btn-olho" data-alvo="f-senha" aria-label="Mostrar senha" aria-pressed="false"></button>
                   </div>
-                  <span class="nota" id="d-senha">Mínimo de 8 caracteres, com letras e números.</span>
+                  <span class="nota" id="d-senha"></span>
+                  <div id="medidor-senha"></div>
                   <span class="campo-erro" id="e-senha"></span>
                 </div>
                 <div class="campo">

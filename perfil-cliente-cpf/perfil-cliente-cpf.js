@@ -5,7 +5,9 @@
      - "Tipo de conta" no lugar de "Cargo"; documento = CPF (inalterável).
      - Só a foto de perfil (sem galeria), opcional → foto padrão do sistema.
      - Sem "Avaliações": o cliente não vê as notas que recebeu (só prestadores).
-     - Aba "Serviços realizados" (componentes/servicos-realizados).
+     - Aba "Serviços realizados" (componentes/servicos-realizados); o nome da
+       empresa abre o perfil público do prestador.
+     - Botão "Mostrar meus dados aos prestadores" (liga/desliga a qualquer momento).
    IMPORTANTE: demonstração — salvar, excluir, enviar fotos e buscar o
    histórico dependem do servidor.
    ===================================================================== */
@@ -25,7 +27,6 @@
   /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
      Substituir pelos dados vindos do servidor depois do login. */
   const perfil = {
-    login: "cliente.exemplo",
     nome: "Nome Sobrenome Exemplo",
     tipoConta: "Cliente - Pessoa física (CPF)",
     documento: "000.000.000-00",
@@ -36,7 +37,11 @@
     complemento: "Apto 12",
     bairro: "Centro",
     cep: "01000000",
-    foto: null                              // null = usa a foto padrão
+    cidade: "São Paulo",
+    uf: "SP",
+    foto: null,                             // null = usa a foto padrão
+    // Autorização do cadastro: prestador vê primeiro nome e bairro (pode mudar a qualquer momento)
+    compartilharDados: false
   };
 
   // Histórico de serviços (exemplo). data = AAAA-MM-DD; valor em reais;
@@ -44,11 +49,11 @@
   // fotos = fotos do serviço realizado (aparecem no carrossel ao expandir o item).
   const demo = (texto) => window.SDCarrossel.imagemDemo(texto);
   const servicos = [
-    { data: "2026-10-02", servico: "Conserto de infiltração no teto", prestador: "Empresa Exemplo A", valor: 850.00, estrelas: 5, foto: null,
+    { data: "2026-10-02", servico: "Conserto de infiltração no teto", prestador: "Empresa Exemplo A", prestadorId: "p-exemplo-a", valor: 850.00, estrelas: 5, foto: null,
       fotos: [{ src: demo("Antes — mancha no teto"), legenda: "Antes" }, { src: demo("Durante — impermeabilização"), legenda: "Durante o serviço" }, { src: demo("Depois — teto pintado"), legenda: "Depois" }] },
-    { data: "2026-08-15", servico: "Instalação de chuveiro elétrico", prestador: "Prestador Exemplo B", valor: 180.00, estrelas: 4, foto: null,
+    { data: "2026-08-15", servico: "Instalação de chuveiro elétrico", prestador: "Prestador Exemplo B", prestadorId: "p-exemplo-b", valor: 180.00, estrelas: 4, foto: null,
       fotos: [{ src: demo("Chuveiro instalado"), legenda: "Chuveiro instalado" }] },
-    { data: "2026-06-20", servico: "Manutenção de portão eletrônico", prestador: "Empresa Exemplo C", valor: 320.50, estrelas: null, foto: null,
+    { data: "2026-06-20", servico: "Manutenção de portão eletrônico", prestador: "Empresa Exemplo C", prestadorId: "p-exemplo-c", valor: 320.50, estrelas: null, foto: null,
       fotos: [] }
   ];
 
@@ -57,22 +62,16 @@
   /* ---------- 3. EXIBIÇÃO DOS DADOS ---------- */
   function renderizarDados() {
     P.preencherCampos({
-      login: perfil.login,
       nome: perfil.nome,
       tipoConta: perfil.tipoConta,
       documento: perfil.documento,
       email: perfil.email,
-      endereco: P.ouTraco(perfil.endereco),
-      numero: P.ouTraco(perfil.numero),
-      complemento: P.ouTraco(perfil.complemento),
-      bairro: P.ouTraco(perfil.bairro),
-      cep: perfil.cep ? U.formatarCep(perfil.cep) : "—"
+      ...P.enderecoParaTela(perfil)
     });
     P.preencherPlaceholders({
-      "f-login": perfil.login, "f-nome": perfil.nome, "f-email": perfil.email,
+      "f-nome": perfil.nome, "f-email": perfil.email,
       "f-telefone": U.formatarTelefone(perfil.telefones.find((t) => t.principal)?.numero),
-      "f-endereco": perfil.endereco, "f-numero": perfil.numero, "f-complemento": perfil.complemento,
-      "f-bairro": perfil.bairro, "f-cep": U.formatarCep(perfil.cep),
+      ...P.placeholdersEndereco(perfil),
       "f-senha": "Deixe vazio para manter a atual", "f-senha2": "Repita a nova senha"
     });
     if (telefones) telefones.renderizar();
@@ -102,6 +101,17 @@
       aoConcluir: renderizarDados
     });
     P.iniciarExclusao();
+    // Privacidade: a mudança vale na hora para os próximos pedidos (o servidor grava a data do consentimento)
+    P.iniciarInterruptor($("#sw-compartilhar"), {
+      ligado: perfil.compartilharDados,
+      aoMudar: (ligado) => {
+        perfil.compartilharDados = ligado;
+        U.mostrarMensagem($("#msg-privacidade"), "atencao",
+          (ligado ? "Ligado: prestadores dos seus pedidos verão seu primeiro nome e bairro." : "Desligado: prestadores verão só a região aproximada.") +
+          " Demonstração: ainda não foi salvo no servidor.");
+        P.atualizarAltura();
+      }
+    });
     P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });
   });
 })();

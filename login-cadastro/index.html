@@ -5,24 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Entrar ou criar conta — S.D Serviços Digitais</title>
 <meta name="description" content="S.D Serviços Digitais: entre na sua conta ou crie um login de Cliente CPF, Cliente CNPJ ou Prestador.">
+<!-- O link de nova senha não pode vazar para outros sites (OWASP: Referrer-Policy no-referrer) -->
+<meta name="referrer" content="no-referrer">
 <!-- Padrão do site -->
 <link rel="stylesheet" href="../configuracoes/base.css">
 <link rel="stylesheet" href="../navbar/navbar.css">
 <link rel="stylesheet" href="../rodape/rodape.css">
 <link rel="stylesheet" href="../componentes/formulario/formulario.css">
+<link rel="stylesheet" href="../componentes/endereco/endereco.css">
+<link rel="stylesheet" href="../componentes/senha/senha.css">
 <link rel="stylesheet" href="login-cadastro.css">
 <script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/senha/senha.js" defer></script>
+<script src="../componentes/endereco/endereco.js" defer></script>
+<!-- Serviços (conversam com o servidor; hoje, com a demonstração) -->
+<script src="../servicos/identificadores.js" defer></script>
+<script src="../servicos/recuperacao.js" defer></script>
 <script src="login-cadastro.js" defer></script>
+<script src="recuperacao.js" defer></script>
 </head>
 <!-- Endereços aceitos (usados pela Home e pela NavBar):
        ?acao=criar-conta                       → abre só o "Criar login"
        ?acao=criar-conta&perfil=cpf|cnpj|prestador → já abre o cadastro escolhido
        ?destino=<id do menu>                   → avisa que é preciso entrar
-       ?sair=1                                 → confirma a saída da conta -->
+       ?sair=1                                 → confirma a saída da conta
+       #redefinir=<token>                      → link do e-mail "nova senha" (abre o pop-up) -->
 <body data-pagina="" data-logado="nao" data-raiz="../">
 <header id="sd-navbar"></header>
 <main id="conteudo" class="pagina pagina-login">
@@ -59,8 +70,8 @@
 
       <form id="form-login" class="login-corpo" novalidate>
         <div class="campo">
-          <label for="login-id">E-mail, CPF/CNPJ ou telefone</label>
-          <input type="text" id="login-id" name="login" autocomplete="username" placeholder="seu@email.com ou 000.000.000-00" aria-describedby="e-login-id">
+          <label for="login-id">E-mail, CPF ou CNPJ</label>
+          <input type="text" id="login-id" name="login" autocomplete="username" placeholder="seu@email.com ou 000.000.000-00" aria-describedby="e-login-id" maxlength="254">
           <span class="campo-erro" id="e-login-id"></span>
         </div>
 
@@ -73,10 +84,10 @@
           <span class="campo-erro" id="e-login-senha"></span>
         </div>
 
-        <!-- Recuperação de acesso: depende do servidor (e-mail/SMS). Por enquanto só avisa. -->
+        <!-- Recuperação de acesso: abre os pop-ups (recuperacao.js). Fechar não perde o progresso. -->
         <div class="login-links">
-          <button type="button" class="link-botao" data-recuperar="senha">Esqueceu a senha?</button>
-          <button type="button" class="link-botao" data-recuperar="login">Esqueceu o login?</button>
+          <button type="button" class="link-botao" data-recuperar="senha" aria-haspopup="dialog">Esqueceu a senha?</button>
+          <button type="button" class="link-botao" data-recuperar="login" aria-haspopup="dialog">Esqueceu o login?</button>
         </div>
 
         <div class="campo campo-check">
@@ -124,6 +135,193 @@
 
   </div>
 </main>
+
+<!-- =====================================================================
+     POP-UPS DE RECUPERAÇÃO DE ACESSO (comportamento em recuperacao.js)
+     - Clicar fora ou em "Fechar" só esconde: tudo o que foi digitado fica.
+     - Abrir de novo continua de onde parou.
+     - "Cancelar solicitação" pede confirmação e recomeça do zero.
+     ===================================================================== -->
+
+<!-- 1. ESQUECEU A SENHA? -->
+<dialog class="modal modal-largo popup-acesso" id="popup-senha" aria-labelledby="ps-titulo">
+  <button type="button" class="popup-fechar" data-fechar aria-label="Fechar (o que você preencheu fica guardado)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <h2 id="ps-titulo">Esqueceu a senha?</h2>
+
+  <!-- Etapa: informar o e-mail -->
+  <div class="popup-etapa" data-etapa="email">
+    <p>Informe o e-mail cadastrado. Vamos enviar um link para você criar uma nova senha.</p>
+    <form id="form-senha-email" novalidate>
+      <div class="campo">
+        <label for="ps-email">E-mail cadastrado</label>
+        <input type="email" id="ps-email" name="email" autocomplete="email" inputmode="email" maxlength="254" aria-describedby="e-ps-email">
+        <span class="campo-erro" id="e-ps-email"></span>
+      </div>
+      <div class="mensagem" id="msg-ps-email" role="alert"></div>
+      <button type="submit" class="btn btn-grande">Enviar link de recuperação</button>
+    </form>
+  </div>
+
+  <!-- Etapa: link enviado (mensagem igual para e-mail cadastrado ou não) -->
+  <div class="popup-etapa" data-etapa="enviado" hidden>
+    <div class="mensagem sucesso" id="msg-ps-enviado" role="status"></div>
+    <p class="nota">Não chegou? Confira a caixa de spam. <span id="ps-espera" aria-live="polite"></span></p>
+    <button type="button" class="btn" id="btn-ps-reenviar">Enviar o link de novo</button>
+    <div class="mensagem" id="msg-ps-reenviar" role="alert"></div>
+    <!-- Só na demonstração: o "e-mail" aparece aqui -->
+    <div class="popup-demo" id="ps-demo" hidden>
+      <span class="selo-demo">Demonstração</span>
+      <p>Na versão real, este link chega <strong>somente por e-mail</strong>. Aqui ele aparece para você testar.</p>
+      <a class="link" id="ps-link-demo" href="#">Abrir o link de recuperação</a>
+    </div>
+  </div>
+
+  <div class="popup-rodape">
+    <button type="button" class="link-botao" data-cancelar hidden>Cancelar solicitação</button>
+    <button type="button" class="btn" data-voltar-login>Voltar ao login</button>
+  </div>
+</dialog>
+
+<!-- 2. CRIAR NOVA SENHA (aberto pelo link do e-mail) -->
+<dialog class="modal modal-largo popup-acesso" id="popup-nova-senha" aria-labelledby="pn-titulo">
+  <button type="button" class="popup-fechar" data-fechar aria-label="Fechar (o que você preencheu fica guardado)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <h2 id="pn-titulo">Criar nova senha</h2>
+
+  <div class="popup-etapa" data-etapa="verificando">
+    <p role="status">Conferindo o link…</p>
+  </div>
+
+  <div class="popup-etapa" data-etapa="invalido" hidden>
+    <div class="mensagem erro" id="msg-pn-invalido" role="alert"></div>
+    <button type="button" class="btn" id="btn-pn-novo-link">Pedir um novo link</button>
+  </div>
+
+  <div class="popup-etapa" data-etapa="formulario" hidden>
+    <form id="form-nova-senha" novalidate>
+      <p class="nota" id="pn-dica"></p>
+      <div class="campo">
+        <label for="pn-senha">Nova senha</label>
+        <div class="senha-caixa">
+          <input type="password" id="pn-senha" name="novaSenha" autocomplete="new-password" maxlength="128" aria-describedby="pn-dica e-pn-senha">
+          <button type="button" class="btn-olho" data-alvo="pn-senha" aria-label="Mostrar senha" aria-pressed="false"></button>
+        </div>
+        <div id="pn-medidor"></div>
+        <span class="campo-erro" id="e-pn-senha"></span>
+      </div>
+      <div class="campo">
+        <label for="pn-senha2">Confirme a nova senha</label>
+        <div class="senha-caixa">
+          <input type="password" id="pn-senha2" name="confirmacao" autocomplete="new-password" maxlength="128" aria-describedby="e-pn-senha2">
+          <button type="button" class="btn-olho" data-alvo="pn-senha2" aria-label="Mostrar senha" aria-pressed="false"></button>
+        </div>
+        <span class="campo-erro" id="e-pn-senha2"></span>
+      </div>
+      <div class="mensagem" id="msg-pn" role="alert"></div>
+      <p class="nota popup-demo-dica" id="pn-demo" hidden><span class="selo-demo">Demonstração</span> Para testar a regra "igual à anterior", digite: <strong id="pn-senha-atual-demo"></strong></p>
+      <button type="submit" class="btn btn-grande">Salvar nova senha</button>
+    </form>
+  </div>
+
+  <div class="popup-etapa" data-etapa="concluido" hidden>
+    <div class="mensagem sucesso" role="status">Senha alterada. Por segurança, encerramos as sessões abertas em outros aparelhos. Entre com a nova senha.</div>
+  </div>
+
+  <div class="popup-rodape">
+    <button type="button" class="link-botao" data-cancelar>Cancelar solicitação</button>
+    <button type="button" class="btn" data-voltar-login>Voltar ao login</button>
+  </div>
+</dialog>
+
+<!-- 3. ESQUECEU O LOGIN? -->
+<dialog class="modal modal-largo popup-acesso" id="popup-login" aria-labelledby="pl-titulo">
+  <button type="button" class="popup-fechar" data-fechar aria-label="Fechar (o que você preencheu fica guardado)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <h2 id="pl-titulo">Esqueceu o login?</h2>
+
+  <!-- Etapa: escolher a situação -->
+  <div class="popup-etapa" data-etapa="escolha">
+    <p>O que você não lembra?</p>
+    <div class="opcoes-acesso">
+      <button type="button" class="opcao-acesso" data-opcao="documento">
+        <strong>Não lembro meu e-mail</strong><span>Entre com o seu CPF ou CNPJ.</span>
+      </button>
+      <button type="button" class="opcao-acesso" data-opcao="email">
+        <strong>Não lembro meu CPF/CNPJ</strong><span>Entre com o seu e-mail cadastrado.</span>
+      </button>
+      <button type="button" class="opcao-acesso" data-opcao="suporte">
+        <strong>Esqueci os dois</strong><span>O suporte ajuda você a recuperar o acesso.</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- A. Não lembra o e-mail → usa o CPF/CNPJ (o e-mail nunca é mostrado) -->
+  <div class="popup-etapa" data-etapa="documento" hidden>
+    <form id="form-pl-documento" novalidate>
+      <div class="campo">
+        <label for="pl-documento">CPF ou CNPJ cadastrado</label>
+        <input type="text" id="pl-documento" name="documento" autocomplete="off" maxlength="18" placeholder="000.000.000-00 ou 00.000.000/0000-00" aria-describedby="e-pl-documento">
+        <span class="campo-erro" id="e-pl-documento"></span>
+      </div>
+      <button type="submit" class="btn">Continuar</button>
+    </form>
+    <div class="popup-resultado" id="pl-resultado-documento" hidden>
+      <div class="mensagem info" role="status">Se este documento estiver cadastrado e liberado para entrar, use-o no campo de login com a sua senha. Por segurança, não mostramos o e-mail da conta.</div>
+      <button type="button" class="btn" data-usar="documento">Usar este documento para entrar</button>
+      <p class="nota">Esqueceu a senha também? O link de nova senha vai para o e-mail cadastrado. Sem acesso ao e-mail, <a class="link" data-link-suporte href="../suporte/index.html">fale com o suporte</a>.</p>
+    </div>
+    <button type="button" class="link-botao" data-voltar-opcoes>Escolher outra opção</button>
+  </div>
+
+  <!-- B. Não lembra o CPF/CNPJ → usa o e-mail (o documento nunca é mostrado) -->
+  <div class="popup-etapa" data-etapa="email" hidden>
+    <form id="form-pl-email" novalidate>
+      <div class="campo">
+        <label for="pl-email">E-mail cadastrado</label>
+        <input type="email" id="pl-email" name="email" autocomplete="email" inputmode="email" maxlength="254" aria-describedby="e-pl-email">
+        <span class="campo-erro" id="e-pl-email"></span>
+      </div>
+      <button type="submit" class="btn">Continuar</button>
+    </form>
+    <div class="popup-resultado" id="pl-resultado-email" hidden>
+      <div class="mensagem info" role="status">Se este e-mail estiver cadastrado, use-o no campo de login com a sua senha. Por segurança, não mostramos o CPF/CNPJ da conta.</div>
+      <button type="button" class="btn" data-usar="email">Usar este e-mail para entrar</button>
+      <p class="nota">Esqueceu a senha também? <button type="button" class="link-botao" data-ir-senha>Receber link de nova senha</button></p>
+    </div>
+    <button type="button" class="link-botao" data-voltar-opcoes>Escolher outra opção</button>
+  </div>
+
+  <!-- C. Esqueceu os dois → suporte (sem recuperação automática) -->
+  <div class="popup-etapa" data-etapa="suporte" hidden>
+    <div class="mensagem info" role="status">Não lembra nenhuma informação de acesso? Entre em contato com nosso suporte para receber ajuda.</div>
+    <p class="nota">Por segurança, o acesso só é devolvido depois de confirmarmos que a conta é sua.</p>
+    <a class="btn" data-link-suporte href="../suporte/index.html">Falar com o suporte</a>
+    <button type="button" class="link-botao" data-voltar-opcoes>Escolher outra opção</button>
+  </div>
+
+  <div class="popup-rodape">
+    <button type="button" class="link-botao" data-cancelar hidden>Cancelar solicitação</button>
+    <button type="button" class="btn" data-voltar-login>Voltar ao login</button>
+  </div>
+</dialog>
+
+<!-- 4. CONFIRMAÇÃO: CANCELAR SOLICITAÇÃO (abre por cima do pop-up atual) -->
+<dialog class="modal" id="popup-confirmar" aria-labelledby="pc-titulo" aria-describedby="pc-texto">
+  <div class="modal-icone" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+  </div>
+  <h2 id="pc-titulo">Cancelar solicitação?</h2>
+  <p id="pc-texto">Se você continuar, todas as informações desta solicitação serão apagadas e o processo será reiniciado. Deseja realmente continuar?</p>
+  <div class="modal-acoes">
+    <button type="button" class="btn" id="pc-nao" autofocus>Não, continuar</button>
+    <button type="button" class="btn" id="pc-sim">Sim, cancelar solicitação</button>
+  </div>
+</dialog>
+
 <footer id="sd-rodape"></footer>
 </body>
 </html>

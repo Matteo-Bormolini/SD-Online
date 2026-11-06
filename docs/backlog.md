@@ -61,7 +61,7 @@ O produto cumpre o objetivo quando:
 |---|---|---|---|---|
 | US03 | Como visitante, quero criar minha conta como Cliente CPF, Cliente CNPJ ou Prestador (com CNPJ ou MEI). | M | 1 → 5 | 🟡 Tela pronta |
 | US04 | Como usuário, quero entrar e sair da minha conta com segurança, e só ver as páginas do meu tipo de conta. | M | 1 → 5 | 🟡 Tela pronta |
-| US05 | Como usuário, quero recuperar minha senha ou meu login se eu esquecer. | M | 5 | ⬜ |
+| US05 | Como usuário, quero recuperar minha senha ou meu login se eu esquecer. | M | 2 → 5 | 🟡 Pop-ups prontos (demonstração); e-mail real na Sprint 5 |
 
 ### E3 · Perfis
 
@@ -105,9 +105,9 @@ O produto cumpre o objetivo quando:
 
 | Nº | História | Prioridade | Sprint | Status |
 |---|---|---|---|---|
-| US24 | Como prestador, quero organizar meus serviços por etapa (A orçar, Orçando, Aceito, A realizar, Prestados), para não perder nenhum. | S | 1 → 3 | 🟡 Falta a coluna "A orçar" |
+| US24 | Como prestador, quero organizar meus serviços por etapa (A orçar, Orçando, Aceito, A realizar, Prestados), para não perder nenhum. | S | 1 → 3 | 🟡 Quadro ainda não está no formato de Kanban que o Marco quer: **refazer na Sprint 3** (falta também a coluna "A orçar") |
 | US25 | Como cliente, quero ver os serviços que já contratei, com fotos, para lembrar como ficou. | S | 1 | ✅ Demonstração |
-| US26 | Como cliente, quero avaliar o prestador com estrelas e comentário, com meu nome escondido, a menos que eu escolha aparecer. | S | 4 | ⬜ |
+| US26 | Como cliente, quero avaliar o prestador com estrelas e comentário, com meu nome escondido, a menos que eu escolha aparecer. | S | 4 | 🟡 Perfil do prestador já mostra só "Avaliação anônima" ou o nome autorizado |
 
 ### E8 · Ajuda e confiança
 
@@ -141,6 +141,12 @@ O produto cumpre o objetivo quando:
 | US39 | Como usuário, quero o app nas lojas, entrar com a digital e receber avisos também pelo telefone. | C |
 | US40 | Como usuário, quero que o Assistente do Suporte responda com inteligência artificial. | C |
 | US41 | Como prestador, quero juntar em um só cadastro as opções CNPJ e MEI. | C |
+| US45 | Como prestador, quero a página **Seus Serviços** com o mapa dos clientes que estão orçando comigo e dos que vão realizar o serviço comigo (região aproximada). | S |
+| US46 | Como prestador, quero uma **Home própria**, sem dados de outros prestadores (concorrência), com o que me ajuda no dia a dia. | S |
+| US47 | Como dono (perfil **Master**), quero cadastrar administradores e ligar/desligar o que cada um pode fazer no site. | C |
+| US48 | Como empresa, condomínio ou cliente CPF, quero registrar (de forma opcional) **quem acompanhou o prestador** e **quantas visitas** foram precisas até concluir; o síndico/gerente/titular decide se esse registro é obrigatório ou opcional. | C |
+| US49 | Como usuário, quero entrar também com o **telefone principal** (depois de confirmado). Nome completo **não** será jeito de entrar (pessoas com o mesmo nome). | C |
+| US50 | Como usuário com duas contas (ex.: prestador que também é Cliente CPF), quero **trocar de conta** pelo perfil sem sair e entrar de novo. | C |
 
 ---
 
@@ -178,6 +184,15 @@ Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que
 - ✅ Fim dos links quebrados: "Sobre nós" em `home/sobre.html`; os 4 documentos legais juntos em `politica-privacidade/`; páginas sem conteúdo mostram "Esta página ainda está em desenvolvimento.".
 - ✅ Ajustes de 05/11: tema escuro salvo entre páginas; rodapé do computador mais baixo e espalhado; destaque pago em vermelho brilhante com a tag `destaque`.
 - ✅ Adiantado da Sprint 3: tela de **Localizar prestador** (demonstração).
+- ✅ Ajustes de 06/11/2026:
+  - menu: "Para clientes" virou **Serviços**; "Seja um prestador" virou **Seus Serviços**; saiu o antigo "Serviços";
+  - rodapé: documentos legais só na linha de baixo; sem a frase da marca; lugar pronto para os selos oficiais das lojas;
+  - endereço com **CEP automático** em todos os cadastros e perfis (CEP | Endereço · UF | Cidade | Bairro · Número | Complemento);
+  - cadastro: e-mail obrigatório, sem "Nome de login", CPF/CNPJ conferidos (CNPJ com letras aceito), senha de **12+ caracteres**;
+  - Cliente CPF: botão de privacidade e link para o perfil do prestador nos serviços realizados;
+  - Cliente CNPJ: cargo em lista e horário de visitas com dias e horas válidos;
+  - Prestador: avaliações anônimas; Home sem dados de concorrentes;
+  - **US05:** pop-ups de recuperação de senha e de login (adiantado da Sprint 5, só a tela).
 - ✅ Faxina técnica:
   - um só modelo de página (`modelo-pagina/`);
   - arquivos de versões antigas removidos;
@@ -192,7 +207,10 @@ Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que
 | Decisão | Opções | Até a Sprint |
 |---|---|---|
 | Onde publicar o site no lançamento (grátis e sem prazo) | Cloudflare (recomendado) · Firebase · outra | 5 |
-| O que a página "Seja um prestador" (`localizar-condominios/`) mostra, já que o mapa do cliente agora aparece dentro do pedido | Apresentar a S.D para novos prestadores **ou** mapa com os pedidos que o prestador já recebeu **ou** remover a página | 3 |
+| ~~O que a página "Seja um prestador" mostra~~ | **Decidido em 06/11:** vira **Seus Serviços** (US45). Ideia ainda em formação. | — |
+| Como será a Home do prestador (US46) | Ver ideias em "Decisões de 06/11" abaixo | 3 |
+| ~~A linha "Login" continua nos perfis?~~ | **Decidido em 06/11:** tirada dos 4 perfis. | — |
+| Onde registrar acompanhante e número de visitas (US48) | Na avaliação do serviço **ou** no histórico "Serviços realizados" **ou** no fechamento do pedido | 4 |
 | Onde ficam "Sobre nós" e as páginas legais | Uma pasta por página (`sobre/`, `termos/`...) **ou** manter `home/sobre.html` e a pasta `politica-privacidade/` e ajustar os links | 2 |
 | Quanto custa usar a S.D (cliente e prestador) | Grátis, plano pago ou só destaque pago | 5 |
 | A S.D confere o CNPJ e as certificações do prestador antes de mostrá-lo? | Conferir no cadastro (selo "Verificado") **ou** não conferir e deixar claro nos Termos | 5 |
@@ -208,6 +226,28 @@ Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que
 - WhatsApp só se o prestador ligar a opção; se não, botão cinza "liberado após o orçamento".
 - Sem botões de rota (Maps/Waze).
 - Mapa: MapLibre + OpenFreeMap (grátis, sem chave).
+
+### Decisões tomadas em 06/11/2026 (ajustes + recuperação de acesso)
+
+- **Prestador nunca vê a área "Serviços"** (busca de prestadores): seriam dados da concorrência. Se quiser orçar para si mesmo, entra com uma conta de Cliente CPF (no futuro, troca de conta pelo perfil — US50).
+- Avaliações **anônimas por padrão**: o prestador que também é cliente não descobre quem o avaliou ou recusou.
+- "Nome de login" saiu do cadastro CPF: e-mail, CPF ou CNPJ já identificam a conta; o nome pode ser separado em nome e sobrenome depois.
+- Jeitos de entrar hoje: **e-mail, CPF ou CNPJ**. Futuro: telefone principal (confirmado). **Nome completo não** (não é único).
+- Recuperação de acesso só em **pop-ups**, guardando o progresso ao fechar. Senha: 12+ caracteres, Argon2id no servidor. Regras: `seguranca/recuperacao-acesso.md`.
+- Selos das lojas: só os arquivos oficiais. A Apple tem selo branco; o Google **não permite** selo sem cor.
+- **Ideias para a Home do prestador (US46) — para o Marco escolher:**
+  - resumo do quadro: quantos pedidos "A orçar", "Orçando", "A realizar" (com atalho para cada coluna);
+  - próximas visitas/serviços agendados (data, bairro aproximado, contato no local quando liberado);
+  - avisos: pedido novo, orçamento aceito/recusado, contraproposta, contato liberado;
+  - a própria reputação: nota média, últimas avaliações (anônimas) e o que os clientes mais elogiam;
+  - "como aparecer melhor": perfil completo, fotos de trabalhos, região de atendimento, certificações;
+  - mapa resumido de "Seus Serviços" (US45);
+  - **nunca**: lista, preços ou avaliações de outros prestadores.
+- **Login:** a linha "Login" saiu dos 4 perfis (e do "Editar perfil").
+- **Horário de visitas (CNPJ):** botões dos dias + rodinhas de hora de início e fim + observação embaixo.
+- **Kanban do prestador:** ainda não está no formato desejado → refazer na Sprint 3 (US24).
+- **Perfil Master (US47) — anotado, não criar ainda.**
+- **Acompanhante e número de visitas (US48) — anotado, não criar ainda.**
 
 ## 8. Definição de Pronto (vale para toda entrega)
 

@@ -89,6 +89,61 @@
 .login-conectado p { margin: 0; }
 .login-acoes { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 
+/* ---------- 3b. POP-UPS DE RECUPERAÇÃO DE ACESSO ----------
+   Base do pop-up: configuracoes/base.css (seção 9). Aqui só o exclusivo. */
+.popup-acesso { position: relative; padding-top: 1.25rem; }
+.popup-acesso h2 { font-size: 1.25rem; font-weight: 700; margin: 0 2.5rem 1rem 0; }
+.popup-acesso p { color: var(--cor-texto); }
+.popup-acesso .nota { color: var(--cor-texto-secundario); font-size: .8125rem; }
+.popup-acesso form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+.popup-acesso .mensagem { margin-top: 0; }
+.popup-etapa { display: flex; flex-direction: column; gap: 1rem; align-items: stretch; }
+.popup-etapa > .link-botao { align-self: flex-start; }
+.popup-resultado { display: flex; flex-direction: column; gap: .75rem; }
+
+/* X de fechar (fecha sem perder o progresso) */
+.popup-fechar {
+  position: absolute; top: .75rem; right: .75rem;
+  width: 2.75rem; height: 2.75rem; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--cor-texto); background: transparent; border: 0; border-radius: 8px; cursor: pointer;
+}
+.popup-fechar svg { width: 1.25rem; height: 1.25rem; }
+.popup-fechar:hover { background: var(--cor-superficie-2); color: var(--cor-vinho); }
+.popup-fechar:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 1px; }
+[data-tema="escuro"] .popup-fechar:hover { color: var(--cor-texto); }
+[data-tema="escuro"] .popup-fechar:focus-visible { outline-color: var(--cor-texto); }
+
+/* Rodapé do pop-up: "Cancelar solicitação" à esquerda, "Voltar ao login" à direita */
+.popup-rodape {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem;
+  margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--cor-divisoria);
+}
+.popup-rodape .btn { margin-left: auto; }
+
+/* Opções do "Esqueceu o login?" (cartões clicáveis) */
+.opcoes-acesso { display: grid; gap: .75rem; }
+.opcao-acesso {
+  display: flex; flex-direction: column; align-items: flex-start; gap: .125rem;
+  width: 100%; min-height: 3.5rem; padding: .75rem 1rem; text-align: left;
+  font: inherit; color: var(--cor-texto); background: var(--cor-superficie);
+  border: 1px solid var(--cor-contorno); border-radius: var(--raio-botao); cursor: pointer;
+}
+.opcao-acesso strong { font-size: .9375rem; }
+.opcao-acesso span { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.opcao-acesso:hover { background: var(--cor-vinho); color: #FFFFFF; }
+.opcao-acesso:hover span { color: #FFFFFF; }
+.opcao-acesso:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; }
+[data-tema="escuro"] .opcao-acesso:focus-visible { outline-color: #FFFFFF; }
+
+/* Caixa da demonstração (o "e-mail" com o link aparece aqui) */
+.popup-demo {
+  display: flex; flex-direction: column; align-items: flex-start; gap: .5rem;
+  padding: .75rem; border: 1px dashed var(--cor-atencao); border-radius: 8px; background: var(--cor-atencao-fundo);
+}
+.popup-demo .selo-demo, .popup-demo-dica .selo-demo { margin-top: 0; }
+.popup-demo p { font-size: .875rem; }
+
 @keyframes login-abrir { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
 /* ---------- 4. RESPONSIVIDADE ---------- */
@@ -98,6 +153,9 @@
   .login-cartao { padding: 1rem; }
   .login-tipos { grid-template-columns: 1fr; }
   .login-acoes .btn { flex: 1 1 100%; }
+  .popup-rodape { flex-direction: column-reverse; align-items: stretch; }
+  .popup-rodape .btn { margin-left: 0; }
+  .popup-rodape .link-botao { align-self: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cadastro:not([hidden]) { animation: none; }

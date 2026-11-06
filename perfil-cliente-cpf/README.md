@@ -8,10 +8,13 @@ O espaço de quem mora em casa ou apartamento. Aqui a pessoa cuida dos seus dado
 Para o cliente pessoa física. Só ele (e o administrador, para suporte) abre esta página.
 
 ## O que entrega
-- **Aba Perfil:** login, nome, CPF (não pode ser alterado), e-mail, endereço, telefone principal e até 4 secundários.
+- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
+- **Aba Perfil:** nome, CPF (não pode ser alterado), e-mail, endereço, telefone principal e até 4 secundários.
 - **Editar perfil:** só preenche o que quer mudar; o resto continua igual.
 - **Foto de perfil opcional** (JPG, PNG ou WEBP até 5 MB).
-- **Aba Serviços realizados:** histórico com fotos de cada serviço.
+- **Privacidade:** botão "Mostrar meus dados aos prestadores" (liga/desliga a qualquer momento). Ligado: o prestador de um pedido vê o primeiro nome e o bairro. CPF, telefone e endereço completo nunca aparecem.
+- **Endereço:** CEP primeiro; ao trocar o CEP, rua, bairro, cidade e UF são preenchidos sozinhos e o endereço inteiro é substituído.
+- **Aba Serviços realizados:** histórico com fotos de cada serviço. O nome da empresa é um link para o perfil público do prestador.
 - **Excluir perfil** com confirmação e aviso de que não tem volta.
 - A senha nunca aparece, só "••••••••".
 

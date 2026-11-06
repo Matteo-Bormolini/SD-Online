@@ -11,6 +11,9 @@
 <link rel="stylesheet" href="../rodape/rodape.css">
 <!-- Base comum dos perfis + componentes + o que é exclusivo do CNPJ -->
 <link rel="stylesheet" href="../componentes/formulario/formulario.css">
+<link rel="stylesheet" href="../componentes/endereco/endereco.css">
+<link rel="stylesheet" href="../componentes/senha/senha.css">
+<link rel="stylesheet" href="../componentes/hora-rolante/hora-rolante.css">
 <link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
 <link rel="stylesheet" href="../componentes/carrossel/carrossel.css">
 <link rel="stylesheet" href="../componentes/servicos-realizados/servicos-realizados.css">
@@ -20,6 +23,9 @@
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/senha/senha.js" defer></script>
+<script src="../componentes/endereco/endereco.js" defer></script>
+<script src="../componentes/hora-rolante/hora-rolante.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="../componentes/carrossel/carrossel.js" defer></script>
 <script src="../componentes/servicos-realizados/servicos-realizados.js" defer></script>
@@ -56,7 +62,6 @@
           <table class="tabela-dados">
             <caption>Dados da empresa</caption>
             <tbody>
-              <tr><th scope="row">Login</th><td class="valor valor-forte" data-campo="login"></td></tr>
               <tr><th scope="row">Razão social</th><td class="valor" data-campo="razaoSocial"></td></tr>
               <tr><th scope="row">Nome fantasia</th><td class="valor" data-campo="nomeFantasia"></td></tr>
               <tr><th scope="row">Tipo de conta</th><td class="valor" data-campo="tipoConta"></td></tr>
@@ -104,13 +109,8 @@
               <tr>
                 <th scope="row">Localização</th>
                 <td>
-                  <div class="grade-local">
-                    <div class="celula cel-endereco"><span class="celula-rotulo">Endereço</span><span class="valor" data-campo="endereco"></span></div>
-                    <div class="celula cel-numero"><span class="celula-rotulo">Número</span><span class="valor" data-campo="numero"></span></div>
-                    <div class="celula cel-complemento"><span class="celula-rotulo">Complemento</span><span class="valor" data-campo="complemento"></span></div>
-                    <div class="celula cel-bairro"><span class="celula-rotulo">Bairro</span><span class="valor" data-campo="bairro"></span></div>
-                    <div class="celula cel-cep"><span class="celula-rotulo">CEP</span><span class="valor" data-campo="cep"></span></div>
-                  </div>
+                  <!-- CEP | Endereço · Número | Complemento | Bairro · Cidade | UF (componentes/endereco) -->
+                  <div data-endereco="exibir"></div>
                 </td>
               </tr>
               <tr>
@@ -149,11 +149,6 @@
             <form id="form-editar" novalidate>
               <div class="form-grade">
                 <div class="campo">
-                  <label for="f-login">Login</label>
-                  <input type="text" id="f-login" name="login" data-mascara="login" autocomplete="username" aria-describedby="e-login" maxlength="30">
-                  <span class="campo-erro" id="e-login"></span>
-                </div>
-                <div class="campo">
                   <label for="f-tipo">Tipo de estabelecimento</label>
                   <select id="f-tipo" name="tipoEstabelecimento"></select>
                 </div>
@@ -178,8 +173,14 @@
                     </div>
                     <div class="campo">
                       <label for="f-resp-cargo">Cargo</label>
-                      <input type="text" id="f-resp-cargo" name="responsavelCargo" autocomplete="organization-title" aria-describedby="e-resp-cargo" maxlength="60">
+                      <!-- Lista montada pelo perfil-cliente-cnpj.js (condomínios e empresas de todos os portes) -->
+                      <select id="f-resp-cargo" name="responsavelCargo" aria-describedby="e-resp-cargo"></select>
                       <span class="campo-erro" id="e-resp-cargo"></span>
+                    </div>
+                    <div class="campo" id="campo-cargo-outro" hidden>
+                      <label for="f-resp-cargo-outro">Qual cargo?</label>
+                      <input type="text" id="f-resp-cargo-outro" name="responsavelCargoOutro" autocomplete="organization-title" maxlength="60" aria-describedby="e-resp-cargo-outro">
+                      <span class="campo-erro" id="e-resp-cargo-outro"></span>
                     </div>
                   </div>
                 </fieldset>
@@ -215,39 +216,26 @@
                   </div>
                 </fieldset>
 
-                <div class="campo largura-total">
-                  <label for="f-horario">Horário para visitas</label>
-                  <input type="text" id="f-horario" name="horarioVisitas" maxlength="80" aria-describedby="d-horario">
-                  <span class="nota" id="d-horario">Ex.: Segunda a sexta, 08:00 às 17:00 (dias úteis).</span>
-                </div>
-
-                <fieldset class="grupo largura-total">
-                  <legend>Localização</legend>
-                  <div class="grade-local-form">
-                    <div class="campo f-endereco">
-                      <label for="f-endereco">Endereço</label>
-                      <input type="text" id="f-endereco" name="endereco" autocomplete="address-line1" maxlength="150">
-                    </div>
-                    <div class="campo f-numero">
-                      <label for="f-numero">Número</label>
-                      <input type="text" id="f-numero" name="numero" maxlength="10" aria-describedby="e-numero">
-                      <span class="campo-erro" id="e-numero"></span>
-                    </div>
-                    <div class="campo f-compl">
-                      <label for="f-complemento">Complemento</label>
-                      <input type="text" id="f-complemento" name="complemento" autocomplete="address-line2" maxlength="60">
-                    </div>
-                    <div class="campo f-bairro">
-                      <label for="f-bairro">Bairro</label>
-                      <input type="text" id="f-bairro" name="bairro" maxlength="80">
-                    </div>
-                    <div class="campo f-cep">
-                      <label for="f-cep">CEP</label>
-                      <input type="text" id="f-cep" name="cep" data-mascara="cep" inputmode="numeric" autocomplete="postal-code" aria-describedby="e-cep">
-                      <span class="campo-erro" id="e-cep"></span>
-                    </div>
+                <!-- Horário para visitas: dias da semana + horas reais (não aceita "dia Leão" nem 110:23).
+                     Montado pelo perfil-cliente-cnpj.js. A observação é texto livre e opcional. -->
+                <fieldset class="grupo largura-total horario-visitas" id="horario-visitas">
+                  <legend>Horário para visitas</legend>
+                  <p class="nota">Toque nos dias e role as rodinhas para escolher o início e o fim. Até 3 horários diferentes (ex.: sábado só de manhã).</p>
+                  <ol class="horario-faixas" id="horario-faixas"></ol>
+                  <button type="button" class="btn btn-pequeno" id="btn-add-faixa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Adicionar outro horário
+                  </button>
+                  <div class="campo">
+                    <label for="f-horario-obs">Observação <span class="nota">(opcional)</span></label>
+                    <input type="text" id="f-horario-obs" name="horarioObs" maxlength="80" placeholder="Ex.: avisar a portaria com 1 dia de antecedência" aria-describedby="e-horario-obs">
+                    <span class="campo-erro" id="e-horario-obs"></span>
                   </div>
                 </fieldset>
+
+                <!-- Campos do endereço montados por componentes/endereco (CEP preenche o resto) -->
+                <fieldset class="largura-total" data-endereco="formulario" data-prefixo="f" data-legenda="Localização"
+                          data-nota="Digite o novo CEP: rua, bairro, cidade e UF são preenchidos sozinhos. Ao trocar o CEP, o endereço inteiro é substituído."></fieldset>
 
                 <div class="campo">
                   <label for="f-senha">Nova senha</label>
@@ -255,7 +243,8 @@
                     <input type="password" id="f-senha" name="senha" autocomplete="new-password" aria-describedby="d-senha e-senha">
                     <button type="button" class="btn-olho" data-alvo="f-senha" aria-label="Mostrar senha" aria-pressed="false"></button>
                   </div>
-                  <span class="nota" id="d-senha">Mínimo de 8 caracteres, com letras e números.</span>
+                  <span class="nota" id="d-senha"></span>
+                  <div id="medidor-senha"></div>
                   <span class="campo-erro" id="e-senha"></span>
                 </div>
                 <div class="campo">

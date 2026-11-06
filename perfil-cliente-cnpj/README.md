@@ -8,10 +8,12 @@ O espaço das empresas, condomínios e MEI. Além dos dados da empresa, mostra *
 Para síndicos, administradores, gestores e responsáveis por empresas. Só a própria empresa (e o administrador, para suporte) abre esta página.
 
 ## O que entrega
+- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
 - **Dados da empresa:** tipo de estabelecimento, razão social, nome fantasia e CNPJ (não pode ser alterado).
-- **Responsável pela conta:** nome, cargo e contatos.
-- **Contato no local:** zelador, portaria ou recepção, com telefone e horário para visitas.
-- **Endereço**, telefone principal e até 4 secundários.
+- **Responsável pela conta:** nome, cargo (lista para condomínios e empresas de todos os portes, ou "Outro" para escrever) e contatos.
+- **Contato no local:** zelador, portaria ou recepção, com telefone.
+- **Horário para visitas:** botões dos dias (Seg…Dom) + **rodinhas** de hora de início e fim (horas de 00 a 23, minutos de 5 em 5; só existem horas válidas) e a observação livre embaixo. Até 3 horários diferentes.
+- **Endereço** com CEP primeiro (preenche rua, bairro, cidade e UF), telefone principal e até 4 secundários.
 - **Fotos do local (opcional):** até 12 fotos das áreas, com aviso para não fotografar pessoas, placas ou documentos.
 - **Aba Serviços realizados**, editar perfil, foto/logo opcional e excluir perfil.
 

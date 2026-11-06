@@ -191,7 +191,7 @@
     { termos: [/(ser|virar|tornar|cadastrar como|como ser).{0,15}prestador/, /oferecer (meus )?servic/, /divulgar (meu )?(trabalho|servico)/],
       resposta: "Em “Criar conta”, escolha o tipo “Prestador”. Depois complete seu perfil com serviços e contatos para os clientes encontrarem você." },
     { termos: [/(encontrar|achar|procurar|buscar|localizar|contratar).{0,20}(prestador|profissional|servic|tecnico)/, /como contrat/],
-      resposta: "Entre como cliente e use “Para clientes” no menu para localizar prestadores. Veja as avaliações e combine o serviço diretamente com o prestador." },
+      resposta: "Entre como cliente e use “Serviços” no menu para localizar prestadores. Veja as avaliações e combine o serviço diretamente com o prestador." },
     { termos: [/\bpag(ar|amento|o)\b/, /\bpix\b/, /cartao/, /boleto/],
       resposta: "A S.D não intermedia pagamentos. Valor e forma de pagamento são combinados diretamente entre cliente e prestador." },
     { termos: [/avalia/, /estrela/],

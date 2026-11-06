@@ -9,8 +9,9 @@ Ele vê os dados das contas, mas **nunca vê senhas**.
 Só para a equipe que mantém a S.D.
 
 ## O que entrega
-- **Aba Perfil:** login, nome, cargo, CPF/CNPJ (não pode ser alterado), e-mail, telefone principal e até 4 secundários, endereço e avaliações.
-- **Editar perfil**, foto de perfil, galeria (até 12 fotos) e excluir perfil com confirmação.
+- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
+- **Aba Perfil:** nome, cargo, CPF/CNPJ (não pode ser alterado), e-mail, telefone principal e até 4 secundários, endereço e avaliações.
+- **Editar perfil** (endereço com CEP automático), foto de perfil, galeria (até 12 fotos) e excluir perfil com confirmação.
 - **Aba Administração:** reservada para o painel de administração (hoje mostra "em desenvolvimento").
 
 ## Histórias atendidas

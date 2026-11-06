@@ -10,6 +10,7 @@ Um perfil completo passa confiança; o quadro de serviços ajuda a não perder n
 - **Os clientes:** veem só a versão pública, sem dados privados e sem o quadro.
 
 ## O que entrega
+- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
 
 **Aba Perfil**
 - Logo **obrigatória**. Sem ela, um aviso pede para adicionar.
@@ -17,7 +18,8 @@ Um perfil completo passa confiança; o quadro de serviços ajuda a não perder n
 - Horário de atendimento e se atende emergências fora do horário.
 - **Região de atendimento:** distância máxima a partir do endereço. O cliente vê só o bairro.
 - Fotos de trabalhos (opcional, até 12), com aviso para pedir autorização ao cliente.
-- Avaliações recentes.
+- Avaliações recentes **sempre anônimas**: o nome só aparece se o cliente autorizou ao avaliar.
+- Endereço com CEP primeiro (preenche rua, bairro, cidade e UF).
 - **Ver como cliente:** mostra o perfil do jeito que o cliente vê.
 
 **Aba Meus serviços**

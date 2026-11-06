@@ -21,8 +21,8 @@
     cadastro:          SD.urlPagina("cadastro"),
     cadastroCliente:   SD.urlPagina("cadastro") + "&perfil=cliente",
     cadastroPrestador: SD.urlPagina("cadastro") + "&perfil=prestador",
-    buscarPrestador:   SD.caminho("localizar-prestador/index.html"),    // "Para clientes"
-    localizarCondominios: SD.caminho("localizar-condominios/index.html"), // "Seja um prestador"
+    buscarPrestador:   SD.caminho("localizar-prestador/index.html"),    // menu "Serviços" (clientes)
+    localizarCondominios: SD.caminho("localizar-condominios/index.html"), // menu "Seus Serviços" (prestador)
     perfilPrestador:   SD.caminho("perfil-prestador/index.html")        // abre com ?visao=cliente
   };
 
@@ -124,9 +124,13 @@
     const ehPrestador = tipo === "prestador";
     const ehCliente = tipo.startsWith("cliente");
 
+    // PRESTADOR: não vê a vitrine (outros prestadores, avaliações e trabalhos são
+    // dados da concorrência). A Home própria do prestador ainda será definida.
+    if (ehPrestador) { montarPrestador(alvo, nome); return; }
+
     const atalhos = [
-      !ehPrestador && `<a class="btn" href="${CAMINHOS.buscarPrestador}">Pedir orçamento</a>`,
-      !ehCliente   && `<a class="btn" href="${CAMINHOS.localizarCondominios}">Ver locais para orçar</a>`
+      `<a class="btn" href="${CAMINHOS.buscarPrestador}">Pedir orçamento</a>`,
+      !ehCliente && `<a class="btn" href="${CAMINHOS.localizarCondominios}">Seus Serviços</a>`
     ].filter(Boolean).join("");
 
     alvo.innerHTML = `
@@ -227,6 +231,21 @@
 
     alvo.hidden = false;
     iniciarFaixa(alvo);
+  }
+
+  /* ---------- 7b. LOGADO COMO PRESTADOR (provisório) ----------
+     Só atalhos para as áreas dele. Nada de dados de outros prestadores. */
+  function montarPrestador(alvo, nome) {
+    alvo.innerHTML = `
+      <section class="boas-vindas" aria-labelledby="ola-titulo">
+        <h1 id="ola-titulo">Olá${nome}!</h1>
+        <p>A sua página inicial de prestador está em construção. Use os atalhos abaixo.</p>
+        <div class="atalhos">
+          <a class="btn" href="${CAMINHOS.localizarCondominios}">Seus Serviços</a>
+          <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
+        </div>
+      </section>`;
+    alvo.hidden = false;
   }
 
   /* ---------- 8. SETAS DA FAIXA DE PRESTADORES ---------- */

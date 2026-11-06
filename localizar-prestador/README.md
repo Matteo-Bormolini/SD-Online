@@ -1,4 +1,4 @@
-# Encontrar prestadores ("Para clientes")
+# Encontrar prestadores (menu "Serviços")
 
 **Sprint 3 · Épico E4 Encontrar · 🟡 Tela pronta (demonstração)**
 
@@ -35,7 +35,7 @@ Clientes CPF e CNPJ (exige login) e administrador. Prestadores **não** acessam 
 - [ ] Dados vindo do servidor (Sprint 5).
 
 ## Como testar
-- Entre como **Cliente CPF** ou **CNPJ** (login de demonstração) e abra **Para clientes**.
+- Entre como **Cliente CPF** ou **CNPJ** (login de demonstração) e abra **Serviços** no menu.
 - Sem localização: abra `localizar-prestador/index.html?localizacao=desativada`.
 - Já com um tipo escolhido: `?categoria=eletrica` (mesmos links da Home).
 

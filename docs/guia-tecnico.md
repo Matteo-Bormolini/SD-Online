@@ -23,6 +23,11 @@ Tudo o que você precisa saber para mexer no código sem quebrar o padrão.
 | Campos de formulário | `componentes/formulario/formulario.css` |
 | Formatar telefone, CEP, data, R$, estrelas | `componentes/utilidades/utilidades.js` |
 | O que é igual nos 4 perfis | `componentes/perfil-base/` |
+| Campos de endereço e busca pelo CEP | `componentes/endereco/` (serviços do CEP em `configuracoes/config.js` → `cep`) |
+| Regra de senha (mínimo, senhas proibidas) | `componentes/senha/senha.js` **e** o servidor |
+| Quais identificadores entram no login (e-mail, CPF, CNPJ…) | `servicos/identificadores.js` **e** o servidor |
+| Conversa com o servidor (recuperar senha) | `servicos/recuperacao.js` (endereço da API em `configuracoes/config.js` → `api`) |
+| Pop-ups (visual) | `configuracoes/base.css`, seção 9 |
 
 ## 3. Como toda página é montada
 
@@ -81,9 +86,9 @@ O mesmo nome é usado em todo o site.
 
 | Tipo | "Meu perfil" abre | No menu, depois de entrar |
 |---|---|---|
-| `cliente-cpf` | `perfil-cliente-cpf/` | vê "Para clientes" |
-| `cliente-cnpj` | `perfil-cliente-cnpj/` | vê "Para clientes" |
-| `prestador` | `perfil-prestador/` | vê "Seja um prestador" |
+| `cliente-cpf` | `perfil-cliente-cpf/` | vê "Serviços" |
+| `cliente-cnpj` | `perfil-cliente-cnpj/` | vê "Serviços" |
+| `prestador` | `perfil-prestador/` | vê "Seus Serviços" (nunca "Serviços": não vê concorrentes) |
 | `adm` | `perfil-adm/` | vê os dois |
 
 O visitante vê os itens com cadeado e é levado ao login ao clicar.
@@ -118,6 +123,8 @@ Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mest
 - Textos vindos de fora passam por escape (`textContent` ou `SD.esc`) antes de entrar na página.
 - Chaves de API, fotos de usuários e cópias do banco **nunca** vão para o GitHub. O `.gitignore` da raiz bloqueia esses arquivos.
 - Localização: o servidor envia ao navegador só uma área aproximada, nunca o endereço exato.
+- Recuperação de acesso (senha e login): regras completas em [`seguranca/recuperacao-acesso.md`](../seguranca/recuperacao-acesso.md).
+- Senhas: mínimo de 12 caracteres, guardadas com **Argon2id** no servidor (regra da tela em `componentes/senha/`).
 
 ## 9. Modelo de README de pasta
 
@@ -151,6 +158,8 @@ Uma ou duas frases dizendo o que é, em linguagem simples.
 | Para quê | Serviço | Situação (conferido em 05/11/2026) |
 |---|---|---|
 | Mapa | MapLibre GL (biblioteca, BSD) + OpenFreeMap (mapas) | Sem chave, sem cadastro, sem limite de visualizações, uso comercial liberado. Sem garantia de funcionamento (SLA). |
+| CEP → endereço (06/11/2026) | ViaCEP; reserva: BrasilAPI | Sem chave e sem cadastro. ViaCEP avisa que uso em massa pode bloquear o acesso: o site só consulta quando a pessoa digita um CEP completo. |
+| E-mail de recuperação (a decidir na Sprint 5) | Ex.: Brevo (plano grátis com 300 e-mails/dia) | Conferir de novo antes de usar: planos grátis mudam. Ver `seguranca/recuperacao-acesso.md`. |
 | Rota até um endereço | Links do Google Maps e do Waze | Sem chave. **Não usado** em Localizar prestador (decisão de 05/11). |
 | Distância | Cálculo próprio (Haversine) | Sem serviço externo. |
 | Hospedagem de teste | GitHub Pages | Grátis, mas os termos **não permitem** usar como site de negócio. Serve só para testes. |

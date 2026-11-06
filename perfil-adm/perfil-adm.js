@@ -23,7 +23,6 @@
   /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
      Substituir pelos dados vindos do servidor depois do login. */
   const perfil = {
-    login: "admin.sd",
     nome: "Nome Sobrenome Exemplo",
     cargoBase: "Administrador",          // fixo para o tipo adm
     cargoLider: "Suporte da plataforma", // definido pelo líder
@@ -35,6 +34,8 @@
     complemento: "Sala 1",
     bairro: "Centro",
     cep: "01000000",
+    cidade: "São Paulo",
+    uf: "SP",
     avaliacao: { media: 4.8, total: 12 },
     foto: null,
     galeria: []
@@ -45,23 +46,17 @@
   /* ---------- 3. EXIBIÇÃO DOS DADOS ---------- */
   function renderizarDados() {
     P.preencherCampos({
-      login: perfil.login,
       nome: perfil.nome,
       cargo: perfil.cargoBase + " - " + perfil.cargoLider,  // espaço antes e depois do "-"
       documento: perfil.documento,
       email: perfil.email,
-      endereco: P.ouTraco(perfil.endereco),
-      numero: P.ouTraco(perfil.numero),
-      complemento: P.ouTraco(perfil.complemento),
-      bairro: P.ouTraco(perfil.bairro),
-      cep: perfil.cep ? U.formatarCep(perfil.cep) : "—"
+      ...P.enderecoParaTela(perfil)
     });
     P.preencherLinkAvaliacoes($("#link-avaliacoes"), perfil.avaliacao, CONFIG.urlAvaliacoes);
     P.preencherPlaceholders({
-      "f-login": perfil.login, "f-nome": perfil.nome, "f-email": perfil.email,
+      "f-nome": perfil.nome, "f-email": perfil.email,
       "f-telefone": U.formatarTelefone(perfil.telefones.find((t) => t.principal)?.numero),
-      "f-endereco": perfil.endereco, "f-numero": perfil.numero, "f-complemento": perfil.complemento,
-      "f-bairro": perfil.bairro, "f-cep": U.formatarCep(perfil.cep),
+      ...P.placeholdersEndereco(perfil),
       "f-senha": "Deixe vazio para manter a atual", "f-senha2": "Repita a nova senha"
     });
     if (telefones) telefones.renderizar();

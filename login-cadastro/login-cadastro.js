@@ -3,6 +3,10 @@
    "Fazer login" e "Criar login" (Cliente CPF, Cliente CNPJ, Prestador).
    NavBar, Rodapé, cores e campos seguem o padrão do site.
 
+   Endereço: componentes/endereco (CEP primeiro, preenche rua, bairro,
+   cidade e UF sozinho). Senha: regra única em componentes/senha.
+   Recuperação de acesso (pop-ups): login-cadastro/recuperacao.js.
+
    DEMONSTRAÇÃO (sem servidor): nenhuma senha é guardada ou enviada.
    Ao entrar/criar conta, guarda só { tipo, nome } nesta aba do navegador
    (configuracoes/config.js → SD.sessaoDemo) e leva para a página certa,
@@ -12,18 +16,21 @@
    ===================================================================== */
 (function () {
   "use strict";
-  const SD = window.SD, U = window.SDUtil;
-  if (!SD || !U) { console.error("[S.D] login-cadastro.js: carregue config.js e utilidades.js antes."); return; }
+  const SD = window.SD, U = window.SDUtil, SENHA = window.SDSenha, END = window.SDEndereco, ID = window.SDIdentificadores;
+  if (!SD || !U || !SENHA || !END || !ID) { console.error("[S.D] login-cadastro.js: carregue config.js, utilidades, senha, endereco e identificadores antes."); return; }
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
   const parametros = new URLSearchParams(location.search);
 
   /* ---------- 1. CONFIGURAÇÃO DOS 3 CADASTROS (edite rótulos e campos aqui) ---------- */
   const CAMPOS_SENHA = [
-    { chave: "senha", rotulo: "Senha", obrigatorio: true, senha: true, dica: "Mínimo de 8 caracteres, com letras e números", auto: "new-password" },
+    { chave: "senha", rotulo: "Senha", obrigatorio: true, senha: true, dica: SENHA.DICA, auto: "new-password", medidor: true },
     { chave: "senha2", rotulo: "Confirmação de senha", obrigatorio: true, senha: true, auto: "new-password" }
   ];
-  const DICA_ENDERECO = "Rua, número, complemento, bairro, cidade – UF, CEP";
+  // E-mail: obrigatório em todos (usado para entrar e para receber o link de nova senha)
+  const CAMPO_EMAIL = { chave: "email", rotulo: "E-mail", obrigatorio: true, tipo: "email", auto: "email", ph: "seu@email.com" };
+  // Marca a posição do bloco de endereço (montado por componentes/endereco)
+  const ENDERECO = { endereco: true };
 
   // perfil = tipo de usuário usado em todo o site (seguranca/acesso.js)
   const TIPOS = {
@@ -32,12 +39,13 @@
       titulo: "Cadastro – Cliente CPF",
       sub: "Pessoa física (casas e apartamentos)",
       botao: "Criar login de Cliente CPF",
+      // Sem "Nome de login": e-mail, CPF ou CNPJ já identificam a conta (decisão de 06/11/2026)
       campos: [
         { chave: "nome", rotulo: "Nome completo", obrigatorio: true, largo: true, auto: "name" },
-        { chave: "login", rotulo: "Nome de login", obrigatorio: true, auto: "username" },
         { chave: "cpf", rotulo: "CPF", obrigatorio: true, mascara: "cpf", ph: "000.000.000-00" },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
-        { chave: "end", rotulo: "Endereço completo", largo: true, ph: DICA_ENDERECO, auto: "street-address" },
+        { ...CAMPO_EMAIL, largo: true },
+        ENDERECO,
         ...CAMPOS_SENHA
       ],
       privTexto: "Autorizo que prestadores vejam meu primeiro nome e bairro quando eu solicitar um serviço.",
@@ -53,7 +61,8 @@
         { chave: "nome", rotulo: "Nome da empresa / condomínio", auto: "organization" },
         { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo" },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
-        { chave: "end", rotulo: "Endereço completo", obrigatorio: true, largo: true, ph: DICA_ENDERECO, auto: "street-address" },
+        { ...CAMPO_EMAIL, largo: true },
+        ENDERECO,
         ...CAMPOS_SENHA
       ],
       privTexto: "Autorizo exibir o nome da empresa/condomínio para prestadores.",
@@ -69,7 +78,8 @@
         { chave: "nome", rotulo: "Nome da empresa", auto: "organization" },
         { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo" },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
-        { chave: "end", rotulo: "Endereço completo", obrigatorio: true, largo: true, ph: DICA_ENDERECO, auto: "street-address" },
+        { ...CAMPO_EMAIL, largo: true },
+        ENDERECO,
         ...CAMPOS_SENHA
       ],
       privTexto: "Autorizo exibir o perfil da minha empresa nas buscas de clientes.",
@@ -110,7 +120,7 @@
   function aplicarMascara(tipo, valor) {
     const d = U.soDigitos(valor);
     if (tipo === "cpf") return formatar(d.slice(0, 11), "000.000.000-00");
-    if (tipo === "cnpj") return formatar(d.slice(0, 14), "00.000.000/0000-00");
+    if (tipo === "cnpj") return U.formatarCnpj(valor);          // aceita o CNPJ alfanumérico
     if (tipo === "tel") return U.formatarTelefone(d);
     return valor;
   }
@@ -141,19 +151,35 @@
   }
 
   /* ---------- 4. MONTA OS 3 FORMULÁRIOS DE CADASTRO ---------- */
+  const enderecos = {};      // id do cadastro → controle do bloco de endereço
+
   function montarCadastros() {
     const destino = $("#cadastros");
     for (const [id, tipo] of Object.entries(TIPOS)) {
       const grade = el("div", { class: "form-grade" });
 
       for (const c of tipo.campos) {
+        // Bloco de endereço (CEP primeiro; só o complemento é opcional)
+        if (c.endereco) {
+          const fs = el("fieldset", { class: "largura-total" });
+          grade.append(fs);
+          enderecos[id] = END.montarFormulario(fs, {
+            prefixo: `${id}-end`, obrigatorio: true, legenda: "Endereço",
+            idErro: (chave) => `${id}-end-${chave}-erro`,
+            nota: "Digite o CEP: rua, bairro, cidade e UF são preenchidos sozinhos."
+          });
+          Object.values(enderecos[id].campos).forEach((campo) => campo.addEventListener("input", () => limparErro(campo)));
+          continue;
+        }
         const idCampo = `${id}-${c.chave}`;
         const descricao = [c.dica ? `${idCampo}-dica` : null, `${idCampo}-erro`].filter(Boolean).join(" ");
         const input = el("input", {
           id: idCampo, name: c.chave,
           type: c.senha ? "password" : (c.tipo || "text"),
           placeholder: c.ph, autocomplete: c.auto || "off",
-          inputmode: c.mascara ? "numeric" : undefined,
+          inputmode: c.mascara === "cnpj" ? "text" : (c.mascara ? "numeric" : (c.tipo === "email" ? "email" : undefined)),
+          autocapitalize: c.mascara === "cnpj" ? "characters" : undefined,
+          maxlength: c.senha ? SENHA.REGRA.maximo : (c.tipo === "email" ? 254 : undefined),
           required: c.obrigatorio || undefined,
           "aria-describedby": descricao
         });
@@ -172,6 +198,11 @@
 
         const bloco = el("div", { class: c.largo ? "campo largura-total" : "campo" }, [rotulo, caixa]);
         if (c.dica) bloco.append(el("span", { class: "nota", id: `${idCampo}-dica` }, [c.dica]));
+        if (c.medidor) {
+          const medidor = el("div");
+          bloco.append(medidor);
+          SENHA.ligarMedidor(input, medidor, () => contextoSenha(id));
+        }
         bloco.append(el("span", { class: "campo-erro", id: `${idCampo}-erro` }));
         grade.append(bloco);
       }
@@ -188,12 +219,18 @@
       const form = el("form", { novalidate: true }, [grade, privacidade, msg, el("button", { type: "submit", class: "btn btn-grande" }, [tipo.botao])]);
       form.addEventListener("submit", (e) => { e.preventDefault(); enviarCadastro(id, form, msg); });
 
-      const subtitulo = el("p", { class: "login-texto" }, [tipo.sub + " · ", el("span", { class: "obrigatorio" }, ["*"]), " obrigatório"]);
+      const subtitulo = el("p", { class: "login-texto" }, [tipo.sub]);
       destino.append(el("div", { id: `cadastro-${id}`, class: "cadastro", hidden: true }, [el("h3", {}, [tipo.titulo]), subtitulo, form]));
     }
   }
 
   /* ---------- 5. VALIDAÇÃO E ENVIO DO CADASTRO ---------- */
+  // Dados da pessoa que a senha NÃO pode conter (nome, e-mail, documento)
+  function contextoSenha(id) {
+    const v = (chave) => { const e = document.getElementById(`${id}-${chave}`); return e ? e.value.trim() : ""; };
+    return { nome: v("nome") + " " + v("resp"), email: v("email"), documento: v("cpf") || v("cnpj") };
+  }
+
   function enviarCadastro(id, form, msg) {
     const tipo = TIPOS[id];
     const pegar = (chave) => document.getElementById(`${id}-${chave}`);
@@ -201,17 +238,30 @@
     const erro = (input, texto) => { mostrarErro(input, texto); primeiroErro = primeiroErro || input; };
 
     for (const c of tipo.campos) {
+      if (c.endereco) continue;
       const input = pegar(c.chave), valor = input.value.trim();
       limparErro(input);
       if (c.obrigatorio && !valor) { erro(input, "Campo obrigatório."); continue; }
       if (!valor) continue;
-      if (c.mascara === "cpf" && U.soDigitos(valor).length !== 11) erro(input, "CPF incompleto.");
-      if (c.mascara === "cnpj" && U.soDigitos(valor).length !== 14) erro(input, "CNPJ incompleto.");
+      if (c.mascara === "cpf" && !U.cpfValido(valor)) erro(input, U.soDigitos(valor).length === 11 ? "CPF inválido. Confira os números." : "CPF incompleto.");
+      if (c.mascara === "cnpj" && !U.cnpjValido(valor)) erro(input, U.normalizarCnpj(valor).length === 14 ? "CNPJ inválido. Confira os caracteres." : "CNPJ incompleto.");
       if (c.mascara === "tel" && !U.telefoneValido(valor)) erro(input, "Telefone incompleto.");
+      if (c.tipo === "email" && !U.emailValido(valor)) erro(input, "E-mail inválido.");
     }
+
+    // Endereço (componentes/endereco)
+    const endereco = enderecos[id];
+    if (endereco) {
+      Object.values(endereco.campos).forEach(limparErro);
+      END.validar(endereco.ler(), true, (chave, texto) => erro(endereco.campos[chave], texto));
+    }
+
+    // Senha (regra única: componentes/senha)
     const senha = pegar("senha"), senha2 = pegar("senha2");
-    // Mesma regra de senha usada no "Editar perfil": 8+ caracteres com letras e números
-    if (senha.value && (senha.value.length < 8 || !/[A-Za-z]/.test(senha.value) || !/\d/.test(senha.value))) erro(senha, "A senha precisa de 8+ caracteres, com letras e números.");
+    if (senha.value) {
+      const r = SENHA.avaliar(senha.value, contextoSenha(id));
+      if (!r.ok) erro(senha, r.erros[0]);
+    }
     if (senha2.value && senha2.value !== senha.value) erro(senha2, "As senhas não conferem.");
 
     if (primeiroErro) {
@@ -222,7 +272,7 @@
     U.limparMensagem(msg);
 
     // Aqui entrará o envio ao servidor. Senhas NUNCA são guardadas no navegador.
-    const nome = id === "cpf" ? pegar("login").value.trim() : (pegar("nome").value.trim() || SD_ACESSO_NOME(tipo.perfil));
+    const nome = id === "cpf" ? pegar("nome").value.trim().split(/\s+/)[0] : (pegar("nome").value.trim() || SD_ACESSO_NOME(tipo.perfil));
     senha.value = ""; senha2.value = "";
     entrar(tipo.perfil, nome);
   }
@@ -235,11 +285,14 @@
     const id = $("#login-id"), senha = $("#login-senha"), msg = $("#msg-login");
     [id, senha].forEach(limparErro);
     U.limparMensagem(msg);
-    if (!id.value.trim()) mostrarErro(id, "Informe seu e-mail, CPF/CNPJ ou telefone.");
+    // Qual identificador foi digitado? (servicos/identificadores.js: e-mail, CPF ou CNPJ)
+    const identificador = ID.identificar(id.value);
+    if (!id.value.trim()) mostrarErro(id, `Informe seu ${ID.nomesAtivos()}.`);
+    else if (!identificador.valido) mostrarErro(id, `Digite um ${ID.nomesAtivos()} válido.`);
     if (!senha.value) mostrarErro(senha, "Informe a senha.");
-    if (!id.value.trim() || !senha.value) {
+    if (!identificador.valido || !senha.value) {
       U.mostrarMensagem(msg, "erro", "Preencha os campos destacados.");
-      (id.value.trim() ? senha : id).focus();
+      (identificador.valido ? senha : id).focus();
       return;
     }
     if (!SD.config.modoDemonstracao) {
@@ -247,9 +300,12 @@
       U.mostrarMensagem(msg, "atencao", "O login ainda não está disponível: o servidor não foi conectado.");
       return;
     }
-    // Aqui entrará a consulta ao servidor, que devolve o tipo real do usuário.
+    // Aqui entrará a consulta ao servidor ({ tipo do identificador, valor normalizado, senha }),
+    // que devolve o tipo real do usuário. O nome exibido vem do servidor; na demonstração,
+    // nunca mostramos o documento: só o e-mail ou o tipo de conta.
     senha.value = "";
-    entrar($("#login-demo-tipo").value, id.value.trim());
+    const tipoDemo = $("#login-demo-tipo").value;
+    entrar(tipoDemo, identificador.tipo === "email" ? identificador.valor : SD_ACESSO_NOME(tipoDemo));
   }
 
   // Guarda a sessão de demonstração e leva para o destino (se permitido) ou para o início
@@ -317,10 +373,7 @@
       estado.tipoAberto = estado.tipoAberto === b.dataset.tipo ? null : b.dataset.tipo;
       atualizarTela();
     }));
-    // Recuperação de acesso: depende do servidor
-    $$("[data-recuperar]").forEach((b) => b.addEventListener("click", () => {
-      U.mostrarMensagem($("#msg-login"), "info", `A recuperação ${b.dataset.recuperar === "senha" ? "de senha" : "do login"} ainda não está disponível: depende do servidor (envio por e-mail/SMS).`);
-    }));
+    // Recuperação de acesso ("Esqueceu a senha/login?"): login-cadastro/recuperacao.js
 
     lerEndereco();
     atualizarTela();

@@ -1,5 +1,5 @@
 /* =====================================================================
-   S.D — LOCALIZAR PRESTADOR / "Para clientes" (localizar-prestador/localizar-prestador.js)
+   S.D — LOCALIZAR PRESTADOR / menu "Serviços" (localizar-prestador/localizar-prestador.js)
    1. O cliente escolhe um tipo de serviço (caixas, mesma lista da Home).
    2. Abre a lista de prestadores (do mais perto ao mais longe) e o mapa.
    3. Ao escolher um prestador: o mapa mostra a empresa e, abaixo do mapa,

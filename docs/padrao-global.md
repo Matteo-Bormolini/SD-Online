@@ -23,13 +23,14 @@ Regra: toda página nova parte de `modelo-pagina/index.html`. NÃO recriar NavBa
 
 ## NavBar
 - Fundo vinho #800000, textos brancos; fixa no topo; hover #5C0000 com contorno branco.
-- 7 itens: Início · Serviços · Para clientes 🔒 · Seja um prestador 🔒 · Sobre nós · Políticas · Suporte.
-- 🔒 visitante → login com destino. Logado → só os itens permitidos para o tipo (prestador não vê "Para clientes"; clientes não veem "Seja um prestador"; adm vê os dois).
+- 6 itens: Início · Serviços 🔒 · Seus Serviços 🔒 · Sobre nós · Políticas · Suporte.
+- 🔒 visitante → login com destino. Logado → só os itens permitidos para o tipo (prestador não vê "Serviços"; clientes não veem "Seus Serviços"; adm vê os dois).
 - Direita: tema (lua/sol); visitante: Entrar + Criar conta; logado: Meu perfil + Sair.
 - Menu compacto (3 riscos) abaixo de 1260px; fecha com Esc ou clique fora.
 
 ## Rodapé
-- Marca + descrição · Navegação · Políticas · Baixe o app ("Em breve"; escondido no app).
+- Marca (sem frase) · Navegação · Baixe o app (selos oficiais das lojas; "Em breve"; escondido no app).
+- Linha de baixo: © à esquerda; Política da empresa · Termos de uso · Responsabilidade · Privacidade à direita.
 - Aviso: Suporte é só para erros e melhorias da plataforma.
 
 ## Cores
@@ -41,3 +42,8 @@ Regra: toda página nova parte de `modelo-pagina/index.html`. NÃO recriar NavBa
 - .btn (normal, hover vinho, foco, pressionado, desabilitado tracejado), .btn-icone, .btn-pequeno, .btn-seta.
 - .link, .mensagem.sucesso|erro|info|atencao, .selo-demo, .visualmente-oculto, .img-sombra.
 - Campos: .campo, .campo-erro, .campo-check, .senha-caixa + .btn-olho, .form-grade.
+- Pop-up: dialog.modal (+ .modal-largo para formulários) em base.css; fecha clicando fora com SDUtil.ligarPopup().
+- Endereço: componentes/endereco (CEP primeiro, preenche rua/bairro/cidade/UF). Ordem: CEP | Endereço · UF | Cidade | Bairro · Número | Complemento.
+- Senha: componentes/senha (mínimo 12 caracteres, bloqueia senhas comuns, medidor de força).
+- Hora: componentes/hora-rolante (rodinhas horas : minutos; o número do meio é o escolhido).
+- Interruptor liga/desliga: .interruptor (role="switch"), com o estado escrito ("Ligado"/"Desligado").
