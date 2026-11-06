@@ -5,6 +5,7 @@
    empresa e tabela de cantos arredondados (Serviço, [Local], Prestador,
    Valor, Sua Avaliação). Ao clicar, o item se expande e mostra o
    carrossel com as fotos do serviço (para o cliente se recordar).
+   O nome do prestador é um link para o perfil público dele (?visao=cliente).
    Depende de: componentes/utilidades, componentes/carrossel e
    componentes/servicos-realizados/servicos-realizados.css.
 
@@ -14,7 +15,7 @@
        servicos: [...], fotoPadraoEmpresa: "../fotos/padrao/prestador.png"
      });
    Formato de cada serviço:
-     { data: "AAAA-MM-DD", servico, prestador, valor (número em R$),
+     { data: "AAAA-MM-DD", servico, prestador, prestadorId (para o link), valor (número em R$),
        estrelas (1 a 5 ou null), foto (da empresa ou null),
        local (opcional — usado no CNPJ), fotos: [{ src, legenda }] }
    ===================================================================== */
@@ -25,6 +26,17 @@
 
   const SETA = '<svg class="servico-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
   let contadorItens = 0;
+
+  // Link do perfil público do prestador (configuracoes/config.js → paginas.perfilPrestador)
+  function linkPrestador(s) {
+    if (!s.prestadorId || !window.SD) return s.prestador;
+    const a = document.createElement("a");
+    a.className = "link";
+    a.href = `${window.SD.urlPagina("perfilPrestador")}?visao=cliente&id=${encodeURIComponent(s.prestadorId)}`;
+    a.textContent = s.prestador;
+    a.setAttribute("aria-label", `Ver perfil de ${s.prestador}`);
+    return a;
+  }
 
   /* ---------- 1. UM ITEM DA LISTA ---------- */
   function criarItem(s, fotoPadraoEmpresa) {
@@ -75,7 +87,7 @@
     corpo.append(U.linhaTabela("Serviço", s.servico));
     if (s.local) corpo.append(U.linhaTabela("Local", s.local));   // CNPJ: área do condomínio/empresa
     corpo.append(
-      U.linhaTabela("Prestador", s.prestador),
+      U.linhaTabela("Prestador", linkPrestador(s)),
       U.linhaTabela("Valor", valor),
       U.linhaTabela("Sua Avaliação", avaliacao)
     );

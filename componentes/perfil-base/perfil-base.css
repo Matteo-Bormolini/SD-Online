@@ -116,17 +116,7 @@
 .add-telefone .campo { flex: 1 1 12rem; margin: 0; }
 
 /* Localização: separada em células */
-.grade-local {
-  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
-  border: 1px solid var(--cor-divisoria); border-radius: 8px; overflow: hidden;
-}
-.celula { padding: .5rem .75rem; border-right: 1px solid var(--cor-divisoria); border-bottom: 1px solid var(--cor-divisoria); min-width: 0; }
-.celula-rotulo { display: block; font-size: .75rem; color: var(--cor-texto-secundario); margin-bottom: .125rem; }
-.cel-endereco    { grid-column: span 4; }
-.cel-numero      { grid-column: span 2; border-right: 0; }
-.cel-complemento { grid-column: span 2; border-bottom: 0; }
-.cel-bairro      { grid-column: span 2; border-bottom: 0; }
-.cel-cep         { grid-column: span 2; border-bottom: 0; border-right: 0; }
+/* Endereço (leitura e campos): componentes/endereco/endereco.css */
 
 /* Estrelas de avaliação */
 .estrelas { display: inline-flex; align-items: center; gap: .5rem; }
@@ -155,10 +145,6 @@
   padding: 1.25rem;
 }
 .sanfona h2 { font-size: 1.0625rem; font-weight: 600; margin: 0 0 .25rem; }
-.grade-local-form { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .75rem; }
-.grade-local-form .f-endereco { grid-column: span 4; }
-.grade-local-form .f-numero   { grid-column: span 2; }
-.grade-local-form .f-compl, .grade-local-form .f-bairro, .grade-local-form .f-cep { grid-column: span 2; }
 
 /* Campos, senha e caixas de seleção: componentes/formulario/formulario.css */
 
@@ -210,23 +196,36 @@
 .servicos-total { font-size: .8125rem; color: var(--cor-texto-secundario); }
 .servicos-dica { margin: -.5rem 0 1rem; font-size: .8125rem; color: var(--cor-texto-secundario); }
 
-/* ---------- 8. POP-UP DE CONFIRMAÇÃO (dialog) ---------- */
-.modal {
-  width: min(28rem, calc(100vw - 2rem)); padding: 1.5rem;
-  color: var(--cor-texto); background: var(--cor-superficie);
-  border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+/* ---------- 7b. INTERRUPTOR LIGA/DESLIGA (privacidade) ----------
+   Estado em texto ("Ligado"/"Desligado") além da cor: não depende só da cor. */
+.interruptor {
+  display: inline-flex; align-items: center; gap: .625rem; flex-wrap: wrap;
+  min-height: 2.75rem; padding: .25rem 0; text-align: left;
+  font: inherit; font-size: .9375rem; font-weight: 600; color: var(--cor-texto);
+  background: transparent; border: 0; cursor: pointer;
 }
-.modal::backdrop { background: rgba(20, 16, 14, .55); }
-.modal-icone {
-  width: 2.5rem; height: 2.5rem; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--cor-erro); background: var(--cor-erro-fundo); margin-bottom: .75rem;
+.interruptor-trilho {
+  position: relative; flex: none; width: 2.75rem; height: 1.5rem;
+  background: var(--cor-superficie-2); border: 1px solid var(--cor-campo-borda); border-radius: 999px;
+  transition: background-color .15s ease;
 }
-.modal-icone svg { width: 1.25rem; height: 1.25rem; }
-.modal h2 { font-size: 1rem; font-weight: 600; margin: 0 0 .5rem; }   /* título pequeno de pergunta */
-.modal p  { margin: 0; font-size: .9375rem; color: var(--cor-texto-secundario); }
-.modal-acoes { display: flex; justify-content: flex-end; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.interruptor-bola {
+  position: absolute; top: 50%; left: .1875rem; width: 1.125rem; height: 1.125rem; transform: translateY(-50%);
+  background: var(--cor-campo-borda); border-radius: 50%; transition: left .15s ease, background-color .15s ease;
+}
+.interruptor[aria-checked="true"] .interruptor-trilho { background: var(--cor-vinho); border-color: var(--cor-vinho); }
+.interruptor[aria-checked="true"] .interruptor-bola { left: 1.4375rem; background: #FFFFFF; }
+.interruptor-estado {
+  font-size: .75rem; font-weight: 700; padding: .0625rem .5rem; border-radius: 999px;
+  border: 1px solid var(--cor-campo-borda); color: var(--cor-texto-secundario);
+}
+.interruptor[aria-checked="true"] .interruptor-estado { color: var(--cor-sucesso); border-color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
+.interruptor:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 8px; }
+[data-tema="escuro"] .interruptor:focus-visible { outline-color: var(--cor-texto); }
+[data-tema="escuro"] .interruptor[aria-checked="true"] .interruptor-trilho { border-color: var(--cor-texto); }
+#msg-privacidade { margin-top: .5rem; }
+
+/* ---------- 8. POP-UP (dialog): estilo único em configuracoes/base.css, seção 9 ---------- */
 
 /* ---------- 9. RESPONSIVIDADE ---------- */
 /* Tablet: foto um pouco menor */
@@ -244,18 +243,9 @@
   .tabela-dados, .tabela-dados tbody, .tabela-dados tr, .tabela-dados th, .tabela-dados td { display: block; width: auto; }
   .tabela-dados caption { display: block; padding: .875rem 1rem .25rem; }
   .tabela-dados tr[hidden] { display: none; }
-  .cel-endereco { border-right: 0; }
   .tabela-dados th { border-bottom: 0; padding-bottom: .25rem; background: transparent; }
   .tabela-dados td { padding-top: 0; }
-  .grade-local, .grade-local-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cel-endereco, .grade-local-form .f-endereco { grid-column: 1 / -1; }
-  .cel-numero, .cel-complemento, .cel-bairro, .cel-cep,
-  .grade-local-form .f-numero, .grade-local-form .f-compl, .grade-local-form .f-bairro, .grade-local-form .f-cep { grid-column: span 1; }
-  .cel-numero { border-right: 1px solid var(--cor-divisoria); }
-  .cel-complemento { border-right: 0; border-bottom: 1px solid var(--cor-divisoria); }
-  .cel-bairro { border-bottom: 0; }
   .perfil-acoes .btn, .form-rodape .btn { flex: 1 1 100%; }
-  .modal-acoes .btn { flex: 1 1 100%; }
   .bloco-fotos-conteudo { grid-template-columns: 1fr; }
   .bloco-fotos-lateral .btn { width: 100%; }
   .painel-servicos { padding: 1rem; }
@@ -267,5 +257,5 @@
 /* Movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
   .perfil-trilho { scroll-behavior: auto; transition: none; }
-  .btn, .seta-sanfona, .perfil-cartao { transition: none; }
+  .btn, .seta-sanfona, .perfil-cartao, .interruptor-trilho, .interruptor-bola { transition: none; }
 }

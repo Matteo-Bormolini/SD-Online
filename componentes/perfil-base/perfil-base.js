@@ -7,7 +7,8 @@
      3. Telefones (principal + extras) 7. Pop-up "Excluir perfil"
      4. Sanfona + olho da senha
    Cada perfil (pasta perfil-<tipo>, arquivo perfil-<tipo>.js) só guarda o que é exclusivo dele.
-   Depende de: componentes/utilidades/utilidades.js.
+   Depende de: componentes/utilidades/utilidades.js, componentes/senha/senha.js
+   e componentes/endereco/endereco.js (CEP primeiro, preenche o resto).
    IMPORTANTE: tudo roda só no navegador (demonstração). Salvar, excluir
    e enviar fotos de verdade dependem do servidor (etapa futura).
    ===================================================================== */
@@ -54,6 +55,22 @@
   }
   // Valores padrão quando o campo está vazio
   const ouTraco = (v) => (v ? v : "—");
+
+  // Endereço na tabela de leitura (células data-campo de componentes/endereco)
+  const enderecoParaTela = (perfil) => ({
+    cep: perfil.cep ? U.formatarCep(perfil.cep) : "—",
+    endereco: ouTraco(perfil.endereco), numero: ouTraco(perfil.numero), complemento: ouTraco(perfil.complemento),
+    bairro: ouTraco(perfil.bairro), cidade: ouTraco(perfil.cidade), uf: ouTraco(perfil.uf)
+  });
+  // Placeholders do endereço no "Editar perfil" (UF é lista: 1ª opção mostra o valor atual)
+  function placeholdersEndereco(perfil) {
+    const uf = document.getElementById("f-uf");
+    if (uf && uf.options[0]) uf.options[0].textContent = `Manter atual (${perfil.uf || "—"})`;
+    return {
+      "f-cep": U.formatarCep(perfil.cep), "f-endereco": perfil.endereco, "f-numero": perfil.numero,
+      "f-complemento": perfil.complemento, "f-bairro": perfil.bairro, "f-cidade": perfil.cidade
+    };
+  }
 
   /* ---------- 2. ABAS COM ROLAGEM LATERAL ----------
      opcoes.abas: seletores das abas (ex.: ["#aba-perfil", "#aba-servicos"])
@@ -246,7 +263,7 @@
   /* ---------- 5. FORMULÁRIO "EDITAR PERFIL" ----------
      Regras: só valida e aplica o que foi PREENCHIDO; vazio mantém o valor atual.
      Máscaras automáticas pelo atributo data-mascara no <input>:
-       telefone · cep · login (minúsculas, sem espaço) · ano (4 dígitos)
+       telefone · cep · ano (4 dígitos)
      opcoes:
        perfil       → objeto com os dados atuais
        coletar()    → { campo: valor } lido do formulário
@@ -257,7 +274,6 @@
   const MASCARAS = {
     telefone: (v) => U.formatarTelefone(v),
     cep: (v) => U.formatarCep(v),
-    login: (v) => v.toLowerCase().replace(/\s/g, ""),
     ano: (v) => U.soDigitos(v).slice(0, 4)
   };
 
@@ -268,15 +284,23 @@
     if (msg) input.setAttribute("aria-invalid", "true"); else input.removeAttribute("aria-invalid");
   }
 
+  // Campos do endereço (mesmos nomes de componentes/endereco)
+  const CAMPOS_ENDERECO = ["cep", "endereco", "uf", "cidade", "bairro", "numero", "complemento"];
+  const cepMudou = (d, perfil) => !!d.cep && d.cep !== perfil.cep;
+
   // Validações que valem para TODOS os perfis
-  function validarComuns(d, marcar) {
-    if (d.login && !/^[a-z0-9._]{3,30}$/.test(d.login)) marcar("f-login", "Use 3 a 30 caracteres: letras minúsculas, números, ponto ou _.");
+  function validarComuns(d, marcar, perfil) {
     if (d.email && !U.emailValido(d.email)) marcar("f-email", "E-mail inválido.");
     if (d.telefone && !U.telefoneValido(d.telefone)) marcar("f-telefone", "Informe DDD + número (10 ou 11 dígitos).");
-    if (d.numero && !/^[0-9A-Za-z\s/-]{1,10}$/.test(d.numero)) marcar("f-numero", "Número inválido.");
-    if (d.cep && d.cep.length !== 8) marcar("f-cep", "O CEP deve ter 8 dígitos.");
+    // Endereço: CEP novo = endereço novo inteiro (só o complemento pode ficar vazio)
+    if (window.SDEndereco) window.SDEndereco.validar(d, cepMudou(d, perfil), (chave, m) => marcar("f-" + chave, m));
+    // Senha: regra única do site (componentes/senha)
     if (d.senha || d.senha2) {
-      if (d.senha.length < 8 || !/[A-Za-z]/.test(d.senha) || !/\d/.test(d.senha)) marcar("f-senha", "A senha precisa de 8+ caracteres, com letras e números.");
+      const r = window.SDSenha
+        ? window.SDSenha.avaliar(d.senha, { nome: perfil.nome || perfil.responsavelNome, email: perfil.email, documento: perfil.documento })
+        : { ok: d.senha.length >= 12, erros: ["Use pelo menos 12 caracteres."] };
+      if (!d.senha) marcar("f-senha", "Informe a nova senha.");
+      else if (!r.ok) marcar("f-senha", r.erros[0]);
       else if (d.senha !== d.senha2) marcar("f-senha2", "As senhas não coincidem.");
     }
   }
@@ -306,6 +330,15 @@
     });
     ligarOlhosDeSenha(form);
 
+    // Regra e medidor da senha (componentes/senha)
+    const dicaSenha = $("#d-senha"), caixaMedidor = $("#medidor-senha");
+    if (window.SDSenha && dicaSenha) dicaSenha.textContent = window.SDSenha.DICA;
+    const medidor = window.SDSenha && caixaMedidor
+      ? window.SDSenha.ligarMedidor($("#f-senha"), caixaMedidor, () => ({ nome: perfil.nome || perfil.responsavelNome, email: perfil.email, documento: perfil.documento }))
+      : { atualizar() {} };
+    $("#f-senha").setAttribute("maxlength", "128");
+    $("#f-senha2").setAttribute("maxlength", "128");
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       U.limparMensagem(msg);
@@ -315,16 +348,16 @@
       // Campos comuns + os da página
       const valor = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
       const dados = Object.assign({
-        login: valor("f-login"), email: valor("f-email"), telefone: U.soDigitos(valor("f-telefone")),
+        email: valor("f-email"), telefone: U.soDigitos(valor("f-telefone")),
         endereco: valor("f-endereco"), numero: valor("f-numero"), complemento: valor("f-complemento"),
-        bairro: valor("f-bairro"), cep: U.soDigitos(valor("f-cep")),
+        bairro: valor("f-bairro"), cidade: valor("f-cidade"), uf: valor("f-uf"), cep: U.soDigitos(valor("f-cep")),
         senha: $("#f-senha").value, senha2: $("#f-senha2").value
       }, coletar ? coletar(valor) : {});
 
       // Validação
       const erros = [];
       const marcar = (id, m) => { if (!erros.includes(id)) { erroCampo(id, m); erros.push(id); } };
-      validarComuns(dados, marcar);
+      validarComuns(dados, marcar, perfil);
       if (validar) validar(dados, marcar);
       if (erros.length) {
         U.mostrarMensagem(msg, "erro", "Corrija os campos destacados. Nada foi alterado.");
@@ -334,7 +367,11 @@
 
       // Aplica somente os campos preenchidos; vazios mantêm o anterior
       const alterados = [];
-      ["login", "email", "endereco", "numero", "complemento", "bairro", "cep", ...camposTexto].forEach((c) => {
+      // CEP novo → troca o endereço inteiro (inclusive complemento vazio)
+      if (cepMudou(dados, perfil)) {
+        CAMPOS_ENDERECO.forEach((c) => { if ((dados[c] || "") !== (perfil[c] || "")) { perfil[c] = dados[c] || ""; alterados.push(c); } });
+      }
+      ["email", ...CAMPOS_ENDERECO, ...camposTexto].forEach((c) => {
         if (dados[c] && dados[c] !== perfil[c]) { perfil[c] = dados[c]; alterados.push(c); }
       });
       if (dados.telefone) {
@@ -350,10 +387,13 @@
       }
 
       form.reset();
+      medidor.atualizar();
+      form.querySelectorAll("[data-endereco]").forEach((f) => { if (f._sdEndereco) f._sdEndereco.limpar(); });
       if (aoConcluir) aoConcluir();
       form.querySelectorAll(".btn-olho[data-alvo]").forEach((b) => { if (b.getAttribute("aria-pressed") === "true") b.click(); });
+      const total = new Set(alterados).size;
       U.mostrarMensagem(msg, "atencao",
-        `Alteração aplicada nesta tela (${alterados.length} ${alterados.length === 1 ? "campo" : "campos"}). ` +
+        `Alteração aplicada nesta tela (${total} ${total === 1 ? "campo" : "campos"}). ` +
         "Demonstração: ainda não foi salva no servidor.");
       atualizarAltura();
     });
@@ -403,17 +443,34 @@
 
   /* ---------- 7. POP-UP DE EXCLUSÃO ---------- */
   function iniciarExclusao() {
-    const modal = $("#modal-excluir");
-    $("#btn-excluir").addEventListener("click", () => modal.showModal());
+    const modal = U.ligarPopup($("#modal-excluir"));        // clique fora fecha e o foco volta ao botão
+    $("#btn-excluir").addEventListener("click", () => modal.abrir());
     $("#modal-cancelar").addEventListener("click", () => modal.close());
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });   // clique fora fecha
-    modal.addEventListener("close", () => $("#btn-excluir").focus());
     $("#modal-confirmar").addEventListener("click", () => {
       modal.close();
       // A exclusão real será feita pelo servidor; aqui não apagamos nada
       U.mostrarMensagem($("#msg-geral"), "atencao", "Exclusão não executada: esta é uma demonstração sem servidor. Na versão final, o perfil será apagado e você sairá da conta.");
       atualizarAltura();
     });
+  }
+
+  /* ---------- 7b. INTERRUPTOR LIGA/DESLIGA (role="switch") ----------
+     <button class="interruptor" role="switch" aria-checked="false">…<span class="interruptor-estado"></span></button>
+     opcoes.ligado → estado inicial · opcoes.aoMudar(ligado) → chamado a cada troca */
+  function iniciarInterruptor(botao, opcoes = {}) {
+    if (!botao) return null;
+    const estadoTxt = botao.querySelector(".interruptor-estado");
+    const pintar = (ligado) => {
+      botao.setAttribute("aria-checked", String(ligado));
+      if (estadoTxt) estadoTxt.textContent = ligado ? "Ligado" : "Desligado";
+    };
+    pintar(!!opcoes.ligado);
+    botao.addEventListener("click", () => {
+      const ligado = botao.getAttribute("aria-checked") !== "true";
+      pintar(ligado);
+      if (opcoes.aoMudar) opcoes.aoMudar(ligado);
+    });
+    return { definir: pintar };
   }
 
   /* ---------- 8. LINK DE AVALIAÇÕES (estrelas + média) ---------- */
@@ -426,9 +483,9 @@
   }
 
   window.SDPerfil = Object.freeze({
-    PADRAO, ICONES, $, ouTraco, atualizarAltura,
+    PADRAO, ICONES, $, ouTraco, atualizarAltura, enderecoParaTela, placeholdersEndereco,
     preencherCampos, preencherPlaceholders, preencherSelect, preencherLinkAvaliacoes,
     iniciarAbas, iniciarTelefones, iniciarSanfona, abrirSanfona,
-    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, iniciarExclusao
+    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, iniciarExclusao, iniciarInterruptor
   });
 })();

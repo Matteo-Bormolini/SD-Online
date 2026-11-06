@@ -32,7 +32,8 @@ Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o 
 ## O que já dá para ver
 
 - **Página inicial** para visitantes e para quem já entrou na conta.
-- **Criar conta e entrar** como Cliente CPF, Cliente CNPJ ou Prestador.
+- **Criar conta e entrar** como Cliente CPF, Cliente CNPJ ou Prestador (endereço preenchido pelo CEP).
+- **Esqueceu a senha? / Esqueceu o login?** em pop-ups, sem sair da página de login.
 - **Perfis** com edição de dados, fotos e exclusão da conta.
 - **Perfil do prestador** com a opção "Ver como cliente".
 - **Meus serviços** (prestador): quadro com as etapas de cada serviço.
@@ -44,7 +45,7 @@ Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o 
 ## Experimente
 
 1. Abra o site: **https://matteo-bormolini.github.io/SD-Online/**
-2. Clique em **Entrar**, digite qualquer e-mail e senha e escolha **Entrar como** (CPF, CNPJ, Prestador ou Administrador).
+2. Clique em **Entrar**, digite qualquer e-mail (ou um CPF/CNPJ válido) e uma senha e escolha **Entrar como** (CPF, CNPJ, Prestador ou Administrador).
 3. Navegue já logado. **Meu perfil** abre o perfil do tipo escolhido. **Sair** desconecta.
 
 Cada tipo de conta só vê as páginas que pode usar. Se tentar abrir outra, o site leva você ao login ou ao início.
@@ -157,7 +158,8 @@ Cada pasta do projeto tem seu próprio README, escrito como **a entrega de uma S
 | [`configuracoes/`](configuracoes/) | Cores, botões e links de todo o site |
 | [`navbar/`](navbar/) · [`rodape/`](rodape/) | Menu do topo e rodapé |
 | [`componentes/`](componentes/) | Peças usadas em várias páginas |
-| [`seguranca/`](seguranca/) | Quem pode ver o quê, e a LGPD |
+| [`seguranca/`](seguranca/) | Quem pode ver o quê, a LGPD e as regras de recuperação de acesso |
+| [`servicos/`](servicos/) | Conversa com o servidor (identificar o login e recuperar senha) |
 | [`fotos/`](fotos/) | Logo e fotos padrão |
 | [`modelo-pagina/`](modelo-pagina/) | Ponto de partida de toda página nova |
 | [`home/`](home/) | Página inicial |
@@ -167,7 +169,7 @@ Cada pasta do projeto tem seu próprio README, escrito como **a entrega de uma S
 | [`politica-privacidade/`](politica-privacidade/) | Termos, privacidade e responsabilidade |
 | [`localizar-prestador/`](localizar-prestador/) | Cliente encontra prestadores |
 | [`solicitacao/`](solicitacao/) | Pedido de orçamento |
-| [`localizar-condominios/`](localizar-condominios/) | Área "Seja um prestador" |
+| [`localizar-condominios/`](localizar-condominios/) | "Seus Serviços" do prestador (em desenvolvimento) |
 | [`avaliacoes/`](avaliacoes/) | Avaliações |
 | [`base-de-dados/`](base-de-dados/) · [`chaves-api/`](chaves-api/) | Banco de dados e chaves do servidor |
 | [`docs/`](docs/) | Backlog, guia técnico e padrão visual |
@@ -185,7 +187,9 @@ Detalhes em **[docs/guia-tecnico.md](docs/guia-tecnico.md)**.
 
 As regras da S.D para proteger você:
 
-- A senha **nunca** aparece para ninguém, nem para o administrador.
+- A senha **nunca** aparece para ninguém, nem para o administrador. Mínimo de 12 caracteres.
+- "Esqueceu a senha?" não revela se um e-mail tem conta; o link vale 30 minutos e só uma vez.
+- Avaliações são anônimas, a menos que quem avaliou escolha mostrar o nome.
 - CPF, telefone e endereço completo **nunca** ficam públicos.
 - O prestador decide quando mostrar o contato dele. A localização do cliente aparece só de forma aproximada.
 - O site não usa cookies, propaganda nem rastreadores de terceiros.

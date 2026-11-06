@@ -12,11 +12,14 @@ Para quem desenvolve. O usuário vê o resultado: perfis e formulários que func
 
 | Peça | O que faz | Onde é usada |
 |---|---|---|
-| `utilidades/` | Formata telefone, CEP, data e R$; desenha estrelas; mostra uma foto reserva se a imagem faltar. | Login e perfis |
+| `utilidades/` | Formata telefone, CEP, CPF, CNPJ (inclusive o novo alfanumérico), data e R$; confere CPF/CNPJ; desenha estrelas; foto reserva; pop-up que fecha clicando fora. | Login e perfis |
+| `endereco/` | Endereço de todos os usuários: digita o CEP e rua, bairro, cidade e UF aparecem sozinhos (ViaCEP; reserva: BrasilAPI — grátis, sem chave). | Cadastro e 4 perfis |
+| `senha/` | Regra única de senha (mínimo 12, bloqueia senhas comuns, sequências e dados pessoais) + medidor de força. | Cadastro, perfis e "Esqueceu a senha?" |
+| `hora-rolante/` | Escolher hora em "rodinhas" (horas : minutos de 5 em 5), com rolagem, clique e teclado. Só existe hora válida. | Perfil CNPJ (horário de visitas) |
 | `formulario/` | Visual dos campos (texto, senha com olho, caixas de marcar). | Login e perfis |
-| `perfil-base/` | Tudo o que é igual nos perfis: abas, telefones, editar perfil, foto e excluir conta. | 4 perfis |
+| `perfil-base/` | Tudo o que é igual nos perfis: abas, telefones, editar perfil, foto, excluir conta e interruptor liga/desliga. | 4 perfis |
 | `carrossel/` | Galeria de fotos que passa para os lados. | Perfis CPF, CNPJ e Prestador |
-| `servicos-realizados/` | Histórico dos serviços contratados, com fotos. | Perfis CPF e CNPJ |
+| `servicos-realizados/` | Histórico dos serviços contratados, com fotos. O nome do prestador abre o perfil público dele. | Perfis CPF e CNPJ |
 | `kanban-servicos/` | Quadro "Meus serviços" com as etapas de cada serviço. | Perfil do Prestador |
 | `mapa/` | Mapa grátis (MapLibre + OpenFreeMap) com ponto "Você", prestadores e destaque em vermelho. Só baixa a biblioteca quando é usado. | Localizar prestador (e, no futuro, Localizar clientes) |
 

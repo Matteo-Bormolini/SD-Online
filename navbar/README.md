@@ -8,7 +8,8 @@ A barra vinho que aparece no alto de todas as páginas. É por ela que a pessoa 
 Para todos: visitantes e quem já entrou na conta.
 
 ## O que entrega
-- 7 itens: Início · Serviços · Para clientes · Seja um prestador · Sobre nós · Políticas · Suporte.
+- 6 itens: Início · Serviços 🔒 (clientes) · Seus Serviços 🔒 (prestador) · Sobre nós · Políticas · Suporte.
+- Ajuste de 06/11/2026: saiu o antigo "Serviços" (atalho da Home); "Para clientes" virou **Serviços**; "Seja um prestador" virou **Seus Serviços**.
 - Itens com **cadeado** levam ao login quando a pessoa ainda não entrou.
 - Depois de entrar, cada tipo de usuário vê só os itens que pode usar.
 - Botão de tema (lua/sol), **Entrar** e **Criar conta** (visitante) ou **Meu perfil** e **Sair** (logado).

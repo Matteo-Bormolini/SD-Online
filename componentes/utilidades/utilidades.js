@@ -2,8 +2,10 @@
    S.D — UTILIDADES COMPARTILHADAS (componentes/utilidades/utilidades.js)
    Funções pequenas usadas por vários componentes e páginas, guardadas
    em UM lugar só (antes cada perfil tinha a sua cópia):
-     formatar telefone, CEP, data e dinheiro · validar e-mail/telefone ·
-     estrelas de avaliação · fotos com reserva (padrão → ícone) · mensagens.
+     formatar telefone, CEP, CPF, CNPJ, data e dinheiro ·
+     validar e-mail, telefone, CPF e CNPJ (inclusive o alfanumérico) ·
+     estrelas de avaliação · fotos com reserva (padrão → ícone) · mensagens ·
+     pop-up que fecha clicando fora.
    Não depende de nenhum outro arquivo. Uso: window.SDUtil.<função>
    ===================================================================== */
 (function () {
@@ -44,6 +46,52 @@
   /* ---------- 2. VALIDAÇÕES ---------- */
   const telefoneValido = (v) => /^\d{10,11}$/.test(soDigitos(v));
   const emailValido = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+
+  // CPF: 11 dígitos + 2 dígitos verificadores (pesos 10→2 e 11→2)
+  function cpfValido(v) {
+    const d = soDigitos(v);
+    if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;   // 000.000.000-00, 111... são inválidos
+    const dv = (n) => {
+      let soma = 0;
+      for (let i = 0; i < n; i++) soma += Number(d[i]) * (n + 1 - i);
+      const r = (soma * 10) % 11;
+      return r === 10 ? 0 : r;
+    };
+    return dv(9) === Number(d[9]) && dv(10) === Number(d[10]);
+  }
+
+  // CNPJ (numérico e ALFANUMÉRICO — novos CNPJs desde julho/2026, Receita Federal):
+  // 12 primeiros caracteres = letras maiúsculas A-Z ou números; 2 últimos = números.
+  // Valor de cada caractere = código ASCII − 48 ("0"=0 … "9"=9, "A"=17 … "Z"=42).
+  const normalizarCnpj = (v) => String(v || "").toUpperCase().replace(/[^0-9A-Z]/g, "").slice(0, 14);
+  function cnpjValido(v) {
+    const c = normalizarCnpj(v);
+    if (!/^[0-9A-Z]{12}\d{2}$/.test(c) || /^(\d)\1{13}$/.test(c)) return false;
+    const dv = (n) => {
+      const pesos = n === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      let soma = 0;
+      for (let i = 0; i < n; i++) soma += (c.charCodeAt(i) - 48) * pesos[i];
+      const r = soma % 11;
+      return r < 2 ? 0 : 11 - r;
+    };
+    return dv(12) === Number(c[12]) && dv(13) === Number(c[13]);
+  }
+  // 12.ABC.345/01DE-35 (formata enquanto a pessoa digita)
+  function formatarCnpj(v) {
+    const c = normalizarCnpj(v);
+    const partes = [c.slice(0, 2), c.slice(2, 5), c.slice(5, 8), c.slice(8, 12), c.slice(12, 14)];
+    let t = partes[0];
+    if (partes[1]) t += "." + partes[1];
+    if (partes[2]) t += "." + partes[2];
+    if (partes[3]) t += "/" + partes[3];
+    if (partes[4]) t += "-" + partes[4];
+    return t;
+  }
+  // 000.000.000-00
+  function formatarCpf(v) {
+    const d = soDigitos(v).slice(0, 11);
+    return d.replace(/^(\d{3})(\d)/, "$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d{1,2})$/, ".$1-$2");
+  }
 
   /* ---------- 3. MENSAGENS (usa as classes .mensagem do base.css) ---------- */
   function mostrarMensagem(el, tipo, texto) {   // tipo: sucesso | erro | info | atencao
@@ -117,9 +165,37 @@
     return tr;
   }
 
+  /* ---------- 8. POP-UP (<dialog class="modal">) ----------
+     Fecha clicando FORA da janela (no fundo escuro) e com Esc.
+     Fechar NÃO apaga o que foi digitado: os campos continuam no HTML.
+     Ao fechar, o foco volta para quem abriu (acessibilidade). */
+  function ligarPopup(dialogo) {
+    if (!dialogo || dialogo.dataset.popupLigado) return dialogo;
+    dialogo.dataset.popupLigado = "1";
+    let quemAbriu = null, comecouFora = false;
+    // Só fecha se o clique começou E terminou fora (evita fechar ao arrastar seleção de texto)
+    const fora = (e) => {
+      const r = dialogo.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    dialogo.addEventListener("pointerdown", (e) => { comecouFora = e.target === dialogo && fora(e); });
+    dialogo.addEventListener("click", (e) => {
+      if (comecouFora && e.target === dialogo && fora(e)) dialogo.close();
+      comecouFora = false;
+    });
+    dialogo.addEventListener("close", () => { if (quemAbriu && document.contains(quemAbriu)) quemAbriu.focus(); quemAbriu = null; });
+    dialogo.abrir = () => {
+      if (dialogo.open) return;
+      quemAbriu = document.activeElement;
+      dialogo.showModal();
+    };
+    return dialogo;
+  }
+
   window.SDUtil = Object.freeze({
     soDigitos, formatarTelefone, formatarCep, formatarData, hojeISO, formatarMoeda, decimal, listaDeTexto,
-    telefoneValido, emailValido, mostrarMensagem, limparMensagem,
-    estrelasSVG, iconeProvisorio, iconeIniciais, aplicarFoto, linhaTabela
+    telefoneValido, emailValido, cpfValido, cnpjValido, normalizarCnpj, formatarCnpj, formatarCpf,
+    mostrarMensagem, limparMensagem,
+    estrelasSVG, iconeProvisorio, iconeIniciais, aplicarFoto, linhaTabela, ligarPopup
   });
 })();

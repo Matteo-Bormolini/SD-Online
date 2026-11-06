@@ -23,7 +23,6 @@
   /* ---------- 1. CONFIGURAÇÃO (editar aqui) ---------- */
   const CONFIG = {
     nome: "S.D Serviços Digitais",
-    descricao: "Conectando clientes a prestadores de serviço.",
     logo: "fotos/marca/logo.svg",            // usado como ícone da aba
 
     // DEMONSTRAÇÃO (sem servidor): o login de teste fica guardado só nesta aba
@@ -56,30 +55,60 @@
       "prestador":    "perfil-prestador/index.html"
     },
 
-    // Itens da NavBar (7). requerLogin: cadeado + vai ao login até a pessoa entrar.
+    // Itens da NavBar (6). requerLogin: cadeado + vai ao login até a pessoa entrar.
     // Depois do login, o item só aparece se seguranca/acesso.js permitir.
+    //   "Serviços"       (id clientes)  → só clientes: buscar prestadores e pedir orçamento.
+    //   "Seus Serviços"  (id prestador) → só prestador: futura página com a localização dos
+    //                                     clientes que estão orçando/vão realizar com ele.
     menu: [
-      { id: "inicio",    texto: "Início",            href: "home/index.html" },
-      { id: "servicos",  texto: "Serviços",          href: "home/index.html#servicos" },
-      { id: "clientes",  texto: "Para clientes",     href: "localizar-prestador/index.html",   requerLogin: true },
-      { id: "prestador", texto: "Seja um prestador", href: "localizar-condominios/index.html", requerLogin: true },
-      { id: "sobre",     texto: "Sobre nós",         href: "home/sobre.html" },
-      { id: "politicas", texto: "Políticas",         href: "politica-privacidade/index.html" },
-      { id: "suporte",   texto: "Suporte",           href: "suporte/index.html" }
+      { id: "inicio",    texto: "Início",        href: "home/index.html" },
+      { id: "clientes",  texto: "Serviços",      href: "localizar-prestador/index.html",   requerLogin: true },
+      { id: "prestador", texto: "Seus Serviços", href: "localizar-condominios/index.html", requerLogin: true },
+      { id: "sobre",     texto: "Sobre nós",     href: "home/sobre.html" },
+      { id: "politicas", texto: "Políticas",     href: "politica-privacidade/index.html" },
+      { id: "suporte",   texto: "Suporte",       href: "suporte/index.html" }
     ],
 
-    // Rodapé
-    rodapeLinks: ["servicos", "clientes", "prestador", "sobre", "suporte"],
-    rodapePoliticas: [
-      { texto: "Política da empresa",       href: "politica-privacidade/index.html" },
-      { texto: "Termos de uso",             href: "politica-privacidade/termos.html" },
-      { texto: "Termo de responsabilidade", href: "politica-privacidade/responsabilidade.html" }
+    // Rodapé: coluna "Navegação"
+    rodapeLinks: ["clientes", "prestador", "sobre", "suporte"],
+    // Rodapé: os 4 documentos legais ficam só na linha de baixo (canto direito)
+    rodapeDocumentos: [
+      { texto: "Política da empresa", href: "politica-privacidade/index.html" },
+      { texto: "Termos de uso",       href: "politica-privacidade/termos.html" },
+      { texto: "Responsabilidade",    href: "politica-privacidade/responsabilidade.html" },
+      { texto: "Privacidade",         href: "politica-privacidade/privacidade.html" }
     ],
-    // Lojas: deixar href vazio até o app ser publicado (mostra "Em breve")
+    // Lojas: deixar href vazio até o app ser publicado (mostra "Em breve").
+    // selo = arquivo OFICIAL baixado da Apple/Google (não desenhar nem recolorir).
+    // Vazio = botão de texto com ícone de celular. Depois de salvar o arquivo em
+    // fotos/marca/lojas/ (ver LEIA-ME de lá), preencher: "fotos/marca/lojas/app-store.svg".
     lojas: [
-      { nome: "Google Play", href: "" },
-      { nome: "App Store",   href: "" }
+      { nome: "Google Play", href: "", selo: "" },
+      { nome: "App Store",   href: "", selo: "" }
     ],
+
+    // CEP → endereço automático (grátis, sem chave). Tenta o 1º; se falhar, o 2º.
+    // {cep} é trocado pelos 8 dígitos. Ver componentes/endereco/endereco.js.
+    cep: {
+      provedores: [
+        { nome: "ViaCEP",   url: "https://viacep.com.br/ws/{cep}/json/" },
+        { nome: "BrasilAPI", url: "https://brasilapi.com.br/api/cep/v1/{cep}" }
+      ],
+      tempoLimiteMs: 6000
+    },
+
+    // SERVIDOR (API) — ainda NÃO existe. Quando existir, preencher "base"
+    // (ex.: "https://api.sdonline.com.br") e trocar modoDemonstracao para false.
+    // Rotas usadas por servicos/recuperacao.js e servicos/autenticacao (futuro).
+    api: {
+      base: "",
+      rotas: {
+        entrar:            "/auth/entrar",
+        solicitarLinkSenha: "/auth/recuperar-senha",          // POST { email }
+        validarLinkSenha:   "/auth/recuperar-senha/validar",  // POST { token }
+        redefinirSenha:     "/auth/recuperar-senha/redefinir" // POST { token, novaSenha }
+      }
+    },
 
     // DESTAQUE PAGO — a "tag" é a palavra usada no banco de dados e no HTML.
     // Dado do prestador:  tags: ["destaque"]   → HTML: data-tag="destaque"
@@ -256,7 +285,7 @@
     return caminho(item.href);
   }
   // Itens que aparecem: visitante vê todos (os bloqueados com cadeado);
-  // logado vê só os permitidos para o seu tipo (ex.: prestador não vê "Para clientes").
+  // logado vê só os permitidos para o seu tipo (ex.: prestador não vê "Serviços").
   const itemVisivel = (item) => !logado() || pode(item.id);
 
   // <a> de um item do menu (usado na NavBar e no Rodapé)

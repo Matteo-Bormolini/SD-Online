@@ -25,13 +25,14 @@
   const REGRAS = {
     // Itens do menu e páginas públicas
     "inicio":    ["*"],
-    "servicos":  ["*"],
+    "servicos":  ["*"],       // seção "Serviços" da Home do visitante (só nomes)
     "sobre":     ["*"],
     "politicas": ["*"],
     "suporte":   ["*"],
-    // "Para clientes" (buscar prestadores) — só clientes (e adm para suporte)
+    // "Serviços" (buscar prestadores e pedir orçamento) — só clientes (e adm para suporte).
+    // O prestador NUNCA vê: não pode conhecer dados dos concorrentes.
     "clientes":  ["cliente-cpf", "cliente-cnpj", "adm"],
-    // "Seja um prestador" (localizar condomínios) — só prestador (e adm)
+    // "Seus Serviços" (localização dos clientes que orçam com ele) — só prestador (e adm)
     "prestador": ["prestador", "adm"],
     // Conta
     "login-cadastro": ["visitante"],

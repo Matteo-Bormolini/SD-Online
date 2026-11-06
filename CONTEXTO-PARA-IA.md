@@ -30,11 +30,15 @@
 
 ## 4. Regras técnicas obrigatórias
 - Toda página nova nasce de `modelo-pagina/index.html`, salva como `<pasta>/index.html`.
-- Ordem dos scripts: `../seguranca/acesso.js` → `../configuracoes/config.js` → `../navbar/navbar.js` → `../rodape/rodape.js` → componentes → arquivo da página. CSS: `base.css` → `navbar.css` → `rodape.css` → componentes → página.
+- Ordem dos scripts: `../seguranca/acesso.js` → `../configuracoes/config.js` → `../navbar/navbar.js` → `../rodape/rodape.js` → componentes → `../servicos/...` (se usar) → arquivo da página. CSS: `base.css` → `navbar.css` → `rodape.css` → componentes → página.
+- Endereço: sempre `componentes/endereco` (CEP primeiro). Senha: sempre `componentes/senha` (12+). Pop-up: `dialog.modal` + `SDUtil.ligarPopup()`.
+- Telas não chamam o servidor direto: usam `servicos/` (hoje em modo demonstração).
 - `<body data-pagina="..." data-logado="sim|nao" data-tipo="..." data-raiz="../">`, `<header id="sd-navbar">` e `<footer id="sd-rodape">` vazios. Navbar e rodapé são montados por JS. **Nunca escrever navbar/rodapé à mão.**
 - Links entre páginas: ficam só em `configuracoes/config.js`.
 - Usar os tokens de cor do `base.css` (`var(--cor-...)`). Não criar cores novas sem autorização.
-- Segurança: senha só com hash no servidor (ninguém vê, nem o adm). Bloqueio de acesso real é feito no servidor; `data-logado` só muda a tela. Chaves e fotos de usuários nunca vão para o GitHub.
+- Segurança: senha só com hash no servidor (Argon2id; ninguém vê, nem o adm). Bloqueio de acesso real é feito no servidor; `data-logado` só muda a tela. Chaves e fotos de usuários nunca vão para o GitHub.
+- Prestador **nunca** vê a área "Serviços" nem dados de outros prestadores. Avaliações anônimas por padrão.
+- Recuperação de acesso: regras em `seguranca/recuperacao-acesso.md`.
 - A S.D **não faz pagamentos**: cliente e prestador combinam entre eles. No futuro o prestador só informa como cobra.
 
 ## 5. Padrão visual

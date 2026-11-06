@@ -8,7 +8,10 @@ A faixa vinho no fim de todas as páginas, com atalhos, políticas e o convite p
 Para todos os visitantes e usuários.
 
 ## O que entrega
-- **Navegação:** Serviços · Para clientes · Seja um prestador · Sobre nós · Suporte.
+- **Navegação:** Serviços · Seus Serviços · Sobre nós · Suporte (cada pessoa vê só o que pode usar).
+- **Documentos legais:** só na linha de baixo, no canto direito: Política da empresa · Termos de uso · Responsabilidade · Privacidade (a antiga coluna "Políticas" saiu em 06/11/2026 para não repetir links).
+- **Marca** sem a frase de apresentação (06/11/2026).
+- **Baixe o app:** selos oficiais das lojas quando os arquivos forem salvos em `fotos/marca/lojas/` (ver o LEIA-ME de lá). Enquanto isso, botão de texto "Em breve".
 - **Políticas:** Política da empresa · Termos de uso · Termo de responsabilidade.
 - **Última linha:** © S.D Serviços Digitais · Termos · Privacidade.
 - **Baixe o app:** mostra "Em breve" até o app existir. Some quando o site é aberto pelo próprio app.

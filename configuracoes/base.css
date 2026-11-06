@@ -3,7 +3,7 @@
    Usado por TODAS as páginas, sempre antes de navbar.css e rodape.css.
    Aqui ficam: tokens de cores (claro/escuro), tipografia, botões,
    links, setas, mensagens, selo de demonstração, destaque pago,
-   página em desenvolvimento e acessibilidade.
+   página em desenvolvimento, pop-ups e acessibilidade.
    Estilos de cada página ficam em <pasta>/<pagina>.css (só com tokens).
    ===================================================================== */
 
@@ -187,7 +187,29 @@ img { height: auto; }
 .pagina-construcao h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
 .pagina-construcao p { margin: 0; color: var(--cor-texto-secundario); }
 
-/* ---------- 9. MOVIMENTO REDUZIDO ---------- */
+/* ---------- 9. POP-UP (dialog) ----------
+   Estilo único dos pop-ups do site (confirmações, recuperação de acesso...).
+   .modal-largo = pop-up com formulário. Fechar clicando fora: SDUtil.ligarPopup(). */
+.modal {
+  width: min(28rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1.5rem;
+  color: var(--cor-texto); background: var(--cor-superficie);
+  border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+.modal-largo { width: min(34rem, calc(100vw - 2rem)); }
+.modal::backdrop { background: rgba(20, 16, 14, .55); }
+.modal-icone {
+  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cor-erro); background: var(--cor-erro-fundo); margin-bottom: .75rem;
+}
+.modal-icone svg { width: 1.25rem; height: 1.25rem; }
+.modal h2 { font-size: 1rem; font-weight: 600; margin: 0 0 .5rem; }   /* título pequeno de pergunta */
+.modal p  { margin: 0; font-size: .9375rem; color: var(--cor-texto-secundario); }
+.modal-acoes { display: flex; justify-content: flex-end; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+@media (max-width: 47.99rem) { .modal-acoes .btn { flex: 1 1 100%; } }
+
+/* ---------- 10. MOVIMENTO REDUZIDO ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

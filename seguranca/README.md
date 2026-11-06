@@ -41,7 +41,9 @@ Para proteger todos os usuários, e para guiar quem vai construir o servidor.
 | Nenhum dado sai do navegador na demonstração | ✅ |
 | Autorização clara no cadastro (o que será mostrado e para quem) | ✅ |
 | Fotos: aviso para não mostrar pessoas, placas e documentos | ✅ |
-| Avaliação com o nome escondido, a menos que a pessoa escolha aparecer | ⬜ Sprint 4 |
+| Avaliação com o nome escondido, a menos que a pessoa escolha aparecer | 🟡 Perfil do prestador já mostra anônimo; botão ao avaliar na Sprint 4 |
+| Cliente CPF liga/desliga "Mostrar meus dados aos prestadores" no perfil | ✅ Na tela |
+| Recuperação de senha sem revelar se a conta existe; link de 30 min e uso único | 🟡 Tela pronta; servidor na Sprint 5 ([regras](recuperacao-acesso.md)) |
 | Localização do cliente só aproximada, calculada no servidor | ⬜ Sprints 4 e 5 |
 | Contato liberado só quando o prestador autoriza | ⬜ Sprint 4 |
 | Política de privacidade em linguagem simples, com o canal de contato | ⬜ Sprint 2 |
@@ -57,6 +59,7 @@ Para proteger todos os usuários, e para guiar quem vai construir o servidor.
 | `acesso.js` | Regras usadas pela **tela** (esconde o que não pode aparecer). |
 | `permissoes.json` | As mesmas regras, para o **servidor** (bloqueio de verdade). Regra padrão: negar. |
 | `index.html` | Tabela de consulta das regras. |
+| `recuperacao-acesso.md` | Regras de "Esqueceu a senha/login?" para o servidor: token, limites, Argon2id, e-mails. |
 
 > ⚠️ **Mudou um arquivo, mude o outro.** `acesso.js` e `permissoes.json` precisam dizer a mesma coisa.
 
