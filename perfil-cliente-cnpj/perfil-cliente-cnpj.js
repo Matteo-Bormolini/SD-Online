@@ -226,7 +226,8 @@
     };
     li._inicio = rodas("inicio", "Das", f.inicio);
     li._fim = rodas("fim", "Às", f.fim);
-    li.querySelector(".btn-remover-faixa").addEventListener("click", () => {
+    li.querySelector(".btn-remover-faixa").addEventListener("click", async () => {
+      if (!(await P.confirmar({ titulo: "Excluir esta faixa de horário?", texto: "Os dias e horas desta faixa serão removidos.", sim: "Sim, excluir" }))) return;
       const atual = lerHorario();
       atual.faixas.splice(i, 1);
       carregarHorario(atual);
@@ -343,7 +344,8 @@
     });
 
     // Remover a foto atual
-    $("#btn-remover-foto-local").addEventListener("click", () => {
+    $("#btn-remover-foto-local").addEventListener("click", async () => {
+      if (!(await P.confirmar({ titulo: "Excluir esta foto do local?", texto: "A foto que está aparecendo agora será removida.", sim: "Sim, excluir" }))) return;
       const i = carrosselLocal.indice;
       const [removida] = perfil.fotosLocal.splice(i, 1);
       if (removida && removida.src.startsWith("blob:")) URL.revokeObjectURL(removida.src);
@@ -414,6 +416,7 @@
 
   /* ---------- 6. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", () => {
+    P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({
       perfil, config: CONFIG, padrao: CONFIG.fotoPadraoCliente, tipoIcone: "predio",

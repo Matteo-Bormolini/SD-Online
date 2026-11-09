@@ -18,6 +18,8 @@ Tudo o que você precisa saber para mexer no código sem quebrar o padrão.
 | Cores, fontes, botões, links, mensagens | `configuracoes/base.css` |
 | Links das páginas, itens do menu e do rodapé, ícones | `configuracoes/config.js` |
 | Quem vê cada página e cada dado | `seguranca/acesso.js` **e** `seguranca/permissoes.json` |
+| Botões liga/desliga (lista, padrão ligado/desligado) | `configuracoes/interruptores.js` (consulta visual: página `interruptores/`) |
+| Pop-up "Tem certeza?" de excluir/editar | `componentes/confirmacao/confirmacao.js` |
 | Barra do topo | `navbar/` |
 | Rodapé | `rodape/` |
 | Campos de formulário | `componentes/formulario/formulario.css` |
@@ -118,7 +120,7 @@ Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mest
 ## 8. Segurança
 
 - `data-logado`, `data-tipo` e a sessão de demonstração **só mudam a tela**. Qualquer pessoa pode alterar isso no navegador.
-- Login, permissões e dados têm de ser conferidos **no servidor** (Sprint 5).
+- Login, permissões e dados têm de ser conferidos **no servidor** (Ciclo 2 · Contas reais).
 - Senha: só o *hash* fica no servidor. Ninguém vê, nem o administrador.
 - Textos vindos de fora passam por escape (`textContent` ou `SD.esc`) antes de entrar na página.
 - Chaves de API, fotos de usuários e cópias do banco **nunca** vão para o GitHub. O `.gitignore` da raiz bloqueia esses arquivos.
@@ -128,21 +130,19 @@ Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mest
 
 ## 9. Modelo de README de pasta
 
-Cada pasta é tratada como uma entrega de Sprint:
+Todo README é curto, em tópicos e fácil de ler (de jovens a idosos):
 
 ```markdown
-# Nome da entrega
+# Nome da pasta
 
-**Sprint X · Épico EX · Status**
+Uma ou duas frases: para que serve.
 
-Uma ou duas frases dizendo o que é, em linguagem simples.
-
-## Para quem
-## O que entrega
-## Histórias atendidas
-## Pronto quando
-## Como testar
-## Parte técnica
+## Quem vê
+## Arquivos
+| Arquivo | Para que serve |
+## Como mudar
+## Situação
+✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 ```
 
 ## 10. Destaque pago (tag `destaque`)
@@ -159,11 +159,11 @@ Uma ou duas frases dizendo o que é, em linguagem simples.
 |---|---|---|
 | Mapa | MapLibre GL (biblioteca, BSD) + OpenFreeMap (mapas) | Sem chave, sem cadastro, sem limite de visualizações, uso comercial liberado. Sem garantia de funcionamento (SLA). |
 | CEP → endereço (06/11/2026) | ViaCEP; reserva: BrasilAPI | Sem chave e sem cadastro. ViaCEP avisa que uso em massa pode bloquear o acesso: o site só consulta quando a pessoa digita um CEP completo. |
-| E-mail de recuperação (a decidir na Sprint 5) | Ex.: Brevo (plano grátis com 300 e-mails/dia) | Conferir de novo antes de usar: planos grátis mudam. Ver `seguranca/recuperacao-acesso.md`. |
+| E-mail de recuperação (a decidir no Ciclo 1) | Ex.: Brevo (plano grátis com 300 e-mails/dia) | Conferir de novo antes de usar: planos grátis mudam. Ver `seguranca/recuperacao-acesso.md`. |
 | Rota até um endereço | Links do Google Maps e do Waze | Sem chave. **Não usado** em Localizar prestador (decisão de 05/11). |
 | Distância | Cálculo próprio (Haversine) | Sem serviço externo. |
 | Hospedagem de teste | GitHub Pages | Grátis, mas os termos **não permitem** usar como site de negócio. Serve só para testes. |
-| Lançamento (a decidir na Sprint 5) | Cloudflare (Pages/Workers + banco D1) | Plano grátis sem prazo: D1 com 5 GB, 5 milhões de leituras e 100 mil gravações por dia. |
+| Lançamento (a decidir no Ciclo 1) | Cloudflare (Pages/Workers + banco D1) | Plano grátis sem prazo: D1 com 5 GB, 5 milhões de leituras e 100 mil gravações por dia. |
 | Alternativas de banco | Firebase Spark / Supabase Free | Firebase: grátis sem prazo, com cotas diárias. Supabase: o projeto **pausa após 1 semana sem uso**. |
 
 ## 12. Publicar no GitHub Pages
@@ -171,3 +171,19 @@ Uma ou duas frases dizendo o que é, em linguagem simples.
 1. Envie o conteúdo do projeto para a raiz do repositório.
 2. No GitHub: **Settings → Pages → Source: Deploy from a branch** → branch `main`, pasta `/ (root)`.
 3. O `index.html` da raiz abre a página inicial.
+
+
+## 13. Padrões aprovados em 09/11/2026
+
+**Confirmação antes de excluir ou editar**
+- Todo botão que exclui ou edita algo abre o pop-up "Tem certeza?" antes de agir.
+- Use: `const ok = await SDConfirmar({ titulo, texto, sim, tipo: "excluir" | "editar" });`
+- Carregar `componentes/confirmacao/confirmacao.js` depois de `componentes/utilidades/utilidades.js`.
+- Cancelar, Esc ou clique fora = nada muda.
+
+**Botões liga/desliga (interruptores)**
+- Desligado = cinza escuro (`--cor-interruptor-desligado`). Ligado = vinho (`--cor-interruptor-ligado`).
+- O estado também aparece escrito ("Ligado"/"Desligado").
+- Todo botão novo é cadastrado em `configuracoes/interruptores.js` (nome, o que faz, padrão, quem tem, onde fica).
+- No HTML basta: `<button class="interruptor" data-interruptor="id-do-botao"></button>`.
+- A página `interruptores/` (só adm) mostra todos em cartões.

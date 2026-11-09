@@ -1,34 +1,21 @@
 # Rodapé
 
-**Sprint 1 · Épico E1 Base do site · ✅ Pronto**
+A faixa vinho no fim de todas as páginas.
 
-A faixa vinho no fim de todas as páginas, com atalhos, políticas e o convite para baixar o app.
+## O que tem
+- Atalhos: Serviços · Seus Serviços · Sobre nós · Suporte (cada um vê o que pode usar).
+- Linha de baixo: Política da empresa · Termos de uso · Responsabilidade · Privacidade.
+- **Baixe o app:** "Em breve" até existirem os selos oficiais em `fotos/marca/lojas/`.
+- Aviso: o Suporte é para dúvidas e melhorias, não para reclamações.
 
-## Para quem
-Para todos os visitantes e usuários.
-
-## O que entrega
-- **Navegação:** Serviços · Seus Serviços · Sobre nós · Suporte (cada pessoa vê só o que pode usar).
-- **Documentos legais:** só na linha de baixo, no canto direito: Política da empresa · Termos de uso · Responsabilidade · Privacidade (a antiga coluna "Políticas" saiu em 06/11/2026 para não repetir links).
-- **Marca** sem a frase de apresentação (06/11/2026).
-- **Baixe o app:** selos oficiais das lojas quando os arquivos forem salvos em `fotos/marca/lojas/` (ver o LEIA-ME de lá). Enquanto isso, botão de texto "Em breve".
-- **Políticas:** Política da empresa · Termos de uso · Termo de responsabilidade.
-- **Última linha:** © S.D Serviços Digitais · Termos · Privacidade.
-- **Baixe o app:** mostra "Em breve" até o app existir. Some quando o site é aberto pelo próprio app.
-- Aviso: o Suporte é para dúvidas e melhorias da plataforma.
-
-## Histórias atendidas
-- **US01** — mesmo rodapé em todas as páginas.
-
-## Pronto quando
-- [x] O rodapé aparece igual em todas as páginas, sem ser escrito à mão.
-- [ ] Os links de Políticas e Sobre nós abrem as páginas finais (quando elas forem criadas, Sprint 2).
-
-## Parte técnica
-
+## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `rodape.js` | Monta as colunas do rodapé. |
-| `rodape.css` | Aparência do rodapé. No computador é uma faixa baixa e espalhada (como a NavBar); no tablet, 2 colunas; no celular, 1. |
+| `rodape.js` | Monta o rodapé. |
+| `rodape.css` | Visual (computador: faixa baixa; tablet: 2 colunas; celular: 1). |
 
-**Onde mudar os links e as lojas:** `configuracoes/config.js` (não aqui).
+## Como mudar
+- Links e lojas → `configuracoes/config.js`.
+
+## Situação
+- ✅ Pronto. ⬜ Os documentos legais ainda estão "em desenvolvimento" (Ciclo 6).

@@ -2,11 +2,10 @@
 
 **Quebrou, vazou ou parou? Conectamos você a quem resolve.**
 
-A S.D é uma plataforma que liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
-Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o prestador.
+A S.D liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
+Você encontra, pede orçamento, compara e combina tudo **direto com o prestador**.
 
-> **Situação atual:** versão de **demonstração**. Dá para ver e testar as telas,
-> mas nada do que você digita é salvo ou enviado.
+> **Situação:** protótipo de **demonstração**. Dá para ver e testar as telas, mas nada do que você digita é salvo.
 
 ---
 
@@ -14,192 +13,111 @@ Você escolhe o serviço, pede orçamentos, compara e combina tudo direto com o 
 
 | Quem | Exemplo | O que ganha |
 |---|---|---|
-| **Pessoa** (Cliente CPF) | Casas e apartamentos | Encontra quem resolve, perto de casa. |
-| **Empresa ou condomínio** (Cliente CNPJ) | Empresas, condomínios | Organiza as manutenções do local. |
-| **Prestador** (com CNPJ ou MEI) | Eletricista, encanador, pintor... | Mais clientes perto dele e um perfil que passa confiança. |
-| **Administrador** | Equipe S.D | Dá suporte e cuida da plataforma. Nunca vê senhas. |
+| **Cliente CPF** | Casas e apartamentos | Acha quem resolve, perto de casa. **Não paga nada.** |
+| **Cliente CNPJ** | Empresas e condomínios | Organiza as manutenções do local. **Não paga nada.** |
+| **Prestador** (CNPJ ou MEI) | Eletricista, encanador, pintor | Mais clientes perto dele e um quadro para organizar o trabalho. |
+| **Administrador** | Equipe S.D | Dá suporte. Nunca vê senhas. |
 
 ## Como funciona
 
-1. **Escolha o serviço** (ex.: encanador) e veja os prestadores mais perto de você.
-2. **Peça orçamento** a quantos prestadores precisar, limitado a 4.
-3. **Compare até 4 orçamentos** e decida: aceitar, recusar ou fazer uma contraproposta.
-4. **Combine direto** pelo WhatsApp ou e-mail. O prestador decide quando mostrar esses contatos.
-5. **Avalie** o serviço e ajude o próximo cliente a escolher.
+1. **Encontre:** escolha o serviço e veja os prestadores do mais perto ao mais longe.
+2. **Peça orçamento:** crie uma solicitação (com 3 a 6 fotos) e marque os prestadores que quiser. O pedido chega na etapa **A orçar** de cada um.
+3. **Compare** até 4 orçamentos (cada um diz se cobra visita). Quer negociar? Fale com o prestador pelo WhatsApp antes de aceitar.
+4. **Combine direto** pelo WhatsApp ou e-mail: preço, material e pagamento são entre vocês.
+5. **Finalize e avalie:** você marca o serviço como feito (com fotos) e avalia. O prestador pode responder.
 
-> 💬 **A S.D não faz pagamentos.** Valor e forma de pagamento são combinados entre cliente e prestador.
+## Dinheiro: regras claras
 
-## O que já dá para ver
-
-- **Página inicial** para visitantes e para quem já entrou na conta.
-- **Criar conta e entrar** como Cliente CPF, Cliente CNPJ ou Prestador (endereço preenchido pelo CEP).
-- **Esqueceu a senha? / Esqueceu o login?** em pop-ups, sem sair da página de login.
-- **Perfis** com edição de dados, fotos e exclusão da conta.
-- **Perfil do prestador** com a opção "Ver como cliente".
-- **Meus serviços** (prestador): quadro com as etapas de cada serviço.
-- **Serviços realizados** (cliente): histórico com fotos.
-- **Suporte**: dúvidas, sugestões e um assistente de demonstração.
-- **Localizar prestador** (cliente): tipos de serviço, lista do mais perto ao mais longe, mapa grátis e destaque pago em vermelho.
-- **Tema claro e escuro** (a escolha fica salva), no celular, no computador e na TV.
+- A S.D **não** recebe, não cobra e não garante pagamento entre cliente e prestador.
+- Não existe tabela de preços: cada orçamento traz o valor e diz se o prestador **cobra visita** e quanto. Negociação e pagamento são entre cliente e prestador.
+- Como a S.D vai se manter: **anúncios** no site e o **destaque** opcional para prestadores
+  (assinatura mensal, cancela quando quiser). Isso só começa depois do MVP.
 
 ## Experimente
 
-1. Abra o site: **https://matteo-bormolini.github.io/SD-Online/**
-2. Clique em **Entrar**, digite qualquer e-mail (ou um CPF/CNPJ válido) e uma senha e escolha **Entrar como** (CPF, CNPJ, Prestador ou Administrador).
-3. Navegue já logado. **Meu perfil** abre o perfil do tipo escolhido. **Sair** desconecta.
-
-Cada tipo de conta só vê as páginas que pode usar. Se tentar abrir outra, o site leva você ao login ou ao início.
-
-## Perguntas frequentes
-
-**A S.D recebe meu pagamento?**
-Não. Você paga direto ao prestador, do jeito que combinarem.
-
-**Quanto custa usar a S.D?**
-Ainda está sendo definido. Nada é cobrado na demonstração.
-
-**O prestador vai saber onde eu moro?**
-Antes de vocês combinarem, ele vê só a região aproximada. O endereço é autorizado caso aceite a compartilhar no site.
-Tudo sobre o perfil vai estar bloqueado para outros verem a menos que autorize a compartilhar.
-
-**Meu CPF e meu telefone aparecem para outras pessoas?**
-Não ficam públicos. Só aparecem para quem você autorizar e para a equipe S.D, quando precisar dar suporte.
-
-**Posso pedir orçamento para vários prestadores?**
-Sim. Até 4 orçamentos aparecem lado a lado. Se chegarem mais, o site avisa quantos estão guardados.
-
-**E se eu não gostar do orçamento?**
-Você pode recusar sem dar explicação ou fazer uma contraproposta.
-
-**Quem pode ser prestador?**
-Hoje, só quem tem CNPJ ou MEI. Se você trabalha sem CNPJ e quer que isso mude, avise pela página Suporte.
-
-**Posso apagar minha conta?**
-Sim. Em **Meu perfil → Excluir perfil**.
-
-**Quem vê a minha senha?**
-Ninguém! nem mesmo a equipe S.D.
+1. Abra: **https://matteo-bormolini.github.io/SD-Online/**
+2. Clique em **Entrar**, digite qualquer e-mail e senha e escolha **Entrar como** (CPF, CNPJ, Prestador ou Administrador).
+3. Navegue. **Meu perfil** abre o perfil do tipo escolhido. **Sair** desconecta.
 
 ---
 
-## 🎯 Plano do produto
+## Sobre o projeto
 
-Este projeto é tocado como uma pequena empresa ágil (Scrum), só que com **uma pessoa só**.
+- Projeto **individual** de **Marco** (GitHub [Matteo-Bormolini](https://github.com/Matteo-Bormolini/SD-Online)).
+- Sem equipe e sem reuniões: **uma lista**, **uma coisa por vez**.
+- **Objetivo do MVP (primeira versão de verdade):**
+  um cliente real e um prestador real conseguem **cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato**,
+  com dados reais e seguros, e o site publicado.
 
-<details>
-<summary><b>Palavras do plano (clique para ver)</b></summary>
+### Como o trabalho é organizado
 
-| Palavra | O que quer dizer |
-|---|---|
-| **Scrum** | Jeito de trabalhar em ciclos curtos, entregando um pedaço pronto de cada vez. |
-| **Sprint** | Um ciclo de 2 semanas com um objetivo. |
-| **Épico** | Um grande assunto do produto (ex.: "Encontrar"). |
-| **História (US)** | Uma necessidade de quem usa, em uma frase. |
-| **MVP** | A menor versão que já resolve o problema de verdade. |
-| **MoSCoW** | Jeito de priorizar: **M**ust (obrigatório), **S**hould (importante), **C**ould (desejável), **W**on't (não agora). |
-| **Product Owner** | Quem decide o que entra no produto e em que ordem. |
-| **Scrum Master** | Quem cuida do método e tira os obstáculos do caminho. |
-
-</details>
-
-### A equipe
-
-| Papel | Quem | O que faz |
+| Lista | O que é | Onde ver |
 |---|---|---|
-| **Product Owner** | Matteo | Decide o que entra no produto e em que ordem. |
-| **Scrum Master** | Matteo | Planeja, revisa e melhora o trabalho a cada Sprint. |
-| **Time de desenvolvimento** | Matteo, com apoio de IA | Cria, testa e entrega. |
+| **Agora** | O que está sendo feito | [`docs/backlog.md`](docs/backlog.md) |
+| **Próximo** | O que vem depois | idem |
+| **Depois** | Ideias para depois do MVP | idem |
 
-### Macro-objetivo
+O trabalho é dividido em **Ciclos**. Cada Ciclo tem **um objetivo**. Terminou o Ciclo → sai uma **versão** nova.
 
-> **Ajudar casas, empresas e condomínios a encontrar, de forma simples e confiável, um prestador de manutenção perto deles, e ajudar esse prestador a conseguir mais clientes.**
-
-### Épicos
-
-| Épico | O que resolve | Status |
-|---|---|---|
-| E1 · Base do site | Mesma aparência, menu e rodapé em todas as páginas | ✅ finalizado |
-| E2 · Conta | Criar conta, entrar e sair | 🟡 Tela pronta |
-| E3 · Perfis | Dados, fotos e confiança de cada usuário | 🟡 Quase pronto |
-| E4 · Encontrar | Prestadores por área, do mais perto ao mais longe | ⬜ Planejando |
-| E5 · Pedir e negociar | Pedido, orçamento, comparar até 4 e decidir | ⬜ Planejando |
-| E6 · Contato e localização | WhatsApp e e-mail liberados pelo prestador; mapa aproximado | ⬜ Planejando |
-| E7 · Acompanhar e avaliar | Etapas do serviço, histórico e estrelas | 🟡 Em andamento |
-| E8 · Ajuda e confiança | Suporte, Sobre nós, termos e privacidade | 🟡 Em andamento |
-| E9 · Servidor, segurança e LGPD | Dados guardados com segurança e direitos do usuário | 🟡 Em andamento |
-
-O caminho completo do pedido e todas as histórias estão no **[Backlog do produto](docs/backlog.md)**.
-
-### MVP (priorização MoSCoW)
-
-- **Must (obrigatório):** criar conta, entrar e recuperar senha · perfis · encontrar por área e proximidade · pedir, receber e comparar orçamentos · aceitar, recusar ou contrapropor · liberar WhatsApp e e-mail · Suporte · termos e privacidade · servidor seguro e LGPD.
-- **Should (importante):** ver perfil como cliente · perfil do administrador · recusados e arquivados · mapa aproximado do cliente · quadro "Meus serviços" · serviços realizados · avaliações · Sobre nós.
-- **Could (desejável):** filtros extras · comparação automática de orçamentos · painel do administrador · destaque pago · app nas lojas · assistente com IA.
-- **Won't (não agora):** pagamento dentro do app · chat dentro do app · categorias além de manutenção.
-
-### Sprints (2 semanas cada)
-
-| Sprint | Período | Objetivo | Status |
+| Ciclo | Objetivo | Versão | Situação |
 |---|---|---|---|
-| 1 · Base e contas | 12/10 a 25/10/2026 | Padrão visual, login de demonstração e perfis | ✅ Concluída |
-| 2 · Ajuda e confiança | 26/10 a 08/11/2026 | Suporte, Sobre nós, termos e organização do projeto | 🟡 Em andamento |
-| 3 · Encontrar e pedir | 09/11 a 22/11/2026 | Busca de prestadores, pedido e orçamento | ⬜ Planejada |
-| 4 · Comparar e combinar | 23/11 a 06/12/2026 | Comparar, decidir, liberar contato e avaliar | ⬜ Planejada |
+| 1 | Fechar pendências e decidir (servidor, domínio, regras do pedido) | v0.6.0 | 🟡 Agora |
+| 2 | Contas reais (servidor, banco, login de verdade) | v0.7.0 | ⬜ |
+| 3 | Encontrar e pedir (busca real, pedido, A orçar) | v0.8.0 | ⬜ |
+| 4 | Orçar e decidir (comparar, aceitar, liberar contato, avaliar) | v0.9.0 | ⬜ |
+| 5 | Segurança e LGPD | v0.10.0 | ⬜ |
+| 6 | Lançamento fechado (textos legais com advogado, poucos usuários reais) | v1.0.0 | ⬜ |
 
-Depois vem a **Sprint 5 · Servidor de verdade**: banco de dados, login real e LGPD.
-Cada pasta do projeto tem seu próprio README, escrito como **a entrega de uma Sprint**.
+Duas semanas por Ciclo é a meta, não uma obrigação.
 
----
+### Pronto é pronto quando
 
-## Mapa do projeto
+- faz o que foi pedido;
+- segue o padrão visual;
+- funciona do celular pequeno à TV, sem "escorregar" para os lados;
+- funciona no tema claro e no escuro;
+- não mostra erros no navegador;
+- não mostra dados pessoais a quem não deve;
+- excluir e editar pedem confirmação;
+- o README da pasta está atualizado.
+
+## Mapa das pastas
 
 | Pasta | O que é |
 |---|---|
-| [`configuracoes/`](configuracoes/) | Cores, botões e links de todo o site |
+| [`configuracoes/`](configuracoes/) | Cores, botões, links e a **lista dos botões liga/desliga** |
 | [`navbar/`](navbar/) · [`rodape/`](rodape/) | Menu do topo e rodapé |
-| [`componentes/`](componentes/) | Peças usadas em várias páginas |
-| [`seguranca/`](seguranca/) | Quem pode ver o quê, a LGPD e as regras de recuperação de acesso |
-| [`servicos/`](servicos/) | Conversa com o servidor (identificar o login e recuperar senha) |
+| [`componentes/`](componentes/) | Peças usadas em várias páginas (inclui o pop-up de confirmação) |
+| [`seguranca/`](seguranca/) | Quem pode ver o quê e LGPD |
+| [`servicos/`](servicos/) | Conversa com o servidor |
 | [`fotos/`](fotos/) | Logo e fotos padrão |
 | [`modelo-pagina/`](modelo-pagina/) | Ponto de partida de toda página nova |
-| [`home/`](home/) | Página inicial |
+| [`home/`](home/) | Início e Sobre nós |
 | [`login-cadastro/`](login-cadastro/) | Entrar e criar conta |
 | [`perfil-cliente-cpf/`](perfil-cliente-cpf/) · [`perfil-cliente-cnpj/`](perfil-cliente-cnpj/) · [`perfil-prestador/`](perfil-prestador/) · [`perfil-adm/`](perfil-adm/) | Perfis |
-| [`suporte/`](suporte/) | Dúvidas, sugestões e assistente |
-| [`politica-privacidade/`](politica-privacidade/) | Termos, privacidade e responsabilidade |
+| [`interruptores/`](interruptores/) | Consulta de todos os botões liga/desliga (adm) |
 | [`localizar-prestador/`](localizar-prestador/) | Cliente encontra prestadores |
 | [`solicitacao/`](solicitacao/) | Pedido de orçamento |
-| [`localizar-condominios/`](localizar-condominios/) | "Seus Serviços" do prestador (em desenvolvimento) |
+| [`localizar-condominios/`](localizar-condominios/) | "Seus Serviços" do prestador |
 | [`avaliacoes/`](avaliacoes/) | Avaliações |
+| [`suporte/`](suporte/) | Dúvidas, sugestões e assistente |
+| [`politica-privacidade/`](politica-privacidade/) | Termos, privacidade e responsabilidade |
 | [`base-de-dados/`](base-de-dados/) · [`chaves-api/`](chaves-api/) | Banco de dados e chaves do servidor |
-| [`docs/`](docs/) | Backlog, guia técnico e padrão visual |
+| [`docs/`](docs/) | Lista de tarefas, decisões, versões, testes e guia técnico |
 
 ## Parte técnica (resumo)
 
-- Feito em **HTML, CSS e JavaScript puro**. Não precisa instalar nem compilar nada.
-- Menu, rodapé, cores e botões são escritos **uma vez só** e usados em todas as páginas.
-- Tudo o que vem de fora (mapa, bibliotecas, futuro banco) tem de ser **grátis e sem prazo**. Lista conferida: [guia técnico, seção 11](docs/guia-tecnico.md).
-- Toda página nova nasce do [`modelo-pagina/`](modelo-pagina/).
+- **HTML, CSS e JavaScript puro.** Não precisa instalar nada.
+- Menu, rodapé, cores e botões existem **uma vez só**.
+- Tudo que vem de fora tem de ser **grátis e sem prazo** ([guia técnico](docs/guia-tecnico.md)).
 
-Detalhes em **[docs/guia-tecnico.md](docs/guia-tecnico.md)**.
+## Segurança e privacidade
 
-## Segurança e privacidade (LGPD)
-
-As regras da S.D para proteger você:
-
-- A senha **nunca** aparece para ninguém, nem para o administrador. Mínimo de 12 caracteres.
-- "Esqueceu a senha?" não revela se um e-mail tem conta; o link vale 30 minutos e só uma vez.
-- Avaliações são anônimas, a menos que quem avaliou escolha mostrar o nome.
-- CPF, telefone e endereço completo **nunca** ficam públicos.
-- O prestador decide quando mostrar o contato dele. A localização do cliente aparece só de forma aproximada.
-- O site não usa cookies, propaganda nem rastreadores de terceiros.
-
-Na demonstração, parte dessas regras funciona só na tela. A proteção completa chega com o servidor (Sprint 5).
+- A senha **nunca** aparece para ninguém, nem para o adm.
+- Avaliações são anônimas, a menos que quem avaliou queira mostrar o nome.
+- CPF, telefone e endereço completo de clientes **nunca** ficam públicos.
+- O prestador escolhe se mostra os contatos. A localização do cliente aparece só aproximada.
+- Na demonstração as regras funcionam **só na tela**. A proteção real chega com o servidor (Ciclo 2).
+  Testes feitos: [`docs/testes-e-seguranca.md`](docs/testes-e-seguranca.md).
 
 > **Nunca** coloque senhas, chaves ou dados reais de pessoas neste repositório. Ele é público.
-
-Regras completas e situação da LGPD: [`seguranca/`](seguranca/).
-
----
-
-Projeto de **Marco** · GitHub [Matteo-Bormolini](https://github.com/Matteo-Bormolini/SD-Online)

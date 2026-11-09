@@ -1,42 +1,25 @@
 # Perfil do Cliente CNPJ (empresas e condomínios)
 
-**Sprint 1 · Épico E3 Perfis · ✅ Pronto (demonstração)**
+Espaço de empresas, condomínios e MEI: dados da empresa, quem atende o prestador no local e fotos das áreas.
 
-O espaço das empresas, condomínios e MEI. Além dos dados da empresa, mostra **com quem o prestador deve falar no local** e as áreas que costumam precisar de manutenção.
+## Quem vê
+- A própria empresa (e o adm, para suporte).
 
-## Para quem
-Para síndicos, administradores, gestores e responsáveis por empresas. Só a própria empresa (e o administrador, para suporte) abre esta página.
+## O que tem
+- **Linha das abas:** Perfil · Serviços realizados · botão **Localização** (à direita).
+- Razão social, nome fantasia, CNPJ (não muda), responsável (cargo em lista ou "Outro").
+- Contato no local (zelador, portaria) e **horário de visitas** (dias + rodinhas de hora, até 3 faixas).
+- Endereço com CEP automático, telefones, fotos do local (opcional, até 12).
+- **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
+- A senha nunca aparece, só "••••••••".
 
-## O que entrega
-- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
-- **Dados da empresa:** tipo de estabelecimento, razão social, nome fantasia e CNPJ (não pode ser alterado).
-- **Responsável pela conta:** nome, cargo (lista para condomínios e empresas de todos os portes, ou "Outro" para escrever) e contatos.
-- **Contato no local:** zelador, portaria ou recepção, com telefone.
-- **Horário para visitas:** botões dos dias (Seg…Dom) + **rodinhas** de hora de início e fim (horas de 00 a 23, minutos de 5 em 5; só existem horas válidas) e a observação livre embaixo. Até 3 horários diferentes.
-- **Endereço** com CEP primeiro (preenche rua, bairro, cidade e UF), telefone principal e até 4 secundários.
-- **Fotos do local (opcional):** até 12 fotos das áreas, com aviso para não fotografar pessoas, placas ou documentos.
-- **Aba Serviços realizados**, editar perfil, foto/logo opcional e excluir perfil.
-
-## Histórias atendidas
-- **US07** — responsável, contato no local e fotos das áreas.
-- **US25** — serviços já contratados, com fotos.
-- **US16, US17 e US19** — comparar até 4 orçamentos, decidir e pedir de novo (Sprint 4).
-- **US32** — corrigir e apagar os dados (LGPD).
-
-## Pronto quando
-- [x] Dados, edição, fotos do local, histórico e exclusão funcionam na tela.
-- [ ] Aba **Serviços** com duas partes: **Orçamentos** (até 4 por pedido) e **Serviços realizados** (Sprint 4).
-- [ ] As alterações são salvas no servidor (Sprint 5).
-
-## Como testar
-Entre pelo modo demonstração como **Cliente CNPJ** e clique em **Meu perfil**.
-
-## Parte técnica
-
+## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` | Estrutura da página. |
-| `perfil-cliente-cnpj.css` | Visual do que é só deste perfil. |
-| `perfil-cliente-cnpj.js` | Dados de demonstração, fotos do local e áreas comuns. |
+| `index.html` / `perfil-cliente-cnpj.css` / `perfil-cliente-cnpj.js` | Página, visual e dados de demonstração. |
 
-O comportamento comum vem de [`componentes/`](../componentes/).
+## Situação
+✅ pronto · 🟡 só na demonstração · ⬜ a fazer
+
+- 🟡 Perfil pronto (US07, US25, US42).
+- ⬜ Orçamentos recebidos — **Ciclo 4**. Salvar no servidor — **Ciclo 2**.

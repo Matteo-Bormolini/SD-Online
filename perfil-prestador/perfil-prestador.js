@@ -92,7 +92,28 @@
   ];
 
   // Serviços do quadro (Kanban). telefone = só aparece depois do aceite.
+  // Pedidos novos (A orçar) entram quando um cliente pede orçamento na página do prestador (US13/US14).
+  // Datas dos pedidos A orçar contam a partir de hoje, para a demonstração não "vencer" com o tempo.
+  const diasAtras = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
   const servicosKanban = [
+    { id: "s12", etapa: "aorcar", servico: "Reparo no interfone", cliente: "Condomínio Exemplo C", tipoCliente: "cnpj", fotoCliente: null,
+      bairro: "Centro", local: "Portaria", visita: "Dias úteis", dataPedido: diasAtras(15), valor: null, telefone: "11930000003",
+      descricao: "Interfone da portaria sem som. (Demonstração: pedido sem resposta há 15 dias — expira e vai para Encerrados.)", fotos: [] },
+    { id: "s8", etapa: "aorcar", servico: "Troca de torneira e registro", cliente: "Cliente Exemplo F", tipoCliente: "cpf", fotoCliente: null,
+      bairro: "Jardim Exemplo", local: "Cozinha", visita: "Sábado de manhã",
+      dataPedido: diasAtras(1), valor: null, telefone: "11930000006",
+      descricao: "Torneira pingando e registro duro. Prefere sábado.", fotos: [] },
+    { id: "s9", etapa: "aorcar", servico: "Iluminação da garagem", cliente: "Condomínio Exemplo G", tipoCliente: "cnpj", fotoCliente: null,
+      bairro: "Vila Exemplo", local: "Garagem e estacionamento", visita: "Falar com o zelador, dias úteis",
+      dataPedido: diasAtras(0), valor: null, telefone: "11930000007",
+      descricao: "6 lâmpadas queimadas e 1 reator com defeito no subsolo.",
+      fotos: [{ src: demo("Garagem escura"), legenda: "Foto enviada pelo cliente" }] },
+    { id: "s10", etapa: "encerrado", motivo: "Recusado pelo cliente", dataEncerramento: "2026-10-30",
+      servico: "Troca de piso do salão de festas", cliente: "Condomínio Exemplo A", tipoCliente: "cnpj", fotoCliente: null,
+      bairro: "Vila Exemplo", dataPedido: "2026-10-12", valor: 6800, descricao: "", fotos: [] },
+    { id: "s11", etapa: "encerrado", motivo: "Encerrado por você", dataEncerramento: "2026-11-02",
+      servico: "Conserto de portão basculante", cliente: "Cliente Exemplo H", tipoCliente: "cpf", fotoCliente: null,
+      bairro: "Centro", dataPedido: "2026-10-28", valor: 450, descricao: "", fotos: [] },
     { id: "s1", etapa: "orcando", servico: "Reparo de infiltração no teto", cliente: "Condomínio Exemplo A", tipoCliente: "cnpj", fotoCliente: null,
       bairro: "Vila Exemplo", local: "Hall, corredores e escadas", visita: "Precisa de visita — falar com o zelador",
       dataPedido: "2026-10-20", valor: 1800, telefone: "11930000001",
@@ -170,11 +191,8 @@
     $("#link-todas-avaliacoes").href = CONFIG.urlAvaliacoes;
     renderizarNumeros();
 
-    // Contato rápido (visão do cliente) — WhatsApp e ligação
+    atualizarContatos();
     const principal = perfil.telefones.find((t) => t.principal);
-    const tel = U.soDigitos(principal && principal.numero);
-    $("#btn-whatsapp").href = "https://wa.me/55" + tel;
-    $("#btn-ligar").href = "tel:+55" + tel;
 
     P.preencherPlaceholders({
       "f-razao": perfil.razaoSocial, "f-fantasia": perfil.nomeFantasia,
@@ -249,6 +267,7 @@
         U.mostrarMensagem(msg, "erro", `Imagem muito pequena (${medida.largura} × ${medida.altura} px). Use no mínimo ${CONFIG.tamanhoMinLogoPx} × ${CONFIG.tamanhoMinLogoPx} px.`);
         return;
       }
+      if (perfil.foto && !(await P.confirmar({ tipo: "editar", titulo: "Trocar a logo?", texto: `A logo atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) { URL.revokeObjectURL(url); return; }
       if (perfil.foto) URL.revokeObjectURL(perfil.foto);
       perfil.foto = url;
       renderizarFoto();
@@ -316,7 +335,8 @@
     legenda.addEventListener("change", aplicarLegenda);
     legenda.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); aplicarLegenda(); } });
 
-    $("#btn-remover-foto-trabalho").addEventListener("click", () => {
+    $("#btn-remover-foto-trabalho").addEventListener("click", async () => {
+      if (!(await P.confirmar({ titulo: "Excluir esta foto?", texto: "A foto que está aparecendo agora (e a legenda dela) será removida.", sim: "Sim, excluir" }))) return;
       const i = carrosselTrabalho.indice;
       const [removida] = perfil.fotosTrabalho.splice(i, 1);
       if (removida && removida.src.startsWith("blob:")) URL.revokeObjectURL(removida.src);
@@ -377,6 +397,39 @@
       lista.append(li);
     });
     $("#avaliacoes-vazio").hidden = avaliacoes.length > 0;
+  }
+
+  /* ---------- 6b. CONTATO RÁPIDO (visão do cliente) ----------
+     Segue o botão "Mostrar meus contatos" (configuracoes/interruptores.js).
+     Ligado: WhatsApp abre a conversa e "Ligar" mostra o número (no computador
+     o número fica visível, porque nem todo PC sabe fazer ligação).
+     Desligado: botões cinza e e-mail/telefones escondidos até o orçamento. */
+  function atualizarContatos() {
+    const mostrar = window.SD_INTERRUPTORES ? window.SD_INTERRUPTORES.ler("mostrar-contatos") : true;
+    document.body.dataset.contatos = mostrar ? "visiveis" : "ocultos";
+    const principal = perfil.telefones.find((t) => t.principal);
+    const tel = U.soDigitos(principal && principal.numero);
+    const zap = $("#btn-whatsapp"), ligar = $("#btn-ligar");
+    [zap, ligar].forEach((b) => {
+      if (mostrar && tel) b.removeAttribute("aria-disabled"); else b.setAttribute("aria-disabled", "true");
+    });
+    if (mostrar && tel) {
+      zap.href = "https://wa.me/55" + tel;
+      ligar.href = "tel:+55" + tel;
+      $("#btn-whatsapp-texto").textContent = "Chamar no WhatsApp";
+      $("#btn-ligar-texto").textContent = "Ligar " + U.formatarTelefone(tel);
+    } else {
+      zap.removeAttribute("href"); ligar.removeAttribute("href");
+      $("#btn-whatsapp-texto").textContent = "WhatsApp liberado após o orçamento";
+      $("#btn-ligar-texto").textContent = "Telefone liberado após o orçamento";
+    }
+    $("#contato-nota").hidden = mostrar;
+  }
+
+  // Mensagem curta quando o prestador liga/desliga um botão
+  function iniciarInterruptores() {
+    P.iniciarInterruptoresPerfil();
+    document.addEventListener("sd:interruptor", (e) => { if (e.detail.id === "mostrar-contatos") atualizarContatos(); });
   }
 
   /* ---------- 7. VISÃO: DONO x CLIENTE ----------
@@ -453,6 +506,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     quadro = window.SDKanban.criar({
       alvo: $("#kanban"), resumo: $("#kanban-resumo"), total: $("#servicos-total"), anuncio: $("#kanban-anuncio"),
+      encerrados: $("#kanban-encerrados"),
       servicos: servicosKanban, fotoPadraoCliente: CONFIG.fotoPadraoCliente,
       aoMudar: () => { renderizarNumeros(); P.atualizarAltura(); }
     });
@@ -470,6 +524,7 @@
       navegaveis: () => (visaoCliente() ? [$("#aba-perfil")] : [$("#aba-perfil"), $("#aba-servicos")]),
       semArrasto: visaoCliente
     });
+    iniciarInterruptores();
     iniciarVisao();
   });
 

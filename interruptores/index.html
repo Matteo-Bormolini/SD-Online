@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Botões liga/desliga — S.D Serviços Digitais</title>
+<meta name="robots" content="noindex">
+<!-- Lista de TODOS os botões liga/desliga do site. Os dados vêm de configuracoes/interruptores.js -->
+<link rel="stylesheet" href="../configuracoes/base.css">
+<link rel="stylesheet" href="../navbar/navbar.css">
+<link rel="stylesheet" href="../rodape/rodape.css">
+<link rel="stylesheet" href="interruptores.css">
+<script src="../seguranca/acesso.js" defer></script>
+<script src="../configuracoes/config.js" defer></script>
+<script src="../configuracoes/interruptores.js" defer></script>
+<script src="../navbar/navbar.js" defer></script>
+<script src="../rodape/rodape.js" defer></script>
+<script src="interruptores.js" defer></script>
+</head>
+<!-- Só o administrador abre esta página (data-recurso="interruptores") -->
+<body data-pagina="" data-logado="nao" data-tipo="" data-recurso="interruptores" data-raiz="../">
+<header id="sd-navbar"></header>
+<main id="conteudo" class="pagina">
+  <h1>Botões liga/desliga</h1>
+  <p class="interruptores-intro">Todos os botões liga/desliga do site, o que cada um faz e como ele começa numa conta nova.
+    Para mudar o padrão, edite <code>configuracoes/interruptores.js</code>.</p>
+  <p class="interruptores-legenda" aria-hidden="true">
+    <span class="amostra desligado"></span> Desligado = cinza escuro
+    <span class="amostra ligado"></span> Ligado = vinho
+  </p>
+  <span class="selo-demo" role="note">Página de consulta (somente leitura)</span>
+  <p class="interruptores-total" id="interruptores-total"></p>
+  <ul class="interruptores-lista" id="interruptores-lista"></ul>
+</main>
+<footer id="sd-rodape"></footer>
+</body>
+</html>

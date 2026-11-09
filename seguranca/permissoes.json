@@ -79,6 +79,9 @@
       "cliente-cnpj",
       "prestador",
       "adm"
+    ],
+    "interruptores": [
+      "adm"
     ]
   },
   "dados": {

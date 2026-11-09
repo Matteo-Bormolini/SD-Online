@@ -1,7 +1,10 @@
 /* =====================================================================
    S.D — QUADRO DE SERVIÇOS DO PRESTADOR (componentes/kanban-servicos/kanban-servicos.js)
    Componente reutilizável. Organiza os serviços em etapas (colunas):
-   Orçando → Aceito → A realizar → Prestados.
+   A orçar → Orçando → Aceito → A realizar → Prestados
+   + área ENCERRADOS (sem serviço), embaixo do quadro.
+   Celular: cada coluna abre e fecha (sanfona) para ocupar menos espaço.
+   Excluir e encerrar pedem confirmação (componentes/confirmacao).
    Depende de: componentes/utilidades, componentes/carrossel e
    componentes/kanban-servicos/kanban-servicos.css.
 
@@ -9,6 +12,7 @@
      const quadro = SDKanban.criar({
        alvo: elemento,             // onde as colunas serão montadas
        resumo: elemento <dl>,      // números (valores por etapa) — opcional
+       encerrados: elemento,       // onde montar a área Encerrados — opcional
        total: elemento,            // contador geral — opcional
        anuncio: elemento aria-live // avisos para leitor de tela — opcional
        servicos: [...],            // ver formato abaixo
@@ -17,7 +21,8 @@
      });
 
    Formato de cada serviço:
-     { id, etapa: "orcando"|"aceito"|"realizar"|"prestado",
+     { id, etapa: "aorcar"|"orcando"|"aceito"|"realizar"|"prestado"|"encerrado",
+       motivo (só encerrado: texto), dataEncerramento (AAAA-MM-DD),
        servico, descricao, cliente, tipoCliente: "cpf"|"cnpj", fotoCliente,
        bairro, local, visita (texto), dataPedido, dataAgendada, dataConclusao (AAAA-MM-DD),
        valor (R$), telefone (só liberado após o aceite), avaliacaoRecebida (1-5 ou null),
@@ -34,12 +39,45 @@
 
   /* ---------- 1. ETAPAS (ordem do fluxo) — editar nomes aqui ---------- */
   const ETAPAS = [
+    { id: "aorcar",   nome: "A orçar",    dica: "Pedidos novos de clientes — decida se vai orçar", data: "dataPedido", rotuloData: "Pedido em",   rotuloValor: "Valor" },
     { id: "orcando",  nome: "Orçando",    dica: "Orçamentos enviados, aguardando o cliente",   data: "dataPedido",    rotuloData: "Pedido em",      rotuloValor: "Valor orçado" },
     { id: "aceito",   nome: "Aceito",     dica: "Cliente aceitou — combinar data e detalhes",  data: "dataAgendada",  rotuloData: "Agendar até",    rotuloValor: "Valor aceito" },
     { id: "realizar", nome: "A realizar", dica: "Agendados ou em andamento",                   data: "dataAgendada",  rotuloData: "Agendado para",  rotuloValor: "Valor a receber" },
     { id: "prestado", nome: "Prestados",  dica: "Serviços concluídos",                         data: "dataConclusao", rotuloData: "Concluído em",   rotuloValor: "Valor recebido" }
   ];
   const indiceEtapa = (id) => ETAPAS.findIndex((e) => e.id === id);
+
+  /* ---------- 1b. ENCERRADOS (pedidos que terminaram SEM serviço) ----------
+     Ficam guardados por 1 ano e depois o SERVIDOR apaga sozinho.
+     O prestador pode apagar antes, pelo botão da lixeira. */
+  const ENCERRADOS = {
+    nome: "Encerrados",
+    dica: "Pedidos e orçamentos que terminaram sem serviço (recusados, cancelados ou não atendidos).",
+    diasParaExcluir: 365,
+    // Pedido em "A orçar" sem resposta por este número de dias expira e vai para Encerrados.
+    // (Decisão de 09/11/2026: 10 dias; pode mudar depois de pesquisa de mercado.)
+    diasParaExpirarAOrcar: 10,
+    motivos: {
+      expirado: "Expirou: sem resposta em 10 dias",
+      prestador: "Encerrado por você",
+      naoAtendido: "Você não quis orçar",
+      recusado: "Recusado pelo cliente",
+      cancelado: "Cancelado pelo cliente"
+    }
+  };
+  // Celular: até esta largura as colunas viram sanfona
+  const CELULAR = window.matchMedia("(max-width: 47.99rem)");
+  // PRESTADOS: quem marca como finalizado é o CLIENTE (com 2 a 6 fotos e a avaliação).
+  // O prestador não move cartões para Prestados nem tira de lá.
+  const SO_CLIENTE_FINALIZA = true;
+  const confirmar = (o) => (window.SDConfirmar ? window.SDConfirmar(o) : Promise.resolve(true));
+  const ICONE_LIXO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';
+  // Soma dias a uma data AAAA-MM-DD
+  function somarDias(iso, dias) {
+    const d = new Date(iso + "T12:00:00");
+    d.setDate(d.getDate() + dias);
+    return d.toISOString().slice(0, 10);
+  }
 
   const SETA_BAIXO = '<svg class="kanban-seta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
   const SETA_ESQ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
@@ -49,9 +87,31 @@
 
   /* ===================================================================== */
   function criar(opcoes) {
-    const { alvo, resumo, total, anuncio, fotoPadraoCliente = {}, aoMudar } = opcoes;
+    const { alvo, resumo, total, anuncio, encerrados: alvoEncerrados, fotoPadraoCliente = {}, aoMudar } = opcoes;
     const servicos = opcoes.servicos.map((s) => ({ ...s }));   // cópia de trabalho
     const abertos = new Set();                                  // ids expandidos
+    const colunasAbertas = new Set();                           // colunas abertas no celular (começam fechadas)
+
+    // Demonstração: pedidos vencidos em "A orçar" vão para Encerrados (no site real, o servidor faz isso)
+    const hoje = U.hojeISO();
+    servicos.forEach((s) => {
+      if (s.etapa !== "aorcar" || !s.dataPedido) return;
+      const limite = somarDias(s.dataPedido, ENCERRADOS.diasParaExpirarAOrcar);
+      if (limite < hoje) { s.etapa = "encerrado"; s.motivo = ENCERRADOS.motivos.expirado; s.dataEncerramento = limite; }
+    });
+
+    // Aviso visível acima do quadro (ex.: "só o cliente marca como finalizado")
+    const avisoQuadro = document.createElement("p");
+    avisoQuadro.className = "mensagem atencao kanban-aviso";
+    avisoQuadro.setAttribute("role", "status");
+    avisoQuadro.hidden = true;
+    alvo.before(avisoQuadro);
+    let tempoAviso = null;
+    const mostrarAviso = (texto) => {
+      avisoQuadro.textContent = texto; avisoQuadro.hidden = false;
+      clearTimeout(tempoAviso); tempoAviso = setTimeout(() => { avisoQuadro.hidden = true; avisar(); }, 6000);
+      anunciar(texto); avisar();
+    };
     const avisar = () => { if (typeof aoMudar === "function") aoMudar(); };
     const anunciar = (t) => { if (anuncio) { anuncio.textContent = ""; setTimeout(() => { anuncio.textContent = t; }, 30); } };
 
@@ -65,16 +125,42 @@
       col.setAttribute("aria-labelledby", "kb-titulo-" + et.id);
       col.innerHTML = `
         <header class="kanban-coluna-topo">
-          <h3 id="kb-titulo-${et.id}"><span class="kanban-marcador" aria-hidden="true"></span>${et.nome} <span class="kanban-qtd"></span></h3>
+          <h3 id="kb-titulo-${et.id}">
+            <button type="button" class="kanban-coluna-botao" aria-controls="kb-corpo-${et.id}">
+              <span class="kanban-marcador" aria-hidden="true"></span>${et.nome} <span class="kanban-qtd"></span>
+              ${SETA_BAIXO}
+            </button>
+          </h3>
           <p class="kanban-coluna-dica">${et.dica}</p>
           <p class="kanban-coluna-soma"></p>
         </header>
-        <ol class="kanban-lista" aria-labelledby="kb-titulo-${et.id}"></ol>
-        <p class="kanban-vazio">Nenhum serviço nesta etapa.</p>`;
+        <div class="kanban-corpo" id="kb-corpo-${et.id}">
+          <ol class="kanban-lista" aria-labelledby="kb-titulo-${et.id}"></ol>
+          <p class="kanban-vazio">Nenhum serviço nesta etapa.</p>
+        </div>`;
       alvo.append(col);
       colunas[et.id] = col;
       ligarSoltar(col, et.id);
+      col.querySelector(".kanban-coluna-botao").addEventListener("click", () => {
+        if (colunasAbertas.has(et.id)) colunasAbertas.delete(et.id); else colunasAbertas.add(et.id);
+        aplicarSanfonas();
+        avisar();
+      });
     });
+
+    // Sanfona das colunas: só no celular. No computador todas ficam abertas.
+    function aplicarSanfonas() {
+      ETAPAS.forEach((et) => {
+        const col = colunas[et.id];
+        const botao = col.querySelector(".kanban-coluna-botao");
+        const aberta = !CELULAR.matches || colunasAbertas.has(et.id);
+        col.classList.toggle("recolhida", !aberta);
+        botao.disabled = !CELULAR.matches;                       // no computador é só um título
+        if (CELULAR.matches) botao.setAttribute("aria-expanded", String(aberta)); else botao.removeAttribute("aria-expanded");
+      });
+    }
+    const aoTrocarTela = () => { aplicarSanfonas(); avisar(); };
+    if (CELULAR.addEventListener) CELULAR.addEventListener("change", aoTrocarTela); else if (CELULAR.addListener) CELULAR.addListener(aoTrocarTela);
 
     /* ---------- 3. UM CARTÃO ---------- */
     function criarCartao(s) {
@@ -117,7 +203,8 @@
       const linhaInfo = document.createElement("span");
       linhaInfo.className = "kanban-card-info";
       const valor = document.createElement("span");
-      valor.className = "kanban-card-valor"; valor.textContent = U.formatarMoeda(s.valor);
+      valor.className = "kanban-card-valor";
+      valor.textContent = s.valor == null ? "Sem valor ainda" : U.formatarMoeda(s.valor);
       const data = document.createElement("span");
       data.className = "kanban-card-data";
       data.textContent = `${et.rotuloData} ${U.formatarData(s[et.data])}`;
@@ -140,6 +227,11 @@
       const tabela = document.createElement("table");
       tabela.className = "tabela-servico";
       const corpo = document.createElement("tbody");
+      if (s.etapa === "aorcar" && s.dataPedido) {
+        const prazo = document.createElement("strong");
+        prazo.textContent = U.formatarData(somarDias(s.dataPedido, ENCERRADOS.diasParaExpirarAOrcar));
+        corpo.append(U.linhaTabela("Responder até", prazo));
+      }
       corpo.append(
         U.linhaTabela("Cliente", `${s.cliente} (${ehCnpj ? "Pessoa jurídica" : "Pessoa física"})`),
         U.linhaTabela("Local", [s.local, s.bairro].filter(Boolean).join(" — ") || "—"),
@@ -148,12 +240,14 @@
       );
       if (s.dataAgendada) corpo.append(U.linhaTabela(s.etapa === "prestado" ? "Agendado para" : "Data combinada", U.formatarData(s.dataAgendada)));
       if (s.dataConclusao) corpo.append(U.linhaTabela("Concluído em", U.formatarData(s.dataConclusao)));
-      const v = document.createElement("span");
-      v.className = "valor-dinheiro"; v.textContent = U.formatarMoeda(s.valor);
-      corpo.append(U.linhaTabela(et.rotuloValor, v));
+      if (s.valor != null) {
+        const v = document.createElement("span");
+        v.className = "valor-dinheiro"; v.textContent = U.formatarMoeda(s.valor);
+        corpo.append(U.linhaTabela(et.rotuloValor, v));
+      }
 
       // Contato: liberado somente depois que o cliente aceita o orçamento
-      if (s.etapa === "orcando") {
+      if (s.etapa === "aorcar" || s.etapa === "orcando") {
         const bloq = document.createElement("span");
         bloq.className = "kanban-bloqueado";
         bloq.textContent = "Liberado quando o cliente aceitar o orçamento";
@@ -191,19 +285,43 @@
       const acoes = document.createElement("div");
       acoes.className = "kanban-acoes";
       const i = indiceEtapa(s.etapa);
-      if (i > 0) {
+      const bloqueadoPeloCliente = SO_CLIENTE_FINALIZA && (s.etapa === "prestado" || ETAPAS[i + 1]?.id === "prestado");
+      if (i > 0 && !(SO_CLIENTE_FINALIZA && s.etapa === "prestado")) {
         const b = document.createElement("button");
         b.type = "button"; b.className = "btn btn-pequeno";
         b.innerHTML = SETA_ESQ; b.append(document.createTextNode(`Voltar para ${ETAPAS[i - 1].nome}`));
         b.addEventListener("click", () => mover(s.id, ETAPAS[i - 1].id, true));
         acoes.append(b);
       }
-      if (i < ETAPAS.length - 1) {
+      if (bloqueadoPeloCliente && s.etapa === "realizar") {
+        const nota = document.createElement("p");
+        nota.className = "kanban-nota";
+        nota.textContent = "Quando o serviço terminar, o cliente marca como finalizado (com fotos e avaliação) e ele vai para Prestados.";
+        acoes.append(nota);
+      }
+      if (i < ETAPAS.length - 1 && !bloqueadoPeloCliente) {
         const b = document.createElement("button");
         b.type = "button"; b.className = "btn btn-pequeno kanban-avancar";
-        b.append(document.createTextNode(`Mover para ${ETAPAS[i + 1].nome}`));
+        // Em "A orçar" o próximo passo é orçar. Na versão final abre o orçamento padrão (US15).
+        b.append(document.createTextNode(s.etapa === "aorcar" ? "Fazer orçamento" : `Mover para ${ETAPAS[i + 1].nome}`));
         b.insertAdjacentHTML("beforeend", SETA_DIR);
         b.addEventListener("click", () => mover(s.id, ETAPAS[i + 1].id, true));
+        acoes.append(b);
+      }
+
+      // Encerrar sem serviço (A orçar, Orçando, Aceito, A realizar)
+      if (s.etapa !== "prestado") {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "btn btn-pequeno kanban-encerrar";
+        b.textContent = s.etapa === "aorcar" ? "Não vou orçar" : "Encerrar sem serviço";
+        b.addEventListener("click", async () => {
+          const ok = await confirmar({
+            titulo: s.etapa === "aorcar" ? "Não orçar este pedido?" : "Encerrar sem prestar o serviço?",
+            texto: `"${s.servico}" vai para ${ENCERRADOS.nome}. Ele fica guardado por 1 ano e depois é apagado.`,
+            sim: "Sim, encerrar"
+          });
+          if (ok) encerrar(s.id, s.etapa === "aorcar" ? ENCERRADOS.motivos.naoAtendido : ENCERRADOS.motivos.prestador);
+        });
         acoes.append(b);
       }
 
@@ -217,7 +335,7 @@
           alvo: areaFotos,
           rotulo: "Fotos do serviço: " + s.servico,
           fotos: fotos.map((f, n) => ({ src: f.src, legenda: f.legenda, alt: f.legenda || `Foto ${n + 1} do serviço ${s.servico}` })),
-          vazio: s.etapa === "orcando" ? "O cliente não enviou fotos para este orçamento." : "Nenhuma foto registrada para este serviço."
+          vazio: (s.etapa === "orcando" || s.etapa === "aorcar") ? "O cliente não enviou fotos para este orçamento." : "Nenhuma foto registrada para este serviço."
         });
       };
       if (aberto) montarCarrossel();
@@ -276,6 +394,10 @@
     function mover(id, etapaId, focar) {
       const s = servicos.find((x) => x.id === id);
       if (!s || s.etapa === etapaId) return;
+      if (SO_CLIENTE_FINALIZA && (etapaId === "prestado" || s.etapa === "prestado")) {
+        mostrarAviso("Só o cliente marca o serviço como finalizado (Prestados). Ele faz isso pelo perfil dele, com fotos e avaliação.");
+        return;
+      }
       s.etapa = etapaId;
       if (etapaId === "prestado" && !s.dataConclusao) s.dataConclusao = U.hojeISO();   // demo: conclui hoje
       if (etapaId !== "prestado") s.dataConclusao = null;
@@ -293,6 +415,88 @@
       }
     }
 
+    /* ---------- 5b. ENCERRAR E EXCLUIR ---------- */
+    function encerrar(id, motivo) {
+      const s = servicos.find((x) => x.id === id);
+      if (!s) return;
+      s.etapaAnterior = s.etapa;
+      s.etapa = "encerrado";
+      s.motivo = motivo;
+      s.dataEncerramento = U.hojeISO();
+      abertos.delete(id);
+      renderizar();
+      anunciar(`"${s.servico}" foi para ${ENCERRADOS.nome}.`);
+    }
+    async function excluir(id) {
+      const s = servicos.find((x) => x.id === id);
+      if (!s) return;
+      const ok = await confirmar({
+        titulo: "Excluir de vez?",
+        texto: `"${s.servico}" (${s.cliente}) será apagado e não poderá ser recuperado.`,
+        sim: "Sim, excluir"
+      });
+      if (!ok) return;
+      servicos.splice(servicos.indexOf(s), 1);   // demonstração: o servidor apagará de verdade
+      renderizar();
+      anunciar(`"${s.servico}" foi excluído.`);
+      const lixo = alvoEncerrados && alvoEncerrados.querySelector(".kanban-encerrados-botao");
+      if (lixo) lixo.focus();
+    }
+
+    /* ---------- 5c. ÁREA ENCERRADOS (sanfona, começa fechada) ---------- */
+    let encerradosAberto = false;
+    function renderizarEncerrados() {
+      if (!alvoEncerrados) return;
+      const lista = servicos.filter((s) => s.etapa === "encerrado")
+        .sort((a, b) => String(b.dataEncerramento).localeCompare(String(a.dataEncerramento)));
+      alvoEncerrados.className = "kanban-encerrados";
+      alvoEncerrados.innerHTML = `
+        <h3 class="kanban-encerrados-titulo">
+          <button type="button" class="kanban-encerrados-botao" aria-expanded="${encerradosAberto}" aria-controls="kb-encerrados-corpo">
+            <span class="kanban-marcador" aria-hidden="true"></span>${ENCERRADOS.nome} <span class="kanban-qtd">(${lista.length})</span>${SETA_BAIXO}
+          </button>
+        </h3>
+        <p class="kanban-coluna-dica">${ENCERRADOS.dica}</p>
+        <div id="kb-encerrados-corpo" ${encerradosAberto ? "" : "hidden"}>
+          <p class="kanban-encerrados-aviso">Cada item é apagado automaticamente <strong>1 ano</strong> depois de encerrado. Você pode apagar antes pela lixeira.</p>
+          <ul class="kanban-encerrados-lista"></ul>
+          <p class="kanban-vazio" ${lista.length ? "hidden" : ""}>Nenhum pedido encerrado.</p>
+        </div>`;
+      const ul = alvoEncerrados.querySelector(".kanban-encerrados-lista");
+      lista.forEach((s) => {
+        const li = document.createElement("li");
+        li.className = "kanban-encerrado";
+        const recusado = s.motivo === ENCERRADOS.motivos.recusado;
+        const textos = document.createElement("div");
+        textos.className = "kanban-encerrado-textos";
+        const t = document.createElement("strong"); t.textContent = s.servico;
+        const c = document.createElement("span"); c.className = "kanban-card-cliente";
+        c.textContent = `${s.cliente} · ${s.tipoCliente === "cnpj" ? "CNPJ" : "CPF"}`;
+        const m = document.createElement("span");
+        m.className = "kanban-motivo" + (recusado ? " recusado" : "");
+        m.textContent = s.motivo || ENCERRADOS.motivos.prestador;
+        const info = document.createElement("span");
+        info.className = "kanban-encerrado-info";
+        info.textContent = `Encerrado em ${U.formatarData(s.dataEncerramento)} · Será apagado em ${U.formatarData(somarDias(s.dataEncerramento, ENCERRADOS.diasParaExcluir))}`;
+        textos.append(t, c, m, info);
+        const lixo = document.createElement("button");
+        lixo.type = "button";
+        lixo.className = "btn btn-pequeno btn-icone kanban-lixeira";
+        lixo.innerHTML = ICONE_LIXO;
+        lixo.setAttribute("aria-label", `Excluir "${s.servico}" de ${s.cliente}`);
+        lixo.title = "Excluir agora";
+        lixo.addEventListener("click", () => excluir(s.id));
+        li.append(textos, lixo);
+        ul.append(li);
+      });
+      alvoEncerrados.querySelector(".kanban-encerrados-botao").addEventListener("click", () => {
+        encerradosAberto = !encerradosAberto;
+        renderizarEncerrados();
+        alvoEncerrados.querySelector(".kanban-encerrados-botao").focus();
+        avisar();
+      });
+    }
+
     /* ---------- 6. DESENHO GERAL ---------- */
     function renderizar() {
       ETAPAS.forEach((et) => {
@@ -302,7 +506,7 @@
         lista.innerHTML = "";
         doEtapa.forEach((s) => lista.append(criarCartao(s)));
         col.querySelector(".kanban-qtd").textContent = `(${doEtapa.length})`;
-        col.querySelector(".kanban-coluna-soma").textContent = doEtapa.length ? U.formatarMoeda(doEtapa.reduce((t, s) => t + Number(s.valor || 0), 0)) : "";
+        col.querySelector(".kanban-coluna-soma").textContent = (doEtapa.length && et.id !== "aorcar") ? U.formatarMoeda(doEtapa.reduce((t, s) => t + Number(s.valor || 0), 0)) : "";
         col.querySelector(".kanban-vazio").hidden = doEtapa.length > 0;
         lista.hidden = doEtapa.length === 0;
       });
@@ -311,18 +515,23 @@
       const soma = (ids) => servicos.filter((s) => ids.includes(s.etapa)).reduce((t, s) => t + Number(s.valor || 0), 0);
       if (resumo) {
         resumo.innerHTML = "";
+        const novos = servicos.filter((s) => s.etapa === "aorcar").length;
         [
+          ["Pedidos a orçar", `${novos} ${novos === 1 ? "pedido" : "pedidos"}`],
           ["Em orçamento", soma(["orcando"])],
           ["A receber (aceitos + a realizar)", soma(["aceito", "realizar"])],
           ["Recebido (prestados)", soma(["prestado"])]
         ].forEach(([rot, val]) => {
           const d = document.createElement("div");
           const dt = document.createElement("dt"); dt.textContent = rot;
-          const dd = document.createElement("dd"); dd.textContent = U.formatarMoeda(val);
+          const dd = document.createElement("dd"); dd.textContent = typeof val === "string" ? val : U.formatarMoeda(val);
           d.append(dt, dd); resumo.append(d);
         });
       }
-      if (total) total.textContent = `${servicos.length} ${servicos.length === 1 ? "serviço" : "serviços"}`;
+      const ativos = servicos.filter((s) => s.etapa !== "encerrado").length;
+      if (total) total.textContent = `${ativos} ${ativos === 1 ? "serviço" : "serviços"}`;
+      renderizarEncerrados();
+      aplicarSanfonas();
       avisar();
     }
 
@@ -332,9 +541,10 @@
       get servicos() { return servicos.map((s) => ({ ...s })); },
       contar: (etapa) => servicos.filter((s) => s.etapa === etapa).length,
       mover: (id, etapa) => mover(id, etapa, false),
+      encerrar, excluir,
       etapas: ETAPAS.map((e) => ({ ...e }))
     };
   }
 
-  window.SDKanban = { criar, ETAPAS };
+  window.SDKanban = { criar, ETAPAS, ENCERRADOS };
 })();

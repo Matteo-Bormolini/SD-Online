@@ -1,24 +1,13 @@
 # Modelo de página
 
-**Sprint 1 · Épico E1 Base do site · ✅ Pronto**
+O ponto de partida de **toda** página nova. Já vem com menu, rodapé, cores e tema.
 
-É o "molde" de toda página nova. Ele já vem com menu, rodapé, cores e regras de acesso ligados.
+## Como criar uma página nova
+1. Copie esta pasta e dê um nome simples (ex.: `sobre/`).
+2. Troque o título, o `data-pagina` e o conteúdo.
+3. Cadastre o link em `configuracoes/config.js`.
+4. Se a página for restrita, coloque `data-recurso` no `<body>` e a regra em `seguranca/`.
 
-## Para quem
-Para quem vai criar uma página nova no site.
-
-## O que entrega
-- Uma página vazia, já no padrão da S.D.
-- Exemplos de botão, link, mensagem e selo "Dados de demonstração".
-
-## Pronto quando
-- [x] Copiar a pasta e trocar o conteúdo é suficiente para ter uma página nova funcionando.
-
-## Como usar
-1. Copie esta pasta e renomeie (ex.: `sobre/`).
-2. Troque o `<title>`, o `data-pagina` e o conteúdo do `<main>`.
-3. Se a página não for pública, coloque a regra dela no `<body>`: `data-recurso="nome-da-regra"`.
-4. Coloque o caminho da nova página em `configuracoes/config.js`.
-5. Escreva o README da nova pasta.
-
-Passo a passo completo: [guia técnico](../docs/guia-tecnico.md#4-criar-uma-página-nova).
+## Não faça
+- Não escreva menu nem rodapé à mão: eles são montados sozinhos.
+- Não crie cores novas: use as do `base.css`.

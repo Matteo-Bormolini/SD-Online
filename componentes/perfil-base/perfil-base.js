@@ -25,6 +25,8 @@
   };
 
   const $ = (sel) => document.querySelector(sel);
+  // PADRÃO: excluir ou editar sempre pergunta antes (componentes/confirmacao)
+  const confirmar = (opcoes) => (window.SDConfirmar ? window.SDConfirmar(opcoes) : Promise.resolve(true));
   const ICONES = {
     x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
     olho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -196,7 +198,11 @@
           rem.className = classeRemover;
           rem.innerHTML = ICONES.x;
           rem.setAttribute("aria-label", "Remover telefone " + U.formatarTelefone(t.numero));
-          rem.addEventListener("click", () => { perfil.telefones.splice(i, 1); renderizar(); btn.focus(); });
+          rem.addEventListener("click", async () => {
+            const ok = await confirmar({ titulo: "Excluir este telefone?", texto: `O número ${U.formatarTelefone(t.numero)} será removido do seu perfil.`, sim: "Sim, excluir" });
+            if (!ok) return;
+            perfil.telefones.splice(i, 1); renderizar(); btn.focus();
+          });
           li.append(rem);
         }
         lista.append(li);
@@ -339,7 +345,7 @@
     $("#f-senha").setAttribute("maxlength", "128");
     $("#f-senha2").setAttribute("maxlength", "128");
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       U.limparMensagem(msg);
       form.querySelectorAll(".campo-erro").forEach((el) => (el.textContent = ""));
@@ -364,6 +370,14 @@
         document.getElementById(erros[0]).focus();
         return;
       }
+
+      // PADRÃO: confirmar antes de editar
+      const ok = await confirmar({
+        tipo: "editar", titulo: "Confirmar alteração do perfil?",
+        texto: "Os campos que você preencheu vão substituir os dados atuais. Campos vazios continuam como estão.",
+        sim: "Sim, alterar"
+      });
+      if (!ok) { U.mostrarMensagem(msg, "info", "Alteração cancelada. Nada foi mudado e o que você digitou continua no formulário."); return; }
 
       // Aplica somente os campos preenchidos; vazios mantêm o anterior
       const alterados = [];
@@ -419,18 +433,20 @@
       atualizarAltura();
     }
     $("#btn-foto").addEventListener("click", () => $("#input-foto").click());
-    $("#input-foto").addEventListener("change", (e) => {
+    $("#input-foto").addEventListener("change", async (e) => {
       const arq = e.target.files[0];
       e.target.value = "";
       if (!arq) return;
       const erro = validarArquivo(arq, config);
       if (erro) { U.mostrarMensagem(msg, "erro", erro); return; }
+      if (!(await confirmar({ tipo: "editar", titulo: "Trocar a foto de perfil?", texto: `A foto atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) return;
       if (perfil.foto) URL.revokeObjectURL(perfil.foto);
       perfil.foto = URL.createObjectURL(arq);
       renderizar();
       U.mostrarMensagem(msg, "atencao", "Pré-visualização atualizada (ainda não enviada ao servidor).");
     });
-    remover.addEventListener("click", () => {
+    remover.addEventListener("click", async () => {
+      if (!(await confirmar({ titulo: "Remover a foto de perfil?", texto: "Será usada a foto padrão do site.", sim: "Sim, remover" }))) return;
       if (perfil.foto) URL.revokeObjectURL(perfil.foto);
       perfil.foto = null;
       renderizar();
@@ -459,6 +475,8 @@
      opcoes.ligado → estado inicial · opcoes.aoMudar(ligado) → chamado a cada troca */
   function iniciarInterruptor(botao, opcoes = {}) {
     if (!botao) return null;
+    // Botões com data-interruptor são ligados por configuracoes/interruptores.js
+    if (botao.dataset.interruptor && window.SD_INTERRUPTORES_LIGAR) return null;
     const estadoTxt = botao.querySelector(".interruptor-estado");
     const pintar = (ligado) => {
       botao.setAttribute("aria-checked", String(ligado));
@@ -471,6 +489,21 @@
       if (opcoes.aoMudar) opcoes.aoMudar(ligado);
     });
     return { definir: pintar };
+  }
+
+  /* ---------- 7c. BOTÕES LIGA/DESLIGA DA LINHA DAS ABAS ----------
+     Liga os botões de .perfil-interruptores (lista em configuracoes/interruptores.js)
+     e mostra uma mensagem curta explicando o que mudou. */
+  function iniciarInterruptoresPerfil() {
+    const caixa = $(".perfil-interruptores");
+    if (!caixa || !window.SD_INTERRUPTORES_LIGAR) return;
+    window.SD_INTERRUPTORES_LIGAR(caixa);
+    const msg = $("#msg-interruptores");
+    document.addEventListener("sd:interruptor", (e) => {
+      const { ligado, item } = e.detail;
+      if (msg) U.mostrarMensagem(msg, "info", `${item.nome}: ${ligado ? item.ligado : item.desligado} (Demonstração: ainda não salvo no servidor.)`);
+      atualizarAltura();
+    });
   }
 
   /* ---------- 8. LINK DE AVALIAÇÕES (estrelas + média) ---------- */
@@ -486,6 +519,7 @@
     PADRAO, ICONES, $, ouTraco, atualizarAltura, enderecoParaTela, placeholdersEndereco,
     preencherCampos, preencherPlaceholders, preencherSelect, preencherLinkAvaliacoes,
     iniciarAbas, iniciarTelefones, iniciarSanfona, abrirSanfona,
-    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, iniciarExclusao, iniciarInterruptor
+    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, iniciarExclusao, iniciarInterruptor,
+    iniciarInterruptoresPerfil, confirmar
   });
 })();

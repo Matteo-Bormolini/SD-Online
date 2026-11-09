@@ -76,7 +76,9 @@
   /* ---------- 4. "SERVIDOR" DE DEMONSTRAÇÃO ----------
      Faz o que a API fará: filtra, esconde dados não liberados, calcula e ordena. */
   function lerCliente() {
-    const desativada = C.modoDemonstracao && new URLSearchParams(location.search).get("localizacao") === "desativada";
+    // Demonstração: vale o ?localizacao=desativada OU o botão "Localização" desligado no perfil
+    const peloBotao = window.SD_INTERRUPTORES ? !window.SD_INTERRUPTORES.ler("localizacao") : false;
+    const desativada = C.modoDemonstracao && (new URLSearchParams(location.search).get("localizacao") === "desativada" || peloBotao);
     return desativada ? { localizacaoAtiva: false } : DEMO.cliente;
   }
 

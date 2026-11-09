@@ -1,6 +1,6 @@
 # Recuperação de acesso — regras para o servidor
 
-**Sprint 2 (tela) e Sprint 5 (servidor) · Épico E2 Conta · História US05**
+**Tela pronta (v0.5.1) · servidor no Ciclo 2 (Contas reais) · História US05**
 
 A tela já está pronta (pop-ups na página de login). Este arquivo diz **o que o servidor tem de fazer** quando existir.
 Nada aqui cria banco de dados: é o plano.
@@ -89,7 +89,7 @@ Na tela, as mesmas partes estão em `servicos/identificadores.js` e `servicos/re
 
 ---
 
-## 5. Configuração do envio de e-mails (Sprint 5)
+## 5. Configuração do envio de e-mails (Ciclo 2)
 
 1. Escolher um provedor **grátis e sem prazo** (regra do projeto). Exemplo conferido em 06/11/2026: **Brevo**, plano grátis com 300 e-mails/dia. Planos mudam: conferir de novo antes de usar.
 2. Ter um **domínio próprio** e configurar no DNS: **SPF**, **DKIM** e **DMARC** (sem isso, os e-mails caem no spam).

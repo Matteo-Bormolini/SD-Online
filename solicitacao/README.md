@@ -1,31 +1,20 @@
 # Pedido de orçamento
 
-**Sprint 3 · Épico E5 Pedir e negociar · ⬜ Planejada**
+Onde o cliente pede um orçamento a um prestador.
 
-O coração da S.D: é aqui que o cliente pede um orçamento e o prestador responde.
+## Quem vê
+- Clientes CPF e CNPJ (e o adm).
 
-## Para quem
-- **Clientes** (CPF e CNPJ): fazem o pedido por esta página.
-- **Prestadores:** recebem o pedido e respondem pelo quadro **Meus serviços**, no perfil deles.
+## Como vai funcionar
+1. O cliente cria **uma solicitação**: descreve o problema e envia **3 fotos obrigatórias** (até 6) de ângulos diferentes.
+2. Na página **Localizar prestador**, vê avaliações, serviços e localização e **marca os prestadores** que quer. O mesmo pedido vai para todos.
+3. O pedido entra na etapa **A orçar** de cada prestador (aviso no site e por e-mail). Sem resposta em **10 dias**, expira.
+4. O prestador escolhe: **Fazer orçamento** (valor + se cobra visita e quanto) ou **Não vou orçar** (vai para Encerrados).
 
-## O que vai entregar
-1. Na página do prestador, o cliente escolhe o serviço e preenche o **pedido de orçamento**.
-2. O pedido aparece no quadro do prestador, na coluna **A orçar**. Ele é avisado no site e por e-mail.
-3. O prestador decide se atende. Se sim, preenche o **orçamento padrão**: serviço, materiais, mão de obra, valores e datas de início e fim. As datas podem mudar depois do aceite.
-4. O cliente é avisado de que chegou uma proposta.
-5. O cliente pode pedir orçamento a quantos prestadores quiser. Ele recebe só dos que procurou.
+## Arquivos
+| Arquivo | Para que serve |
+|---|---|
+| `index.html` | Página provisória ("em desenvolvimento"). |
 
-## Histórias atendidas
-- **US13** — pedir orçamento na página do prestador.
-- **US14** — prestador recebe na coluna "A orçar" e é avisado.
-- **US15** — orçamento padrão.
-
-## Pronto quando
-- [ ] O cliente faz um pedido completo na tela.
-- [ ] O pedido aparece na coluna "A orçar" do prestador.
-- [ ] O prestador envia um orçamento com todos os campos.
-- [ ] Nenhum dado pessoal aparece para quem não deve (regras de `seguranca/`).
-
-## Parte técnica
-- Hoje: página "em construção" (`index.html`), já protegida (só clientes e administrador abrem).
-- Cada pedido e cada orçamento será um registro no banco de dados (Sprint 5).
+## Situação
+- ⬜ Página do pedido (US13) e orçamento padrão (US15) — **Ciclo 3**.

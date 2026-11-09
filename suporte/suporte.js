@@ -10,10 +10,11 @@
 
   /* ---------- 1. E-MAILS (editar aqui; vazio = "E-mail em definição") ---------- */
   const EMAILS = {
-    suporte:         "",   // dúvidas da plataforma (botão Dúvidas)
-    sugestoes:       "",   // botão Sugestões + resumo do assistente
-    desenvolvimento: "",   // equipe técnica
-    reserva:         ""    // usado se os outros não responderem
+    // 09/11/2026: por enquanto um e-mail só para tudo (definido pelo Marco). Trocar aqui quando houver e-mails próprios.
+    suporte:         "matteo.bormolini228@al.unieduk.com.br",   // dúvidas da plataforma (botão Dúvidas)
+    sugestoes:       "matteo.bormolini228@al.unieduk.com.br",   // botão Sugestões + resumo do assistente
+    desenvolvimento: "matteo.bormolini228@al.unieduk.com.br",   // equipe técnica
+    reserva:         "matteo.bormolini228@al.unieduk.com.br"    // usado se os outros não responderem
   };
   // Cartões do fim da página (ordem de exibição)
   const CONTATOS = [

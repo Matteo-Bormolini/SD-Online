@@ -19,9 +19,11 @@
 <link rel="stylesheet" href="perfil-prestador.css">
 <script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
+<script src="../configuracoes/interruptores.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/confirmacao/confirmacao.js" defer></script>
 <script src="../componentes/senha/senha.js" defer></script>
 <script src="../componentes/endereco/endereco.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
@@ -71,6 +73,12 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
         Ver como cliente
       </button>
+      <!-- Botões liga/desliga (lista e padrão em configuracoes/interruptores.js) — à direita -->
+      <div class="perfil-interruptores so-dono">
+        <button class="interruptor" data-interruptor="mostrar-contatos"></button>
+        <button class="interruptor" data-interruptor="localizacao"></button>
+        <div class="mensagem" id="msg-interruptores" role="status" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="perfil-trilho" id="perfil-trilho">
@@ -102,12 +110,13 @@
           <div class="contato-cliente so-cliente">
             <a class="btn" id="btn-whatsapp" href="#" target="_blank" rel="noopener noreferrer">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.4A8.4 8.4 0 1 1 21 11.5Z"/></svg>
-              Chamar no WhatsApp
+              <span id="btn-whatsapp-texto">Chamar no WhatsApp</span>
             </a>
             <a class="btn" id="btn-ligar" href="#">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>
-              Ligar
+              <span id="btn-ligar-texto">Ligar</span>
             </a>
+            <p class="nota" id="contato-nota" hidden>Este prestador libera o contato depois do orçamento.</p>
           </div>
 
           <!-- Dados da empresa (preenchidos pelo perfil-prestador.js) -->
@@ -137,8 +146,9 @@
                   <p class="nota so-dono">Ex.: CREA/CFT, NR-10 (eletricidade), NR-35 (trabalho em altura). Na versão final, os documentos serão conferidos pela S.D.</p>
                 </td>
               </tr>
-              <tr><th scope="row">E-mail</th><td class="valor" data-campo="email"></td></tr>
-              <tr>
+              <!-- E-mail e telefones: na visão do cliente só aparecem com "Mostrar meus contatos" ligado -->
+              <tr class="contato-privado"><th scope="row">E-mail</th><td class="valor" data-campo="email"></td></tr>
+              <tr class="contato-privado">
                 <th scope="row">WhatsApp/Telefone</th>
                 <td>
                   <div class="linha-acao">
@@ -406,9 +416,11 @@
           <h2 id="titulo-servicos">Meus serviços</h2>
           <span class="servicos-total" id="servicos-total"></span>
         </div>
-        <p class="servicos-dica">Clique em um serviço para ver detalhes, fotos e valores. Para mudar a etapa, use os botões do serviço ou arraste o cartão com o mouse.</p>
+        <p class="servicos-dica">Pedidos novos chegam em <strong>A orçar</strong>. Clique em um serviço para ver detalhes, fotos e valores. Para mudar a etapa, use os botões do serviço ou arraste o cartão com o mouse. No celular, toque no nome da etapa para abrir ou fechar.</p>
         <dl class="kanban-resumo" id="kanban-resumo"></dl>
         <div class="kanban" id="kanban"></div>
+        <!-- Encerrados: pedidos que terminaram sem serviço (apagados em 1 ano) -->
+        <section id="kanban-encerrados" aria-label="Encerrados"></section>
       </div>
 
     </div>

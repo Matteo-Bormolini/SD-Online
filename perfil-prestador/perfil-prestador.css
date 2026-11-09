@@ -115,3 +115,8 @@
   .vitrine-area { text-align: center; }
   .vitrine .chips { justify-content: center; }
 }
+
+/* Contatos escondidos na visão do cliente quando "Mostrar meus contatos" está desligado */
+[data-visao="cliente"][data-contatos="ocultos"] .contato-privado { display: none; }
+.contato-cliente .nota { flex-basis: 100%; margin: 0; }
+[data-visao="cliente"] .perfil-abas { display: none; }   /* sem abas na visão do cliente: evita faixa vazia */

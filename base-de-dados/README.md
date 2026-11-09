@@ -1,68 +1,49 @@
 # Banco de dados
 
-**Sprint 5 · Épico E9 Servidor, segurança e LGPD · ⬜ Planejada**
-
 É onde as informações vão ficar guardadas de verdade: contas, pedidos, orçamentos e avaliações.
-Sem ele, o site é só demonstração.
-
-## Para quem
-Para todos os usuários (de forma invisível) e para a equipe S.D.
+Ainda **não existe**. Hoje o site usa dados de demonstração.
 
 ## O que vai guardar
-Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · contrapropostas · avaliações · fotos · avisos.
+Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avaliações · fotos · avisos · escolhas dos botões liga/desliga.
 
-## Histórias atendidas
-- **US30** — dados guardados com segurança.
-- **US32** — ver, corrigir, baixar e apagar os dados.
-- **US03 a US05** — contas reais.
+## Campos já decididos
+**Todos os usuários**
+- Endereço separado: `cep`, `endereco`, `numero`, `complemento` (opcional), `bairro`, `cidade`, `uf`.
+- Um campo para cada botão liga/desliga de `configuracoes/interruptores.js` (ex.: `localizacao`).
 
-## Pronto quando
-- [ ] Tabelas criadas e documentadas aqui.
-- [ ] Senhas guardadas só como *hash* (ninguém consegue ler).
-- [ ] CPF/CNPJ único e sem alteração.
-- [ ] Localização guardada de forma que o prestador só receba uma área aproximada.
-- [ ] Prazo definido para apagar dados antigos (ex.: orçamentos arquivados).
-- [ ] Testes de segurança feitos.
+**Prestador**
+- `tags` — `destaque` = assinatura de destaque ativa (o adm liga/desliga).
+- `localizacao` (sim/não) — desligado: não aparece em mapas nem listas.
+- `mostrar_contatos` (sim/não, padrão sim) — desligado: telefone, WhatsApp e e-mail não são enviados ao navegador do cliente.
+- `latitude`, `longitude` — calculados pelo servidor a partir do endereço.
+- `informativo_cobranca` — texto de como cobra (só informação; o site não mexe com dinheiro).
 
-## Campos já definidos (05/11/2026)
-Prestador:
-- `tags` — lista de etiquetas. **`destaque`** = destaque pago (liga/desliga pelo administrador).
-- `localizacao_ativa` (sim/não) — desligado: não aparece em mapas e listas; o perfil informa que não disponibilizou a localização.
-- `whatsapp_publico` (sim/não) — desligado: o número **não** é enviado ao navegador na busca.
-- `latitude`, `longitude` — calculados pelo servidor a partir do endereço da empresa.
+**Cliente CPF**
+- `compartilhar_dados` (sim/não, padrão não) + data da última mudança.
 
-Clientes (CPF e CNPJ):
-- `localizacao_ativa` (sim/não) e o ponto do endereço do perfil (só para calcular distâncias; nunca enviado ao prestador).
+**Cliente CNPJ**
+- `responsavel_cargo`; `horario_visitas` (até 3 faixas: dias 0–6, hora de início e fim) + `horario_obs`.
 
-## Campos novos (06/11/2026)
-Todos os usuários — endereço separado (o CEP preenche o resto):
-- `cep` (8 dígitos), `endereco` (rua), `numero` (aceita "S/N"), `complemento` (opcional), `bairro`, `cidade`, `uf` (sigla de 2 letras).
+**Pedidos e quadro do prestador**
+- `etapa`: a_orcar · orcando · aceito · a_realizar · prestado · encerrado.
+- `motivo_encerramento` + `encerrado_em`. O servidor **apaga sozinho 1 ano depois** de `encerrado_em`.
+- Uma **solicitação** do cliente (descrição + 3 a 6 fotos; mínimo 3) ligada a vários prestadores (um pedido por prestador marcado).
+- `responder_ate` = data do pedido + 10 dias. Passou sem resposta → `encerrado` com motivo "Expirou".
+- Orçamento: valores, datas, `cobra_visita` (sim/não) e `valor_visita`. Sem tabela de preço fixa. Ao enviar, libera o contato do prestador para aquele cliente. Sem contraproposta.
+- Finalização **pelo cliente**: `finalizado_em` + 2 a 6 fotos. Só então a etapa vira `prestado`.
 
-Cliente CPF:
-- `compartilhar_dados` (sim/não) + data da última mudança — o botão "Mostrar meus dados aos prestadores" (primeiro nome e bairro).
+**Avaliações**
+- `mostrar_nome` (sim/não, padrão não). `resposta_prestador` (opcional) e a data da resposta.
 
-Cliente CNPJ:
-- `responsavel_cargo` (lista ou texto de "Outro").
-- `horario_visitas`: lista de faixas `{ dias: [0-6], inicio: "HH:MM", fim: "HH:MM" }` (até 3) + `horario_obs` (texto livre, até 80). O servidor confere de novo: dia de 0 a 6, hora de 00:00 a 23:59, fim depois do início.
-
-Avaliações:
-- `mostrar_nome` (sim/não, padrão **não**). Se for "não", o nome de quem avaliou **nunca** é enviado ao prestador.
-
-## Modelo lógico do acesso (preparado — NÃO criado)
-Planejado para aceitar vários jeitos de entrar sem refazer o banco.
-**Nada disto foi criado ainda**: é só a organização para a Sprint 5.
-
-| Tabela (futura) | Guarda | Regras |
+## Login (planejado, não criado)
+| Tabela | Guarda | Regra |
 |---|---|---|
-| `usuarios` | Dados da pessoa/empresa (nome, tipo de conta, endereço…) | Sem senha e sem identificadores de login aqui. |
-| `identificadores_acesso` | `usuario_id`, `tipo` (email, cpf, cnpj; futuro: login, telefone), `valor_normalizado`, `confirmado_em`, `liberado_para_login` | `tipo + valor_normalizado` **único** (sem duplicados). Vários por conta. Só entra no login se confirmado **e** liberado. |
-| `credenciais` | `usuario_id`, `hash_senha` (Argon2id), `alterada_em` | Uma por conta. Nunca a senha em texto. |
-| `tokens_recuperacao` | `usuario_id`, `hash_token` (SHA-256), `expira_em` (30 min), `usado_em` | Uso único; novo pedido apaga os anteriores. |
-| `sessoes` | `usuario_id`, `hash_sessao`, `criada_em`, `expira_em`, `encerrada_em` | Trocar a senha encerra todas. |
-| `tentativas_acesso` | e-mail/identificador (em hash), IP, data, tipo (login, recuperação) | Usada para os limites de tentativas. Apagar após 30 dias. |
+| `usuarios` | Dados da pessoa/empresa | Sem senha aqui. |
+| `identificadores_acesso` | E-mail, CPF, CNPJ (futuro: telefone) | Sem repetidos. Só vale depois de confirmado. |
+| `credenciais` | Senha em *hash* (Argon2id) | Ninguém lê a senha, nem o adm. |
 
-**Normalização** (a mesma da tela, em `servicos/identificadores.js`): e-mail em minúsculas e sem espaços; CPF só números; CNPJ em maiúsculas, só letras e números (aceita o alfanumérico).
+## Situação
+✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-## Parte técnica
-- Hoje: só este README. A estrutura será criada na Sprint 5, seguindo o modelo acima.
-- Cópias do banco (backup) **nunca** vão para o GitHub. O `.gitignore` bloqueia os formatos mais comuns.
+- ⬜ Escolher o servidor (Cloudflare ou Firebase) — **Ciclo 1**.
+- ⬜ Criar as tabelas — **Ciclo 2**.

@@ -37,6 +37,10 @@
   --cor-menu-fundo: #800000;
   --cor-menu-texto: #FFFFFF;
 
+  /* Botões liga/desliga (padrão aprovado em 09/11/2026): desligado = cinza escuro, ligado = vinho */
+  --cor-interruptor-desligado: #4A4A4A;
+  --cor-interruptor-ligado:    #800000;
+
   /* Formas e sombras */
   --raio-cartao: 12px;
   --raio-botao:  8px;
@@ -63,6 +67,7 @@
   --cor-erro:    #F29A9A;  --cor-erro-fundo:    #3A1A1A;
   --cor-info:    #9CC3F0;  --cor-info-fundo:    #142A42;
   --cor-destaque: #FF4545;  --cor-destaque-texto: #1A0000;
+  --cor-interruptor-desligado: #8C8C8C;
   --sombra-imagem: 0 2px 8px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
@@ -209,7 +214,55 @@ img { height: auto; }
 .modal-acoes { display: flex; justify-content: flex-end; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; }
 @media (max-width: 47.99rem) { .modal-acoes .btn { flex: 1 1 100%; } }
 
-/* ---------- 10. MOVIMENTO REDUZIDO ---------- */
+/* Pop-up de confirmação (componentes/confirmacao): ícone de lápis para "editar" */
+.modal-icone.modal-icone-editar { color: var(--cor-info); background: var(--cor-info-fundo); }
+
+/* ---------- 10. BOTÃO LIGA/DESLIGA (interruptor) — PADRÃO DO SITE ----------
+   Desligado = cinza escuro · Ligado = vinho. O estado também aparece
+   em texto ("Ligado"/"Desligado"), para não depender só da cor.
+   Lista de todos os botões: configuracoes/interruptores.js.
+   <button class="interruptor" role="switch" aria-checked="false">
+     <span class="interruptor-trilho" aria-hidden="true"><span class="interruptor-bola"></span></span>
+     <span class="interruptor-texto">Nome</span>
+     <span class="interruptor-estado" aria-hidden="true"></span>
+   </button> */
+.interruptor {
+  display: inline-flex; align-items: center; gap: .625rem; flex-wrap: wrap;
+  min-height: 2.75rem; padding: .25rem 0; text-align: left;
+  font: inherit; font-size: .9375rem; font-weight: 600; color: var(--cor-texto);
+  background: transparent; border: 0; cursor: pointer;
+}
+.interruptor-trilho {
+  position: relative; flex: none; width: 2.75rem; height: 1.5rem;
+  background: var(--cor-interruptor-desligado); border: 1px solid var(--cor-interruptor-desligado); border-radius: 999px;
+  transition: background-color .15s ease;
+}
+.interruptor-bola {
+  position: absolute; top: 50%; left: .1875rem; width: 1.125rem; height: 1.125rem; transform: translateY(-50%);
+  background: #FFFFFF; border-radius: 50%; transition: left .15s ease;
+}
+.interruptor[aria-checked="true"] .interruptor-trilho { background: var(--cor-interruptor-ligado); border-color: var(--cor-interruptor-ligado); }
+.interruptor[aria-checked="true"] .interruptor-bola { left: 1.4375rem; }
+.interruptor-estado {
+  font-size: .75rem; font-weight: 700; padding: .0625rem .5rem; border-radius: 999px;
+  color: #FFFFFF; background: var(--cor-interruptor-desligado); border: 1px solid var(--cor-interruptor-desligado);
+}
+.interruptor[aria-checked="true"] .interruptor-estado { background: var(--cor-interruptor-ligado); border-color: var(--cor-interruptor-ligado); }
+.interruptor:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 8px; }
+[data-tema="escuro"] .interruptor:focus-visible { outline-color: var(--cor-texto); }
+[data-tema="escuro"] .interruptor-estado { color: #1A1A1A; }
+[data-tema="escuro"] .interruptor[aria-checked="true"] .interruptor-estado { color: #FFFFFF; border-color: var(--cor-texto); }
+[data-tema="escuro"] .interruptor[aria-checked="true"] .interruptor-trilho { border-color: var(--cor-texto); }
+
+/* Aviso embaixo de um botão desligado (texto em configuracoes/interruptores.js → avisoDesligado) */
+.interruptor-aviso { flex-basis: 100%; margin: .25rem 0 0; font-size: .8125rem; }
+.interruptor-aviso[hidden] { display: none; }
+
+/* Botão que existe mas ainda não pode ser usado (ex.: contato não liberado) */
+.btn[aria-disabled="true"] { cursor: not-allowed; opacity: .6; background: var(--cor-superficie-2); color: var(--cor-texto-secundario); border-style: dashed; }
+.btn[aria-disabled="true"]:hover { background: var(--cor-superficie-2); color: var(--cor-texto-secundario); }
+
+/* ---------- 11. MOVIMENTO REDUZIDO ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

@@ -8,7 +8,7 @@
 
 /* ---------- 1. RESUMO EM NÚMEROS ---------- */
 .kanban-resumo {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem;
+  display: grid; gap: .75rem;   /* colunas na seção 10 */
   margin: 0 0 1.25rem;
 }
 .kanban-resumo div {
@@ -19,9 +19,9 @@
 .kanban-resumo dt { font-size: .75rem; color: var(--cor-texto-secundario); text-transform: uppercase; letter-spacing: .03em; font-weight: 600; }
 .kanban-resumo dd { margin: .125rem 0 0; font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-/* ---------- 2. QUADRO: 4 COLUNAS ---------- */
+/* ---------- 2. QUADRO: 5 COLUNAS (larguras na seção 10) ---------- */
 .kanban {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .875rem;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .875rem;
   align-items: start;
 }
 .kanban-coluna {
@@ -152,10 +152,8 @@
 [data-tema="escuro"] .kanban-card-topo:focus-visible { outline-color: var(--cor-texto); }
 
 /* ---------- 6. RESPONSIVIDADE ---------- */
-@media (max-width: 75rem) { .kanban { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 47.99rem) {
   .kanban { grid-template-columns: 1fr; }
-  .kanban-resumo { grid-template-columns: 1fr; }
   .kanban-acoes .btn { flex-basis: 100%; }
 }
 @media (min-width: 120rem) { .kanban-card-titulo { font-size: .9375rem; } }
@@ -164,3 +162,86 @@
   .kanban-detalhes:not([hidden]), .kanban-card.recem-movido { animation: none; }
   .kanban-card, .kanban-coluna, .kanban-seta { transition: none; }
 }
+
+/* ---------- 7. A ORÇAR (nova etapa, 09/11/2026) ---------- */
+[data-etapa="aorcar"] .kanban-marcador { border-radius: 2px; transform: rotate(45deg); border-color: var(--cor-vinho); }  /* losango */
+
+/* ---------- 8. TÍTULO DA COLUNA = BOTÃO DA SANFONA (só no celular) ---------- */
+.kanban-coluna-botao {
+  display: flex; align-items: center; gap: .5rem; width: 100%;
+  padding: 0; font: inherit; font-weight: 700; color: var(--cor-texto); text-align: left;
+  background: transparent; border: 0;
+}
+.kanban-coluna-botao:disabled { cursor: default; opacity: 1; }     /* computador: só título */
+.kanban-coluna-botao .kanban-seta { margin-left: auto; transition: transform .2s ease; }
+.kanban-coluna-botao:disabled .kanban-seta { display: none; }
+.kanban-coluna-botao[aria-expanded="true"] .kanban-seta { transform: rotate(180deg); }
+.kanban-coluna-botao:not(:disabled) { cursor: pointer; min-height: 2.75rem; }
+.kanban-coluna-botao:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 6px; }
+.kanban-coluna.recolhida .kanban-corpo { display: none; }
+.kanban-coluna.recolhida .kanban-coluna-topo { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+.kanban-coluna.recolhida .kanban-coluna-dica { display: none; }
+
+/* ---------- 9. ENCERRADOS (sem serviço) ---------- */
+.kanban-encerrados {
+  margin-top: 1rem; padding: .75rem;
+  background: var(--cor-superficie-2);
+  border: 1px dashed var(--cor-campo-borda); border-radius: var(--raio-cartao);
+}
+.kanban-encerrados-titulo { margin: 0; font-size: 1rem; }
+.kanban-encerrados-botao {
+  display: flex; align-items: center; gap: .5rem; width: 100%; min-height: 2.75rem;
+  padding: 0 .25rem; font: inherit; font-weight: 700; color: var(--cor-texto); text-align: left;
+  background: transparent; border: 0; cursor: pointer;
+}
+.kanban-encerrados-botao .kanban-seta { margin-left: auto; transition: transform .2s ease; }
+.kanban-encerrados-botao[aria-expanded="true"] .kanban-seta { transform: rotate(180deg); }
+.kanban-encerrados-botao:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 6px; }
+.kanban-encerrados .kanban-marcador { border-radius: 2px; border-color: var(--cor-texto-secundario); background: repeating-linear-gradient(45deg, transparent 0 2px, var(--cor-texto-secundario) 2px 3px); }
+.kanban-encerrados > .kanban-coluna-dica { padding: 0 .25rem; }
+.kanban-encerrados-aviso {
+  margin: .75rem 0; padding: .5rem .75rem; font-size: .8125rem;
+  color: var(--cor-atencao); background: var(--cor-atencao-fundo); border-radius: 8px;
+}
+.kanban-encerrados-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
+.kanban-encerrado {
+  display: flex; align-items: flex-start; gap: .75rem; padding: .625rem .75rem;
+  background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: 10px;
+}
+.kanban-encerrado-textos { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .125rem; font-size: .875rem; overflow-wrap: anywhere; }
+.kanban-encerrado-info { font-size: .75rem; color: var(--cor-texto-secundario); }
+.kanban-motivo {
+  align-self: flex-start; font-size: .75rem; font-weight: 700; padding: .0625rem .5rem; border-radius: 999px;
+  color: var(--cor-texto-secundario); border: 1px solid var(--cor-campo-borda);
+}
+.kanban-motivo.recusado { color: var(--cor-erro); background: var(--cor-erro-fundo); border-color: var(--cor-erro); }  /* recusado = vermelho */
+.kanban-lixeira { flex: none; }
+.kanban-lixeira svg { width: 1.125rem; height: 1.125rem; }
+.kanban-lixeira:hover { background: var(--cor-erro); border-color: var(--cor-erro); color: #FFFFFF; }
+.kanban-encerrar { color: var(--cor-erro); }
+.kanban-acoes .kanban-encerrar { flex-basis: 100%; }
+
+/* ---------- 10. LARGURAS COM 5 COLUNAS ---------- */
+@media (min-width: 75.01rem) { .kanban { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 48rem) and (max-width: 75rem) { .kanban { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 47.99rem) {
+  .kanban { gap: .5rem; }
+  .kanban-coluna { padding: .5rem .75rem; }
+}
+.kanban-resumo { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 62rem) { .kanban-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 22rem) { .kanban-resumo { grid-template-columns: 1fr; } }
+@media (max-width: 47.99rem) { .kanban-resumo div { padding: .5rem .75rem; } .kanban-resumo dd { font-size: 1.0625rem; } }
+@media (prefers-reduced-motion: reduce) { .kanban-coluna-botao .kanban-seta, .kanban-encerrados-botao .kanban-seta { transition: none; } }
+/* Títulos não quebram no meio da palavra (só hífen, quando preciso) */
+.kanban-card-titulo, .kanban-card-cliente { overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
+/* 5 colunas: foto menor para sobrar espaço ao texto */
+@media (min-width: 75.01rem) {
+  .kanban-card-topo { grid-template-columns: 2rem minmax(0, 1fr) 1rem; gap: .25rem .5rem; padding-left: .625rem; }
+  .kanban-foto { width: 2rem; height: 2rem; }
+}
+
+/* ---------- 11. AVISOS (09/11/2026) ---------- */
+.kanban-aviso { margin: 0 0 .75rem; }
+.kanban-aviso[hidden] { display: none; }
+.kanban-nota { flex-basis: 100%; margin: 0; font-size: .8125rem; font-style: italic; color: var(--cor-texto-secundario); }

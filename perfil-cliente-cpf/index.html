@@ -18,9 +18,11 @@
 <link rel="stylesheet" href="../componentes/servicos-realizados/servicos-realizados.css">
 <script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
+<script src="../configuracoes/interruptores.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
+<script src="../componentes/confirmacao/confirmacao.js" defer></script>
 <script src="../componentes/senha/senha.js" defer></script>
 <script src="../componentes/endereco/endereco.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
@@ -46,6 +48,11 @@
       <div class="abas-lista" role="tablist" aria-label="Seções do perfil">
         <button type="button" class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
         <button type="button" class="btn aba" role="tab" id="aba-servicos" aria-controls="painel-servicos" aria-selected="false" tabindex="-1">Serviços realizados</button>
+      </div>
+      <!-- Botão liga/desliga da localização (configuracoes/interruptores.js) — totalmente à direita -->
+      <div class="perfil-interruptores">
+        <button class="interruptor" data-interruptor="localizacao"></button>
+        <div class="mensagem" id="msg-interruptores" role="status" aria-live="polite"></div>
       </div>
     </div>
 

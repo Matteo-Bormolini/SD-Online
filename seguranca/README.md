@@ -1,72 +1,34 @@
 # Segurança e LGPD — quem pode ver o quê
 
-**Sprints 1 a 5 · Épico E9 Servidor, segurança e LGPD · 🟡 Regras prontas na tela (falta o servidor)**
+Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precisa.**
 
-Esta pasta define o que cada tipo de pessoa pode ver no site.
-O objetivo é simples: **cada pessoa vê só o que precisa, e nada além disso.**
-
-## Para quem
-Para proteger todos os usuários, e para guiar quem vai construir o servidor.
-
-## O que entrega
-- As regras de cada página para os 5 tipos: visitante, Cliente CPF, Cliente CNPJ, Prestador e Administrador.
-- As regras de quais dados cada um pode ver. Exemplos:
-  - CPF, telefone e endereço completo **nunca** são públicos;
-  - um prestador **não** vê outros prestadores;
-  - um cliente **não** vê outros clientes;
-  - do Cliente CPF, o prestador vê só o primeiro nome e o bairro, e só quando há um pedido aberto e autorizado;
-  - do Cliente CNPJ, o prestador vê só o que a empresa autorizou no cadastro.
-- Uma página de consulta com tudo em tabela.
-
-## Histórias atendidas
-- **US04** — cada tipo de conta só vê as suas páginas.
-- **US31** — o servidor bloqueia páginas e dados (regras prontas; bloqueio real na Sprint 5).
-
-## Pronto quando
-- [x] As regras estão escritas e iguais na tela e no arquivo do servidor.
-- [x] Na demonstração, quem tenta abrir uma página proibida é levado ao login ou ao início.
-- [ ] O servidor aplica as regras de verdade (Sprint 5).
-
-## Como testar
-- Abra `seguranca/index.html` para ver a tabela de regras.
-- Sem entrar na conta, tente abrir `perfil-adm/index.html`: o site leva você ao login.
-
-## LGPD — como a S.D cuida dos seus dados
-
-✅ já funciona · 🟡 funciona em parte · ⬜ ainda vai ser feito
-
-| Cuidado | Situação |
-|---|---|
-| O site não usa cookies, propaganda nem rastreadores de terceiros | ✅ |
-| Nenhum dado sai do navegador na demonstração | ✅ |
-| Autorização clara no cadastro (o que será mostrado e para quem) | ✅ |
-| Fotos: aviso para não mostrar pessoas, placas e documentos | ✅ |
-| Avaliação com o nome escondido, a menos que a pessoa escolha aparecer | 🟡 Perfil do prestador já mostra anônimo; botão ao avaliar na Sprint 4 |
-| Cliente CPF liga/desliga "Mostrar meus dados aos prestadores" no perfil | ✅ Na tela |
-| Recuperação de senha sem revelar se a conta existe; link de 30 min e uso único | 🟡 Tela pronta; servidor na Sprint 5 ([regras](recuperacao-acesso.md)) |
-| Localização do cliente só aproximada, calculada no servidor | ⬜ Sprints 4 e 5 |
-| Contato liberado só quando o prestador autoriza | ⬜ Sprint 4 |
-| Política de privacidade em linguagem simples, com o canal de contato | ⬜ Sprint 2 |
-| Direitos do usuário: ver, corrigir, baixar e apagar os dados | 🟡 Editar e excluir prontos na tela |
-| Senha guardada só como *hash* | ⬜ Sprint 5 |
-| Fotos sem a localização escondida no arquivo | ⬜ Sprint 5 |
-| Plano para avisar a ANPD e os usuários em caso de vazamento | ⬜ Sprint 5 |
-
-## Parte técnica
-
+## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `acesso.js` | Regras usadas pela **tela** (esconde o que não pode aparecer). |
-| `permissoes.json` | As mesmas regras, para o **servidor** (bloqueio de verdade). Regra padrão: negar. |
+| `acesso.js` | Regras usadas pela tela (demonstração). |
+| `permissoes.json` | As mesmas regras, para o servidor. **Manter igual ao `acesso.js`.** |
 | `index.html` | Tabela de consulta das regras. |
-| `recuperacao-acesso.md` | Regras de "Esqueceu a senha/login?" para o servidor: token, limites, Argon2id, e-mails. |
+| `recuperacao-acesso.md` | Regras de "esqueci a senha / o login". |
 
-> ⚠️ **Mudou um arquivo, mude o outro.** `acesso.js` e `permissoes.json` precisam dizer a mesma coisa.
+## Regras principais
+- CPF, telefone e endereço completo de clientes **nunca** são públicos.
+- Prestador não vê outros prestadores. Cliente não vê outros clientes.
+- Prestador vê só a região aproximada do cliente.
+- Senha: só *hash* no servidor. Ninguém vê, nem o adm.
 
-**Como uma página usa as regras:** no `<body>`, `data-recurso="nome-da-regra"`.
-Ex.: `data-recurso="perfil-adm"`. Para ter uma versão pública, use também `data-recurso-publico`.
+## Importante
+- Hoje o bloqueio é **só na tela**. Qualquer pessoa pode se passar por adm mexendo no navegador.
+  Isso só deixa de acontecer com o servidor (Ciclo 2). Resultado completo dos testes: [`docs/testes-e-seguranca.md`](../docs/testes-e-seguranca.md).
 
-**Lembretes:**
-- Esconder na tela **não** protege o dado. Quem protege é o servidor.
-- A localização do cliente tem de ser arredondada **no servidor**. Se o endereço exato chegar ao navegador, qualquer pessoa consegue ver, mesmo escondido no mapa.
-- Chaves de API: veja [`chaves-api/`](../chaves-api/).
+## LGPD
+| Cuidado | Situação |
+|---|---|
+| Sem cookies e sem rastreadores **hoje** | ✅ (anúncios vão exigir aviso e consentimento) |
+| Autorização clara no cadastro | ✅ |
+| Avaliação anônima por padrão | 🟡 |
+| Botões de privacidade (localização, contatos, dados CPF) | 🟡 Na tela |
+| Pedidos encerrados apagados em 1 ano | 🟡 Regra definida; o servidor apaga |
+| Política de privacidade e canal de contato | ⬜ Ciclo 6 (com advogado) |
+| Ver, corrigir, baixar e apagar meus dados | 🟡 Editar e excluir na tela |
+| Fotos sem localização escondida (EXIF) | ⬜ Ciclo 5 |
+| Plano de aviso de vazamento (ANPD) | ⬜ Ciclo 5 |

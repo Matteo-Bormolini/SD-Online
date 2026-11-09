@@ -196,33 +196,13 @@
 .servicos-total { font-size: .8125rem; color: var(--cor-texto-secundario); }
 .servicos-dica { margin: -.5rem 0 1rem; font-size: .8125rem; color: var(--cor-texto-secundario); }
 
-/* ---------- 7b. INTERRUPTOR LIGA/DESLIGA (privacidade) ----------
-   Estado em texto ("Ligado"/"Desligado") além da cor: não depende só da cor. */
-.interruptor {
-  display: inline-flex; align-items: center; gap: .625rem; flex-wrap: wrap;
-  min-height: 2.75rem; padding: .25rem 0; text-align: left;
-  font: inherit; font-size: .9375rem; font-weight: 600; color: var(--cor-texto);
-  background: transparent; border: 0; cursor: pointer;
-}
-.interruptor-trilho {
-  position: relative; flex: none; width: 2.75rem; height: 1.5rem;
-  background: var(--cor-superficie-2); border: 1px solid var(--cor-campo-borda); border-radius: 999px;
-  transition: background-color .15s ease;
-}
-.interruptor-bola {
-  position: absolute; top: 50%; left: .1875rem; width: 1.125rem; height: 1.125rem; transform: translateY(-50%);
-  background: var(--cor-campo-borda); border-radius: 50%; transition: left .15s ease, background-color .15s ease;
-}
-.interruptor[aria-checked="true"] .interruptor-trilho { background: var(--cor-vinho); border-color: var(--cor-vinho); }
-.interruptor[aria-checked="true"] .interruptor-bola { left: 1.4375rem; background: #FFFFFF; }
-.interruptor-estado {
-  font-size: .75rem; font-weight: 700; padding: .0625rem .5rem; border-radius: 999px;
-  border: 1px solid var(--cor-campo-borda); color: var(--cor-texto-secundario);
-}
-.interruptor[aria-checked="true"] .interruptor-estado { color: var(--cor-sucesso); border-color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
-.interruptor:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 8px; }
-[data-tema="escuro"] .interruptor:focus-visible { outline-color: var(--cor-texto); }
-[data-tema="escuro"] .interruptor[aria-checked="true"] .interruptor-trilho { border-color: var(--cor-texto); }
+/* ---------- 7b. INTERRUPTOR LIGA/DESLIGA ----------
+   Estilo padrão em configuracoes/base.css (seção 10). Aqui só a posição no perfil:
+   botões na linha das abas, totalmente à direita (acima da foto). */
+.perfil-interruptores { display: flex; align-items: center; justify-content: flex-end; gap: .25rem 1rem; flex-wrap: wrap; margin-left: auto; }
+.perfil-interruptores .interruptor { font-size: .875rem; }
+.perfil-interruptores .mensagem { flex-basis: 100%; margin: 0; }
+.perfil-interruptores .mensagem:empty { display: none; }
 #msg-privacidade { margin-top: .5rem; }
 
 /* ---------- 8. POP-UP (dialog): estilo único em configuracoes/base.css, seção 9 ---------- */
@@ -257,5 +237,5 @@
 /* Movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
   .perfil-trilho { scroll-behavior: auto; transition: none; }
-  .btn, .seta-sanfona, .perfil-cartao, .interruptor-trilho, .interruptor-bola { transition: none; }
+  .btn, .seta-sanfona, .perfil-cartao { transition: none; }
 }

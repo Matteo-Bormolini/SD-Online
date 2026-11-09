@@ -1,35 +1,24 @@
 # Perfil do Administrador
 
-**Sprint 1 · Épico E3 Perfis · 🟡 Perfil pronto (painel de administração no futuro)**
+Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das contas, mas **nunca vê senhas**.
 
-O espaço da equipe S.D. O administrador cuida da plataforma e dá suporte aos usuários.
-Ele vê os dados das contas, mas **nunca vê senhas**.
+## Quem vê
+- Só o administrador.
 
-## Para quem
-Só para a equipe que mantém a S.D.
+## O que tem
+- **Aba Perfil:** nome, cargo, CPF/CNPJ (não muda), e-mail, telefones, endereço e avaliações.
+- Editar perfil, foto, galeria (até 12 fotos) e excluir perfil.
+- **Aba Administração:** "em desenvolvimento" + link para a página dos **botões liga/desliga**.
+- **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
+- A senha nunca aparece, só "••••••••".
 
-## O que entrega
-- Sem a linha "Login" (decisão de 06/11/2026): a conta é identificada por e-mail, CPF ou CNPJ.
-- **Aba Perfil:** nome, cargo, CPF/CNPJ (não pode ser alterado), e-mail, telefone principal e até 4 secundários, endereço e avaliações.
-- **Editar perfil** (endereço com CEP automático), foto de perfil, galeria (até 12 fotos) e excluir perfil com confirmação.
-- **Aba Administração:** reservada para o painel de administração (hoje mostra "em desenvolvimento").
-
-## Histórias atendidas
-- **US10** — dar suporte sem ver senhas.
-- **US35** — painel de administração (depois do MVP).
-
-## Pronto quando
-- [x] Perfil, edição, fotos e exclusão funcionam na tela.
-- [x] Só o administrador abre esta página.
-- [ ] Painel de administração com números e controles (depois do MVP).
-
-## Como testar
-Entre pelo modo demonstração como **Administrador** e clique em **Meu perfil**.
-
-## Parte técnica
-
+## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` | Estrutura da página. |
-| `perfil-adm.css` | Visual do que é só deste perfil. |
-| `perfil-adm.js` | Dados de demonstração e regras do perfil. |
+| `index.html` / `perfil-adm.css` / `perfil-adm.js` | Página, visual e dados de demonstração. |
+
+## Situação
+✅ pronto · 🟡 só na demonstração · ⬜ a fazer
+
+- 🟡 Perfil pronto (US10).
+- ⬜ Painel com números e controles — depois do MVP (US35). Perfil Master — depois do MVP (US47).

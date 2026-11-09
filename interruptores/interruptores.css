@@ -1,0 +1,26 @@
+/* =====================================================================
+   S.D — PÁGINA DOS BOTÕES LIGA/DESLIGA (interruptores/interruptores.css)
+   Só tokens do configuracoes/base.css.
+   ===================================================================== */
+.interruptores-intro { max-width: 48rem; color: var(--cor-texto-secundario); }
+.interruptores-intro code { font-size: .875rem; background: var(--cor-superficie-2); padding: .0625rem .375rem; border-radius: 4px; overflow-wrap: anywhere; }
+.interruptores-legenda { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; font-size: .875rem; }
+.amostra { display: inline-block; width: 2.25rem; height: 1.25rem; border-radius: 999px; vertical-align: middle; }
+.amostra.desligado { background: var(--cor-interruptor-desligado); }
+.amostra.ligado { background: var(--cor-interruptor-ligado); }
+.interruptores-total { font-weight: 600; margin: 1rem 0 .5rem; }
+
+.interruptores-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); }
+.interruptor-cartao {
+  padding: 1rem 1.25rem; background: var(--cor-superficie);
+  border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+}
+.interruptor-cartao h2 { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin: 0 0 .25rem; font-size: 1.0625rem; }
+.interruptor-cartao .interruptor { cursor: default; pointer-events: none; }
+.interruptor-id { display: block; margin-bottom: .25rem; font-size: .75rem; color: var(--cor-texto-secundario); font-family: ui-monospace, Consolas, monospace; }
+.interruptor-cartao p { margin: .5rem 0; font-size: .9375rem; }
+.interruptor-cartao dl { margin: .75rem 0 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .375rem .75rem; font-size: .875rem; }
+.interruptor-cartao dt { font-weight: 700; color: var(--cor-texto-secundario); }
+.interruptor-cartao dd { margin: 0; overflow-wrap: anywhere; }
+.situacao-planejado { font-size: .75rem; font-weight: 700; padding: .0625rem .5rem; border-radius: 999px; color: var(--cor-atencao); background: var(--cor-atencao-fundo); }
+@media (max-width: 30rem) { .interruptor-cartao dl { grid-template-columns: 1fr; } .interruptor-cartao dd { margin-bottom: .375rem; } }

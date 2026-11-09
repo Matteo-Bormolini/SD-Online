@@ -1,38 +1,22 @@
 # Políticas, termos e privacidade
 
-**Sprint 2 · Épico E8 Ajuda e confiança · ⬜ Planejada (páginas criadas, textos a escrever)**
+Os documentos com as regras da S.D, em linguagem simples.
 
-Os documentos que dizem, em linguagem simples, as regras da S.D, como os dados são usados e quem responde por quê.
-Ler isso antes de usar é o que gera confiança.
-
-## Para quem
-Para todos os usuários, e para a própria S.D se proteger.
-
-## O que vai entregar
-
-| Página | Documento |
+## Páginas
+| Arquivo | Documento |
 |---|---|
 | `index.html` | Política da empresa |
 | `termos.html` | Termos de uso |
-| `responsabilidade.html` | Termo de responsabilidade: a S.D aproxima cliente e prestador; o serviço e o pagamento são combinados entre eles |
+| `responsabilidade.html` | Termo de responsabilidade |
 | `privacidade.html` | Política de privacidade (LGPD) |
 
-**A Política de privacidade vai responder, sem juridiquês:**
-- quais dados a S.D pede e por quê;
-- quem vê cada dado;
-- por quanto tempo os dados ficam guardados;
-- como ver, corrigir, baixar ou apagar seus dados;
-- como falar com a S.D sobre privacidade.
+## O que os textos precisam dizer
+- A S.D **só aproxima** cliente e prestador. Não intermedeia o serviço, não recebe nem garante pagamentos.
+- O cliente não paga nada. O prestador pode assinar o **destaque** (mensal, cancela quando quiser).
+- O site pode ter **anúncios**.
+- Quais dados a S.D pede, por quê, quem vê, por quanto tempo guarda e como pedir para apagar.
+- Pedidos encerrados são apagados 1 ano depois.
+- Canal para denunciar conteúdo (avaliações, fotos) e prazo de resposta.
 
-## Histórias atendidas
-- **US28** — ler termos, privacidade e responsabilidades em linguagem simples.
-
-## Pronto quando
-- [ ] Os 4 textos escritos em linguagem simples.
-- [ ] Textos revisados por um advogado (LGPD).
-- [ ] Botão de imprimir em cada documento.
-- [ ] Links do menu, do rodapé e do cadastro abrindo estas páginas.
-
-## Parte técnica
-- Formato escolhido: **HTML** (mais leve e acessível que PDF), com botão de imprimir.
-- Os endereços finais destas páginas estão em `configuracoes/config.js` (menu e rodapé).
+## Situação
+- ⬜ Escrever os 4 textos com advogado — **Ciclo 6**, antes do lançamento (US28, decisão de 09/11).

@@ -161,3 +161,6 @@
   .cadastro:not([hidden]) { animation: none; }
   .btn-cabecalho svg { transition: none; }
 }
+
+/* Botões liga/desliga do cadastro (ex.: Mostrar meus contatos) */
+.cadastro-interruptores { display: flex; flex-wrap: wrap; align-items: center; margin-top: .75rem; }

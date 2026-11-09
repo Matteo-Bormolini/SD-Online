@@ -83,7 +83,9 @@
         ...CAMPOS_SENHA
       ],
       privTexto: "Autorizo exibir o perfil da minha empresa nas buscas de clientes.",
-      privNota: "Telefone, endereço e responsável só são mostrados a clientes com sua autorização."
+      privNota: "Telefone, endereço e responsável só são mostrados a clientes com sua autorização.",
+      // Botões liga/desliga do cadastro (lista em configuracoes/interruptores.js). Começam no padrão de lá.
+      interruptores: ["mostrar-contatos"]
     }
   };
 
@@ -214,6 +216,14 @@
         ]),
         el("p", { class: "nota" }, [tipo.privNota])
       ]);
+
+      // Botões liga/desliga (ex.: "Mostrar meus contatos" no cadastro do Prestador)
+      if (tipo.interruptores && window.SD_INTERRUPTORES_LIGAR) {
+        const caixa = el("div", { class: "cadastro-interruptores" });
+        tipo.interruptores.forEach((idBotao) => caixa.append(el("button", { type: "button", class: "interruptor", "data-interruptor": idBotao })));
+        privacidade.append(caixa);
+        window.SD_INTERRUPTORES_LIGAR(caixa);
+      }
 
       const msg = el("div", { class: "mensagem", role: "alert" });
       const form = el("form", { novalidate: true }, [grade, privacidade, msg, el("button", { type: "submit", class: "btn btn-grande" }, [tipo.botao])]);

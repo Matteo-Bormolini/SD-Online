@@ -1,24 +1,20 @@
 # Avaliações
 
-**Sprint 4 · Épico E7 Acompanhar e avaliar · ⬜ Planejada**
+Página onde aparecem todas as avaliações de um prestador (estrelas e comentários).
 
-Depois do serviço, o cliente dá estrelas e conta como foi. Isso ajuda o próximo cliente a escolher, e o bom prestador a se destacar.
+## Quem vê
+- Pessoas com conta (clientes, prestador e adm).
 
-## Para quem
-- **Clientes:** avaliam e leem avaliações.
-- **Prestadores:** recebem e acompanham suas notas.
+## Arquivos
+| Arquivo | Para que serve |
+|---|---|
+| `index.html` | Página provisória ("em desenvolvimento"). |
 
-## O que vai entregar
-- Nota de 1 a 5 estrelas e comentário.
-- Nome de quem avaliou **escondido**, a menos que a pessoa escolha aparecer.
-- Lista de avaliações de cada prestador (as estrelas do perfil trazem para cá).
+## Regras já decididas
+- Avaliação é **anônima** por padrão. O nome só aparece se o cliente autorizar.
+- O prestador não descobre quem o avaliou.
 
-## Histórias atendidas
-- **US26** — avaliar com estrelas e comentário.
+## Situação
+✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-## Pronto quando
-- [ ] Avaliar só depois de um serviço concluído.
-- [ ] A nota média aparece no perfil do prestador.
-
-## Parte técnica
-- Hoje: página "em construção" (`index.html`), já protegida (só quem entrou na conta abre).
+- ⬜ Página completa — **Ciclo 4** (US26).

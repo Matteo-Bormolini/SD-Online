@@ -1,262 +1,193 @@
-# Backlog do produto — S.D Serviços Digitais
+# Lista de tarefas — S.D Serviços Digitais
 
-Aqui está **tudo o que a S.D precisa ter**, escrito do ponto de vista de quem vai usar.
-O [README principal](../README.md) mostra o resumo; este arquivo mostra os detalhes.
+Tudo o que a S.D precisa ter, em uma lista só.
+Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoes.md).
 
-**Legenda:** ✅ Pronto · 🟡 Em andamento ou só na demonstração · ⬜ A fazer
-
----
-
-## 1. Macro-objetivo (Product Goal)
-
-> **Ajudar casas, empresas e condomínios a encontrar, de forma simples e confiável, um prestador de manutenção perto deles, e ajudar esse prestador a conseguir mais clientes.**
-
-O produto cumpre o objetivo quando:
-
-- o cliente encontra prestadores perto dele em poucos minutos;
-- o pedido recebe orçamentos claros e fáceis de comparar;
-- cliente e prestador combinam o serviço direto, com segurança;
-- a avaliação no fim ajuda o próximo cliente a escolher.
-
-**Como vamos medir:** pedidos feitos, pedidos com pelo menos 1 orçamento, tempo até o primeiro orçamento, orçamentos aceitos e nota média dos prestadores.
+**Legenda:** ✅ pronto · 🟡 só na demonstração / em andamento · ⬜ a fazer
 
 ---
 
-## 2. Como as histórias são escritas
+## 1. Objetivo do MVP (em 1 frase)
 
-> **Como** [quem usa], **quero** [o que precisa] **para** [o motivo].
+> **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-- **Prioridade (MoSCoW):** **M** = obrigatória no MVP · **S** = importante · **C** = desejável · **W** = não agora.
-- **Sprint:** em qual Sprint ela foi (ou será) entregue.
+Hoje o site é um **protótipo**: as telas funcionam, mas nada é salvo.
+
+---
+
+## 2. Agora · Próximo · Depois
+
+### 🟡 Agora — Ciclo 1 · Fechar pendências e decidir (v0.6.0)
+> Os textos legais (US28) saíram deste Ciclo e foram para o Ciclo 6 (decisão de 09/11).
+- [x] READMEs reescritos para projeto individual (09/11).
+- [x] E-mail do Suporte definido (09/11).
+- [x] Regras de dinheiro decididas: sem intermediação; anúncios + destaque mensal (09/11).
+- [x] Testes de navegadores, logins e segurança registrados em [`testes-e-seguranca.md`](testes-e-seguranca.md) (09/11).
+- [x] Funcionamento do pedido decidido (09/11, tarde): ver [`decisoes.md`](decisoes.md).
+- [x] Quadro: pedido em A orçar expira em 10 dias; só o cliente marca como finalizado; aviso de contatos desligados (09/11, tarde).
+- [x] Contraproposta retirada; fotos do pedido: 3 obrigatórias, até 6 (09/11).
+- [ ] Decidir o servidor: Cloudflare ou Firebase (e como enviar e-mails de recuperação).
+- [ ] Decidir: a S.D confere o CNPJ do prestador antes de mostrar? (selo "Verificado")
+- [ ] Decidir: domínio próprio (.com.br) antes do Ciclo 2? (e-mail de recuperação precisa de domínio)
+
+### ⬜ Próximo — Ciclo 2 · Contas reais (v0.7.0)
+US03, US04, US05 de verdade · US30 · US31 no servidor · modo demonstração desligado no site publicado.
+
+### ⬜ Depois (na ordem)
+- **Ciclo 3 · Encontrar e pedir (v0.8.0):** US11 real, US13, US14, US15, US24 (pedidos reais em A orçar). **Decidir a Home do prestador no fim do Ciclo 3 (US46).**
+- **Ciclo 4 · Orçar e decidir (v0.9.0):** US16–US20, US22, US23, US26.
+- **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
+- **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.
+- **Depois do MVP:** Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
 
 ---
 
 ## 3. O caminho do pedido (fluxo aprovado)
 
-1. **Encontrar:** o cliente escolhe a área (ex.: encanador) e vê os prestadores, do mais perto ao mais longe, com o mapa centrado nele.
-2. **Pedir:** na página do prestador, escolhe o serviço e preenche o pedido de orçamento. Pode pedir a quantos prestadores quiser.
-3. **Receber:** o pedido entra no quadro do prestador, na coluna **A orçar**. O prestador é avisado no site e por e-mail e decide se atende.
-4. **Orçar:** o prestador preenche um orçamento padrão: serviço, materiais, mão de obra, valores e datas de início e fim.
-5. **Comparar:** o cliente vê seus pedidos em uma tabela. Em cada pedido, até **4 orçamentos** aparecem lado a lado. Se chegarem mais, ele é avisado de quantos estão guardados.
-6. **Decidir:** o cliente **aceita** (com uma janela de confirmação), **recusa** (sem precisar explicar) ou faz uma **contraproposta**.
-7. **Combinar:** o prestador libera o **WhatsApp** (botão verde) e/ou o **e-mail** (botão vinho). Botão cinza = contato ainda não liberado. O cliente é avisado quando um contato é liberado.
-8. **Avaliar:** depois do serviço, o cliente dá estrelas e comentário.
+1. **Encontrar:** o cliente escolhe a área e vê os prestadores, do mais perto ao mais longe.
+2. **Pedir:** o cliente cria **uma solicitação** (descrição + **3 fotos obrigatórias**, até 6, de ângulos diferentes) e, em Localizar prestador, **marca os prestadores** que quer, depois de ver avaliações, serviços e localização. O mesmo pedido vai para todos os marcados.
+3. **Receber:** o pedido entra no quadro do prestador, na etapa **A orçar**. Ele é avisado no site e por e-mail. **Sem resposta em 10 dias, expira** e vai para Encerrados.
+4. **Orçar ou não:** o prestador clica em **Fazer orçamento** (orçamento padrão: serviço, materiais, mão de obra, valores, datas e **se cobra visita e quanto**; não existe preço fixo) ou em **Não vou orçar**.
+5. **Comparar:** o cliente vê até **4 orçamentos** lado a lado por pedido.
+6. **Decidir:** aceita (com confirmação) ou recusa (sem explicar). **Não há contraproposta no site:** o contato do prestador é liberado quando ele envia o orçamento, com o aviso "Quer negociar preço ou material? Fale com o prestador antes de aceitar".
+7. **Combinar:** WhatsApp e/ou e-mail do prestador (liberados no envio do orçamento, ou antes se "Mostrar meus contatos" estiver ligado). Cinza = ainda não liberado.
+8. **Finalizar e avaliar:** o **cliente** marca como finalizado, com **2 a 6 fotos** e a avaliação (anônima por padrão). Só então vai para **Prestados**. O prestador pode responder à avaliação.
+9. **Encerrados:** pedido que terminou **sem serviço** vai para Encerrados, com o motivo. É apagado **1 ano** depois; a lixeira apaga antes.
 
-> **A S.D não faz pagamentos.** Valor e forma de pagamento são combinados entre cliente e prestador.
+> **A S.D não mexe com o dinheiro do serviço.** O prestador só informa como cobra; cliente e prestador negociam e pagam entre eles.
 
 ---
 
-## 4. Épicos e histórias
+## 4. Histórias
 
-### E1 · Base do site
+Formato: **Como** [quem], **quero** [o quê] **para** [motivo].
+Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 
-| Nº | História | Prioridade | Sprint | Status |
+### Base e contas
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US01 | Como visitante, quero que todas as páginas tenham a mesma aparência e o mesmo menu, para não me perder. | M | 1 | ✅ |
-| US02 | Como pessoa de qualquer idade, quero usar o site no celular, no tablet, no computador ou na TV, com letras fáceis de ler e tema claro ou escuro. | M | 1 | ✅ |
+| US01 | Todas as páginas com a mesma aparência e o mesmo menu. | M | — | ✅ |
+| US02 | Usar no celular, tablet, computador e TV, tema claro ou escuro. | M | — | ✅ |
+| US03 | Criar conta como Cliente CPF, Cliente CNPJ ou Prestador. | M | 2 | 🟡 Tela pronta |
+| US04 | Entrar e sair com segurança, vendo só as páginas do meu tipo. | M | 2 | 🟡 Tela pronta |
+| US05 | Recuperar senha ou login. | M | 2 | 🟡 Pop-ups prontos |
 
-### E2 · Conta
-
-| Nº | História | Prioridade | Sprint | Status |
+### Perfis
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US03 | Como visitante, quero criar minha conta como Cliente CPF, Cliente CNPJ ou Prestador (com CNPJ ou MEI). | M | 1 → 5 | 🟡 Tela pronta |
-| US04 | Como usuário, quero entrar e sair da minha conta com segurança, e só ver as páginas do meu tipo de conta. | M | 1 → 5 | 🟡 Tela pronta |
-| US05 | Como usuário, quero recuperar minha senha ou meu login se eu esquecer. | M | 2 → 5 | 🟡 Pop-ups prontos (demonstração); e-mail real na Sprint 5 |
+| US06 | Cliente CPF vê e edita os dados. | M | — | 🟡 |
+| US07 | Cliente CNPJ informa responsável, contato no local e fotos. | M | — | 🟡 |
+| US08 | Prestador com perfil completo. | M | — | 🟡 |
+| US09 | Prestador vê o perfil como o cliente vê. | S | — | 🟡 |
+| US10 | Adm dá suporte sem nunca ver senhas. | S | — | 🟡 |
+| US42 | Ligar/desligar a **localização** no perfil (botão na linha das abas). | M | 3 | 🟡 Tela pronta (09/11) |
+| US43 | Prestador escolhe **Mostrar meus contatos** (padrão ligado, também no cadastro). Desligado: WhatsApp e Ligar cinza + aviso de que fica mais difícil ser contratado. | S | 3 | 🟡 Tela pronta (09/11) |
+| US52 | Todo botão de excluir ou editar pede confirmação. | M | — | ✅ Padrão (09/11) |
+| US53 | Uma lista única de todos os botões liga/desliga (padrão, o que faz, onde fica). | S | — | ✅ (09/11) |
 
-### E3 · Perfis
-
-| Nº | História | Prioridade | Sprint | Status |
+### Encontrar e pedir
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US06 | Como cliente de uma casa (CPF), quero ver e editar meus dados, para manter meu contato certo. | M | 1 | ✅ Demonstração |
-| US07 | Como empresa ou condomínio (CNPJ), quero informar o responsável, o contato no local e fotos das áreas. | M | 1 | ✅ Demonstração |
-| US08 | Como prestador, quero um perfil completo (logo, especialidades, região que atendo e fotos de trabalhos), para passar confiança. | M | 1 | ✅ Demonstração |
-| US09 | Como prestador, quero ver meu perfil do jeito que o cliente vê, para conferir o que está público. | S | 1 | ✅ Demonstração |
-| US10 | Como administrador, quero acessar os dados das contas para dar suporte, **sem nunca ver senhas**. | S | 1 | 🟡 Perfil pronto |
+| US11 | Escolher a área e ver prestadores do mais perto ao mais longe, com mapa. | M | 3 | 🟡 Tela pronta |
+| US12 | Filtrar por nome e avaliação. | C | Depois | ⬜ |
+| US13 | Criar uma solicitação (3 fotos obrigatórias, até 6) e marcar vários prestadores na página Localizar. | M | 3 | ⬜ |
+| US14 | Prestador recebe o pedido em **A orçar** e é avisado no site e por e-mail; expira em 10 dias. | M | 3 | 🟡 Etapa e prazo prontos na tela (09/11) |
+| US15 | Prestador preenche o orçamento padrão, informando se cobra visita e quanto. | M | 3 | ⬜ |
+| US24 | Quadro do prestador: A orçar, Orçando, Aceito, A realizar, Prestados; sanfona no celular. | S | 3 | 🟡 Tela pronta (09/11) |
+| US36 | ~~Informativo fixo de cobrança~~ → substituído: sem preço padrão; a visita vai dentro de cada orçamento (US15). | — | — | — |
 
-### E4 · Encontrar
-
-| Nº | História | Prioridade | Sprint | Status |
+### Orçar e decidir
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US11 | Como cliente, quero escolher a área do serviço e ver os prestadores do mais perto ao mais longe, com um mapa centrado em mim. | M | 3 | 🟡 Tela pronta (demonstração) |
-| US12 | Como cliente, quero filtrar também por nome e por avaliação. | C | Futuro | ⬜ |
+| US16 | Cliente vê os pedidos e até 4 orçamentos lado a lado. | M | 4 | ⬜ |
+| US17 | Aceitar (com confirmação) ou recusar. Sem contraproposta: aviso para negociar com o prestador pelo WhatsApp. | M | 4 | ⬜ |
+| US18 | Prestador vê pedidos encerrados sem serviço em **Encerrados** (motivo; recusado em vermelho), apagados em 1 ano, com lixeira. | S | 4 | 🟡 Tela pronta (09/11; antes "Arquivados em 30 dias") |
+| US19 | Novo orçamento ao mesmo prestador, com aviso se já houver negociação. | S | 4 | ⬜ |
+| US20 | Voltar à lista sem perder a escolha. | S | 4 | 🟡 |
+| US21 | Comparação automática dos orçamentos. | C | Depois | ⬜ |
+| US22 | Contato do prestador liberado quando ele envia o orçamento; cliente é avisado. | M | 4 | ⬜ |
+| US23 | Prestador vê a região aproximada do cliente. | S | 4 | ⬜ |
+| US25 | Cliente vê os serviços já feitos, com fotos. | S | — | 🟡 |
+| US26 | Avaliar com estrelas e comentário (anônimo por padrão) só depois de finalizado; prestador pode responder. | S | 4 | 🟡 Parcial |
+| US54 | Cliente marca o serviço como finalizado com 2 a 6 fotos + avaliação; só então vai para Prestados. | M | 4 | 🟡 Quadro já impede o prestador de mover (09/11) |
 
-### E5 · Pedir e negociar orçamentos
-
-| Nº | História | Prioridade | Sprint | Status |
+### Ajuda e confiança
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US13 | Como cliente, quero escolher o serviço na página do prestador e preencher o pedido de orçamento. | M | 3 | ⬜ |
-| US14 | Como prestador, quero receber o pedido na coluna "A orçar" do meu quadro e ser avisado no site e por e-mail, para decidir se atendo. | M | 3 → 5 | ⬜ |
-| US15 | Como prestador, quero preencher um orçamento padrão (serviço, materiais, mão de obra, valores e datas), para o cliente entender tudo. | M | 3 | ⬜ |
-| US16 | Como cliente, quero ver meus pedidos em uma tabela e, em cada um, até 4 orçamentos lado a lado, sendo avisado se chegarem mais. | M | 4 | ⬜ |
-| US17 | Como cliente, quero aceitar (com confirmação), recusar (sem explicar o motivo) ou fazer uma contraproposta. | M | 4 | ⬜ |
-| US18 | Como prestador, quero ver os orçamentos recusados em vermelho e que eles vão para "Arquivados" depois de 30 dias, podendo apagá-los. | S | 4 | ⬜ |
-| US19 | Como cliente, quero pedir um novo orçamento ao mesmo prestador, vendo um aviso vermelho se já existir uma negociação em andamento. | S | 4 | ⬜ |
-| US20 | Como cliente, quero voltar à lista de prestadores sem perder os filtros, para pedir outros orçamentos. | S | 4 | 🟡 Tela pronta (demonstração) |
-| US21 | Como cliente, quero uma comparação automática dos orçamentos (o que é igual, o que é diferente e o que não combina com meu pedido). Só eu vejo. | C | Futuro | ⬜ |
+| US27 | Tirar dúvidas e enviar sugestões. | M | — | ✅ (e-mail definido em 09/11) |
+| US28 | Ler termos, privacidade e responsabilidades em linguagem simples (com advogado). | M | 6 | ⬜ |
+| US29 | Sobre nós (história da empresa). | S | Depois | ⬜ |
 
-### E6 · Contato e localização
-
-| Nº | História | Prioridade | Sprint | Status |
+### Servidor, segurança e LGPD
+| Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US22 | Como prestador, quero escolher quando liberar meu WhatsApp e/ou e-mail; como cliente, quero ser avisado quando um contato for liberado. | M | 4 | ⬜ |
-| US23 | Como prestador, quero ver no mapa a região do cliente que me pediu orçamento, **sem** que o endereço exato seja revelado. | S | 4 | ⬜ |
+| US30 | Dados guardados com segurança; senha nunca visível. | M | 2 | ⬜ |
+| US31 | Servidor bloqueia páginas e dados por tipo de conta. | M | 2 | 🟡 Regras escritas |
+| US32 | Ver, corrigir, baixar e apagar meus dados (LGPD). | M | 5 | 🟡 |
+| US33 | Fotos sem localização escondida (EXIF). | M | 5 | ⬜ |
+| US34 | Plano de aviso de vazamento (ANPD). | M | 5 | ⬜ |
 
-### E7 · Acompanhar e avaliar
-
-| Nº | História | Prioridade | Sprint | Status |
-|---|---|---|---|---|
-| US24 | Como prestador, quero organizar meus serviços por etapa (A orçar, Orçando, Aceito, A realizar, Prestados), para não perder nenhum. | S | 1 → 3 | 🟡 Quadro ainda não está no formato de Kanban que o Marco quer: **refazer na Sprint 3** (falta também a coluna "A orçar") |
-| US25 | Como cliente, quero ver os serviços que já contratei, com fotos, para lembrar como ficou. | S | 1 | ✅ Demonstração |
-| US26 | Como cliente, quero avaliar o prestador com estrelas e comentário, com meu nome escondido, a menos que eu escolha aparecer. | S | 4 | 🟡 Perfil do prestador já mostra só "Avaliação anônima" ou o nome autorizado |
-
-### E8 · Ajuda e confiança
-
-| Nº | História | Prioridade | Sprint | Status |
-|---|---|---|---|---|
-| US27 | Como usuário, quero tirar dúvidas da plataforma e enviar sugestões, para ser ajudado rápido. | M | 2 | ✅ Demonstração |
-| US28 | Como usuário, quero ler os termos de uso, a privacidade e as responsabilidades em linguagem simples. | M | 2 | ⬜ |
-| US29 | Como visitante, quero conhecer a história da empresa (Sobre nós), para saber com quem estou falando. | S | 2 | ⬜ |
-
-### E9 · Servidor, segurança e LGPD
-
-| Nº | História | Prioridade | Sprint | Status |
-|---|---|---|---|---|
-| US30 | Como usuário, quero que meus dados fiquem guardados com segurança, e que a senha nunca possa ser vista. | M | 5 | ⬜ |
-| US31 | Como dono da plataforma, quero que o servidor bloqueie páginas e dados conforme o tipo de conta. | M | 5 | 🟡 Regras escritas e testadas na tela |
-| US32 | Como usuário, quero ver, corrigir, baixar e apagar meus dados, e ter um canal para pedir isso (direitos da LGPD). | M | 5 | 🟡 Editar e excluir prontos na tela |
-| US33 | Como usuário, quero que as fotos que envio não revelem onde moro (o servidor apaga a localização escondida na foto). | M | 5 | ⬜ |
-| US34 | Como dono da plataforma, quero um plano pronto para avisar a ANPD e os usuários se houver vazamento de dados. | M | 5 | ⬜ |
-
-### E10 · Futuro (depois do MVP)
-
-| Nº | História | Prioridade |
+### Depois do MVP
+| Nº | História | Prior. |
 |---|---|---|
-| US35 | Como administrador, quero um painel com números, liga/desliga de recursos e edição de contas. | C |
-| US36 | Como prestador, quero **informar** como cobro (Pix, dinheiro, cartão...), só como informação para o cliente. | C |
-| US37 | Como prestador, quero pagar por um destaque, que aparece identificado como "Destaque pago" (contorno vermelho, tag `destaque`). | C |
-| US42 | Como usuário, quero ligar ou desligar o uso da minha localização no perfil; desligado, não apareço em mapas e listas. | M |
-| US43 | Como prestador, quero escolher se meu WhatsApp aparece na busca (desligado: botão cinza até o orçamento). | S |
-| US44 | Como administrador, quero uma página com filtros para ligar e desligar o destaque dos prestadores. | C |
-| US38 | Como cliente, quero comparar preços de equipamentos (ex.: TV de monitoramento). | C |
-| US39 | Como usuário, quero o app nas lojas, entrar com a digital e receber avisos também pelo telefone. | C |
-| US40 | Como usuário, quero que o Assistente do Suporte responda com inteligência artificial. | C |
-| US41 | Como prestador, quero juntar em um só cadastro as opções CNPJ e MEI. | C |
-| US45 | Como prestador, quero a página **Seus Serviços** com o mapa dos clientes que estão orçando comigo e dos que vão realizar o serviço comigo (região aproximada). | S |
-| US46 | Como prestador, quero uma **Home própria**, sem dados de outros prestadores (concorrência), com o que me ajuda no dia a dia. | S |
-| US47 | Como dono (perfil **Master**), quero cadastrar administradores e ligar/desligar o que cada um pode fazer no site. | C |
-| US48 | Como empresa, condomínio ou cliente CPF, quero registrar (de forma opcional) **quem acompanhou o prestador** e **quantas visitas** foram precisas até concluir; o síndico/gerente/titular decide se esse registro é obrigatório ou opcional. | C |
-| US49 | Como usuário, quero entrar também com o **telefone principal** (depois de confirmado). Nome completo **não** será jeito de entrar (pessoas com o mesmo nome). | C |
-| US50 | Como usuário com duas contas (ex.: prestador que também é Cliente CPF), quero **trocar de conta** pelo perfil sem sair e entrar de novo. | C |
+| US35 | Painel do adm com números e liga/desliga de recursos. | C |
+| US37 | **Destaque** do prestador: assinatura mensal (começa em R$ 20), cancela quando quiser, sem multa. Etiqueta "Destaque". | C |
+| US51 | **Anúncios** no site, só em páginas permitidas pelas regras do serviço de anúncios, com aviso de cookies (LGPD). | C |
+| US55 | **Página de parceiros e ofertas**: a S.D vende o espaço direto para empresas (ex.: lojas de material, câmeras), por mensalidade. | C |
+| US38 | Comparar preços de equipamentos. | C |
+| US39 | App nas lojas, entrar com a digital, avisos no celular. | C |
+| US40 | Assistente do Suporte com IA. | C |
+| US41 | Cadastro único CNPJ/MEI. | C |
+| US44 | Página do adm para ligar/desligar o destaque. | C |
+| US45 | Seus Serviços: mapa dos clientes do prestador (região aproximada). | S |
+| US46 | Home própria do prestador — **decidir no fim do Ciclo 3**. | S |
+| US47 | Perfil Master: cadastrar admins e o que cada um pode fazer. | C |
+| US48 | Registrar acompanhante e número de visitas. | C |
+| US49 | Entrar com o telefone principal. | C |
+| US50 | Trocar de conta pelo perfil. | C |
+
+**Não agora:** pagamento dentro do app · chat dentro do app · prestador só com CPF · categorias guardadas (Serviços domésticos, Aulas, Eventos, Beleza, Automóveis, Pets).
+
+### Anotações para depois do MVP (09/11/2026)
+
+**Página de parceiros e ofertas (US55)**
+- A S.D **vende o espaço direto** (não é Google AdSense): empresas pagam uma mensalidade para aparecer.
+- Combina com comparar preços de equipamentos (US38).
+- Todo anúncio marcado como **"Anúncio"** ou **"Patrocinado"**, para não parecer recomendação da S.D.
+
+**Regras do Google AdSense (se usar)**
+- **Não pode** página só de anúncios, nem com mais anúncios do que conteúdo, nem página "em construção". Risco: bloqueio ou **encerramento da conta**.
+- Não pode pedir clique ("clique para ajudar") nem dar prêmio por clique.
+- Não pode em chat (assistente do Suporte), pop-ups e páginas que exigem login.
+- O dinheiro vem de **visitas**: página sem visitas não rende.
+- Bons lugares: Home do visitante, Sobre nós e páginas de conteúdo aberto (ex.: dicas de manutenção).
+- Anúncios usam cookies: aviso e consentimento (LGPD) antes de ligar.
 
 ---
 
-## 5. Priorização MoSCoW (o que entra no MVP)
+## 5. Como ler o número da versão (vX.Y.Z) — informativo
 
-O **MVP** é a menor versão que já resolve o problema de verdade: encontrar, pedir, comparar, combinar e avaliar.
+| Posição | Nome | Quando muda | Exemplo |
+|---|---|---|---|
+| **X** (1.-.-) | Principal | Lançamento para o público (**1.0.0**) e, depois, mudanças muito grandes | 0 = ainda não lançado |
+| **Y** (-.1.-) | Recurso novo | Entrou coisa nova (página, botão, função) | Quadro com A orçar |
+| **Z** (-.-.1) | Correção | Só arrumou erro ou fez limpeza, sem nada novo | Link quebrado corrigido |
 
-| Grupo | O que entra |
-|---|---|
-| **Must** (obrigatório no MVP) | Base do site · criar conta, entrar, sair e recuperar senha · perfis de cliente e de prestador · encontrar por área e proximidade · pedir orçamento · orçamento padrão · comparar até 4 · aceitar, recusar ou contrapropor · liberar WhatsApp e e-mail · Suporte · termos e privacidade · servidor seguro e direitos da LGPD |
-| **Should** (importante, mas o MVP funciona sem) | Ver perfil como cliente · perfil do administrador · recusados e arquivados · novo orçamento ao mesmo prestador · voltar à lista com filtros · mapa aproximado do cliente · quadro "Meus serviços" · serviços realizados · avaliações · Sobre nós |
-| **Could** (desejável) | Filtros por nome e avaliação · comparação automática de orçamentos · painel do administrador · formas de pagamento informadas · destaque pago · comparar preços · app nas lojas, digital e avisos por telefone · assistente com IA · cadastro único CNPJ/MEI |
-| **Won't** (não agora) | Pagamento dentro do app · chat dentro do app · prestador sem CNPJ ou MEI (só se vier como sugestão de melhoria) · outras categorias, guardadas para o futuro (Serviços domésticos, Aulas, Eventos, Beleza e bem-estar, Automóveis, Pets) |
-
----
-
-## 6. Plano de Sprints (2 semanas cada)
-
-| Sprint | Período | Objetivo da Sprint | Histórias | Status |
-|---|---|---|---|---|
-| **1 · Base e contas** | 12/10 a 25/10/2026 | Site com cara de produto: padrão visual, menu, login de demonstração e perfis. | US01–US04 (tela), US06–US10, US24, US25 | ✅ Concluída |
-| **2 · Ajuda e confiança** | 26/10 a 08/11/2026 | Onde pedir ajuda, o que ler antes de confiar, e projeto organizado. | US27, US28, US29 + faxina técnica + README e backlog | 🟡 Em andamento |
-| **3 · Encontrar e pedir** | 09/11 a 22/11/2026 | O cliente encontra o prestador e pede orçamento; o prestador recebe e responde. | US11, US13, US14 (tela), US15, US24 | ⬜ Planejada |
-| **4 · Comparar e combinar** | 23/11 a 06/12/2026 | O cliente compara e decide; os dois combinam com segurança; o cliente avalia. | US16–US20, US22, US23, US26 | ⬜ Planejada |
-
-**Depois do plano inicial:** **Sprint 5 · Servidor de verdade** (07/12 a 20/12/2026): banco de dados, login real, avisos por e-mail, permissões no servidor e LGPD (US03–US05, US14, US30–US34).
-Ela é a mais pesada e pode virar duas Sprints. É melhor ajustar o plano do que entregar sem testar.
-
-**O MVP fica completo quando todas as histórias Must estiverem prontas, com o servidor funcionando.**
-
-### O que a Sprint 2 já entregou
-
-- ✅ Suporte com dúvidas, sugestões e assistente.
-- ✅ README de todas as pastas e este backlog.
-- ✅ Fim dos links quebrados: "Sobre nós" em `home/sobre.html`; os 4 documentos legais juntos em `politica-privacidade/`; páginas sem conteúdo mostram "Esta página ainda está em desenvolvimento.".
-- ✅ Ajustes de 05/11: tema escuro salvo entre páginas; rodapé do computador mais baixo e espalhado; destaque pago em vermelho brilhante com a tag `destaque`.
-- ✅ Adiantado da Sprint 3: tela de **Localizar prestador** (demonstração).
-- ✅ Ajustes de 06/11/2026:
-  - menu: "Para clientes" virou **Serviços**; "Seja um prestador" virou **Seus Serviços**; saiu o antigo "Serviços";
-  - rodapé: documentos legais só na linha de baixo; sem a frase da marca; lugar pronto para os selos oficiais das lojas;
-  - endereço com **CEP automático** em todos os cadastros e perfis (CEP | Endereço · UF | Cidade | Bairro · Número | Complemento);
-  - cadastro: e-mail obrigatório, sem "Nome de login", CPF/CNPJ conferidos (CNPJ com letras aceito), senha de **12+ caracteres**;
-  - Cliente CPF: botão de privacidade e link para o perfil do prestador nos serviços realizados;
-  - Cliente CNPJ: cargo em lista e horário de visitas com dias e horas válidos;
-  - Prestador: avaliações anônimas; Home sem dados de concorrentes;
-  - **US05:** pop-ups de recuperação de senha e de login (adiantado da Sprint 5, só a tela).
-- ✅ Faxina técnica:
-  - um só modelo de página (`modelo-pagina/`);
-  - arquivos de versões antigas removidos;
-  - `.gitignore` e `chaves-api/.env.example` criados;
-  - páginas protegidas no modo demonstração: quem não pode ver é levado ao login ou ao início;
-  - Home com o fluxo aprovado (até 4 orçamentos, WhatsApp ou e-mail).
+- Y sobe → Z volta a 0 (0.5.1 → 0.6.0). X sobe → os dois voltam a 0 (0.10.0 → 1.0.0).
+- **-alpha.1, -alpha.2** = prévia de teste antes da versão oficial.
+- Depois de 0.9.0 vem **0.10.0** (dez). O 1.0.0 é só o lançamento.
+- Histórico completo: [`versoes.md`](versoes.md).
 
 ---
 
-## 7. Decisões em aberto
+## 6. Definição de Pronto
 
-| Decisão | Opções | Até a Sprint |
-|---|---|---|
-| Onde publicar o site no lançamento (grátis e sem prazo) | Cloudflare (recomendado) · Firebase · outra | 5 |
-| ~~O que a página "Seja um prestador" mostra~~ | **Decidido em 06/11:** vira **Seus Serviços** (US45). Ideia ainda em formação. | — |
-| Como será a Home do prestador (US46) | Ver ideias em "Decisões de 06/11" abaixo | 3 |
-| ~~A linha "Login" continua nos perfis?~~ | **Decidido em 06/11:** tirada dos 4 perfis. | — |
-| Onde registrar acompanhante e número de visitas (US48) | Na avaliação do serviço **ou** no histórico "Serviços realizados" **ou** no fechamento do pedido | 4 |
-| Onde ficam "Sobre nós" e as páginas legais | Uma pasta por página (`sobre/`, `termos/`...) **ou** manter `home/sobre.html` e a pasta `politica-privacidade/` e ajustar os links | 2 |
-| Quanto custa usar a S.D (cliente e prestador) | Grátis, plano pago ou só destaque pago | 5 |
-| A S.D confere o CNPJ e as certificações do prestador antes de mostrá-lo? | Conferir no cadastro (selo "Verificado") **ou** não conferir e deixar claro nos Termos | 5 |
-
----
-
-### Decisões tomadas em 05/11/2026 (Localizar prestador)
-
-- Caixas por tipo de serviço (mesma lista da Home) → lista + mapa ao lado → cartão abaixo do mapa.
-- Cartão: logo, nome, serviços (3 + "+N"), WhatsApp e **Fazer orçamento** (abre o perfil do prestador).
-- Ordem por distância; o destaque **não** muda a posição, só ganha contorno vermelho e etiqueta.
-- Localização vem do endereço do perfil, com botão ligar/desligar. Prestador desligado não aparece. Cliente desligado vê a lista em ordem alfabética, com aviso.
-- WhatsApp só se o prestador ligar a opção; se não, botão cinza "liberado após o orçamento".
-- Sem botões de rota (Maps/Waze).
-- Mapa: MapLibre + OpenFreeMap (grátis, sem chave).
-
-### Decisões tomadas em 06/11/2026 (ajustes + recuperação de acesso)
-
-- **Prestador nunca vê a área "Serviços"** (busca de prestadores): seriam dados da concorrência. Se quiser orçar para si mesmo, entra com uma conta de Cliente CPF (no futuro, troca de conta pelo perfil — US50).
-- Avaliações **anônimas por padrão**: o prestador que também é cliente não descobre quem o avaliou ou recusou.
-- "Nome de login" saiu do cadastro CPF: e-mail, CPF ou CNPJ já identificam a conta; o nome pode ser separado em nome e sobrenome depois.
-- Jeitos de entrar hoje: **e-mail, CPF ou CNPJ**. Futuro: telefone principal (confirmado). **Nome completo não** (não é único).
-- Recuperação de acesso só em **pop-ups**, guardando o progresso ao fechar. Senha: 12+ caracteres, Argon2id no servidor. Regras: `seguranca/recuperacao-acesso.md`.
-- Selos das lojas: só os arquivos oficiais. A Apple tem selo branco; o Google **não permite** selo sem cor.
-- **Ideias para a Home do prestador (US46) — para o Marco escolher:**
-  - resumo do quadro: quantos pedidos "A orçar", "Orçando", "A realizar" (com atalho para cada coluna);
-  - próximas visitas/serviços agendados (data, bairro aproximado, contato no local quando liberado);
-  - avisos: pedido novo, orçamento aceito/recusado, contraproposta, contato liberado;
-  - a própria reputação: nota média, últimas avaliações (anônimas) e o que os clientes mais elogiam;
-  - "como aparecer melhor": perfil completo, fotos de trabalhos, região de atendimento, certificações;
-  - mapa resumido de "Seus Serviços" (US45);
-  - **nunca**: lista, preços ou avaliações de outros prestadores.
-- **Login:** a linha "Login" saiu dos 4 perfis (e do "Editar perfil").
-- **Horário de visitas (CNPJ):** botões dos dias + rodinhas de hora de início e fim + observação embaixo.
-- **Kanban do prestador:** ainda não está no formato desejado → refazer na Sprint 3 (US24).
-- **Perfil Master (US47) — anotado, não criar ainda.**
-- **Acompanhante e número de visitas (US48) — anotado, não criar ainda.**
-
-## 8. Definição de Pronto (vale para toda entrega)
-
-Uma entrega só é **Pronta** quando:
-
+Uma entrega só está **pronta** quando:
 - faz o que a história pede;
-- segue o padrão visual (cores, menu, rodapé e botões do site);
-- funciona do celular pequeno à TV, sem a tela "escorregar" para os lados;
+- segue o padrão visual;
+- funciona do celular pequeno à TV, sem rolagem para os lados;
 - funciona no tema claro e no escuro;
-- não mostra erros técnicos no navegador;
-- não mostra nenhum dado pessoal a quem não deve ver;
-- tem o README da pasta atualizado.
+- não mostra erros no navegador;
+- não mostra dados pessoais a quem não deve;
+- excluir e editar pedem confirmação;
+- o README da pasta está atualizado.

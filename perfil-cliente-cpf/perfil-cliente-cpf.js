@@ -80,6 +80,7 @@
 
   /* ---------- 4. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", () => {
+    P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({
       perfil, config: CONFIG, padrao: CONFIG.fotoPadraoCliente, tipoIcone: "pessoa",
