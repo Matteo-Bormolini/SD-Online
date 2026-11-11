@@ -26,9 +26,10 @@ Hoje o site é um **protótipo**: as telas funcionam, mas nada é salvo.
 - [x] Funcionamento do pedido decidido (09/11, tarde): ver [`decisoes.md`](decisoes.md).
 - [x] Quadro: pedido em A orçar expira em 10 dias; só o cliente marca como finalizado; aviso de contatos desligados (09/11, tarde).
 - [x] Contraproposta retirada; fotos do pedido: 3 obrigatórias, até 6 (09/11).
-- [ ] Decidir o servidor: Cloudflare ou Firebase (e como enviar e-mails de recuperação).
-- [ ] Decidir: a S.D confere o CNPJ do prestador antes de mostrar? (selo "Verificado")
-- [ ] Decidir: domínio próprio (.com.br) antes do Ciclo 2? (e-mail de recuperação precisa de domínio)
+- [x] Servidor decidido: **Firebase** (grátis). E-mails de conta (confirmação e nova senha) pelo próprio Firebase (11/11).
+- [x] CNPJ do prestador: **sim**, conferido pelos dígitos/letras e pela API pública (ativo, MEI, nome e CNAE); o que não bater vai para aprovação manual antes do selo (09/11).
+- [x] Domínio .com.br antes do Ciclo 2: **não**. No 1º ano fica o endereço grátis; o .com.br (~R$ 40/ano) só se o projeto der resultado (09/11).
+- ✅ **Ciclo 1 concluído em 11/11/2026 → v0.6.0.**
 
 ### ⬜ Próximo — Ciclo 2 · Contas reais (v0.7.0)
 US03, US04, US05 de verdade · US30 · US31 no servidor · modo demonstração desligado no site publicado.

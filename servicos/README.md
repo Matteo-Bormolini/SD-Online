@@ -14,4 +14,5 @@ Quando o servidor existir, só estes arquivos mudam; as telas continuam iguais.
 - Novo jeito de entrar (ex.: telefone): já está listado como `ativo: false` em `identificadores.js`.
 
 ## Situação
-- 🟡 Funciona na demonstração. ⬜ Ligar ao servidor real — **Ciclo 2**.
+- ✅ `recuperacao.js` ligado ao Firebase (11/11/2026). O link do e-mail vale 1 hora.
+- 🟡 `identificadores.js`: o login usa só o e-mail no MVP (CPF/CNPJ continuam aqui para o futuro).

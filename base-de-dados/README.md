@@ -1,7 +1,23 @@
 # Banco de dados
 
-É onde as informações vão ficar guardadas de verdade: contas, pedidos, orçamentos e avaliações.
-Ainda **não existe**. Hoje o site usa dados de demonstração.
+É onde as informações ficam guardadas de verdade: contas, pedidos, orçamentos e avaliações.
+**Desde 11/11/2026:** banco **Firestore** (Firebase, plano grátis). Contas já são reais; pedidos, orçamentos e avaliações ainda são demonstração.
+Código: `firebase/firebase.js` · Regras de segurança: `firebase/firestore.rules`.
+
+## Coleções que já existem (Ciclo 2)
+| Coleção | Documento | Guarda | Quem lê / edita |
+|---|---|---|---|
+| `usuarios` | id = uid do login | Dados da conta (campos abaixo). **Sem senha.** | A própria pessoa e o adm. Tipo, documento e selo de destaque a pessoa não muda. |
+| `documentos` | `cpf-<11 números>` ou `cnpj-<14 caracteres>` | `{ uid, criadoEm }` — garante **1 conta por CPF/CNPJ** | Ninguém lê (só o adm). Criado junto com a conta; apagado ao excluir. |
+
+**Campos de `usuarios`** (mesmos nomes dos objetos `perfil` das páginas de perfil):
+`tipo` (cliente-cpf · cliente-cnpj · prestador · adm) · `email` · `documento` (só números/letras) · `documentoChave` ·
+`telefones` [{ numero, principal }] · `cep`, `endereco`, `numero`, `complemento`, `bairro`, `cidade`, `uf` ·
+`interruptores` { localizacao, mostrar-contatos, … } · `criadoEm`, `atualizadoEm`.
+- CPF: `nome`, `compartilharDados` + `compartilharDadosEm`.
+- CNPJ e prestador: `razaoSocial`, `responsavelNome`, `autorizacaoExibir` + os campos do "Editar perfil".
+- Senha: fica só no **Firebase Authentication** (com hash). Ninguém vê, nem o adm.
+- Fotos: ainda não são salvas (precisa do plano pago do Firebase).
 
 ## O que vai guardar
 Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avaliações · fotos · avisos · escolhas dos botões liga/desliga.
@@ -35,15 +51,15 @@ Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avalia�
 **Avaliações**
 - `mostrar_nome` (sim/não, padrão não). `resposta_prestador` (opcional) e a data da resposta.
 
-## Login (planejado, não criado)
-| Tabela | Guarda | Regra |
-|---|---|---|
-| `usuarios` | Dados da pessoa/empresa | Sem senha aqui. |
-| `identificadores_acesso` | E-mail, CPF, CNPJ (futuro: telefone) | Sem repetidos. Só vale depois de confirmado. |
-| `credenciais` | Senha em *hash* (Argon2id) | Ninguém lê a senha, nem o adm. |
+## Login (como ficou no Firebase)
+| Antes (planejado) | Agora |
+|---|---|
+| `identificadores_acesso` | E-mail = Firebase Authentication · CPF/CNPJ = coleção `documentos` |
+| `credenciais` (Argon2id) | Senha guardada pelo Firebase Authentication (hash próprio do Google) |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-- ⬜ Escolher o servidor (Cloudflare ou Firebase) — **Ciclo 1**.
-- ⬜ Criar as tabelas — **Ciclo 2**.
+- ✅ Servidor escolhido: Firebase (11/11/2026).
+- ✅ Contas (`usuarios`, `documentos`) — Ciclo 2.
+- ⬜ Pedidos, orçamentos, avaliações — Ciclos 3 e 4.

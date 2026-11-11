@@ -415,7 +415,10 @@
   }
 
   /* ---------- 6. INÍCIO ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Conta real (Firebase): troca o exemplo pelos dados da conta; o histórico
+    // de exemplo some (os serviços reais chegam no Ciclo 3).
+    if (await P.carregarDadosReais(perfil, "cliente-cnpj")) servicos.length = 0;
     P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({

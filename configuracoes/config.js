@@ -5,6 +5,7 @@
      2. ../configuracoes/config.js (este arquivo)
      3. ../navbar/navbar.js  e  ../rodape/rodape.js
      4. componentes e o script da própria página
+     5. ../firebase/firebase.js (ÚLTIMO, com type="module", sem defer)
    Aqui ficam: caminhos das páginas, menu, rodapé, lojas, ícones,
    categorias, destaque pago, mapa, tema salvo, sessão de demonstração
    e funções usadas pela NavBar, pelo Rodapé e pelas páginas.
@@ -25,10 +26,10 @@
     nome: "S.D Serviços Digitais",
     logo: "fotos/marca/logo.svg",            // usado como ícone da aba
 
-    // DEMONSTRAÇÃO (sem servidor): o login de teste fica guardado só nesta aba
-    // do navegador (sessionStorage) para dar para navegar logado entre as páginas.
-    // Quando o servidor existir: trocar para false.
-    modoDemonstracao: true,
+    // DEMONSTRAÇÃO (sem servidor): true = login de teste (qualquer senha entra,
+    // escolhe o tipo de conta). false = login REAL pelo Firebase (firebase/firebase.js).
+    // Desde 11/11/2026 o site usa o Firebase (Ciclo 2 · Contas reais).
+    modoDemonstracao: false,
 
     // Caminhos a partir da pasta SDOnline (cada página = <pasta>/index.html)
     paginas: {
@@ -193,26 +194,28 @@
   };
   const iconeCategoria = (nome) => svg(ICONES_CATEGORIA[nome] || "");
 
-  /* ---------- 3. SESSÃO DE DEMONSTRAÇÃO (sem servidor) ----------
-     Guarda só { tipo, nome } nesta aba do navegador. NUNCA guarda senha.
-     Na versão final quem diz se a pessoa está logada é o SERVIDOR. */
-  const CHAVE_SESSAO = "sd-sessao-demonstracao";
+  /* ---------- 3. SESSÃO DA TELA ----------
+     Guarda só { tipo, nome } (e o uid no modo Firebase). NUNCA guarda senha.
+     - Demonstração: chave "sd-sessao-demonstracao", só nesta aba.
+     - Firebase: chave "sd-sessao", gravada por firebase/firebase.js depois do
+       login (nesta aba, ou no navegador se marcar "Continuar conectado").
+     Serve só para a NavBar e o menu. Quem protege os dados é o banco. */
+  const CHAVE_SESSAO = CONFIG.modoDemonstracao ? "sd-sessao-demonstracao" : "sd-sessao";
   const acesso = window.SD_ACESSO;
+  const lerDe = (area) => { try { return JSON.parse(area.getItem(CHAVE_SESSAO) || "null"); } catch (_) { return null; } };
   const sessaoDemo = {
     ler() {
-      if (!CONFIG.modoDemonstracao) return null;
-      try {
-        const s = JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || "null");
-        return s && acesso && acesso.perfilValido(s.tipo) && s.tipo !== "visitante" ? s : null;
-      } catch (_) { return null; }
+      const s = lerDe(sessionStorage) || (CONFIG.modoDemonstracao ? null : lerDe(localStorage));
+      return s && acesso && acesso.perfilValido(s.tipo) && s.tipo !== "visitante" ? s : null;
     },
+    // Só a demonstração entra por aqui (no modo Firebase quem grava é o firebase.js)
     entrar(tipo, nome) {
       if (!CONFIG.modoDemonstracao) return false;
       try { sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ tipo, nome: String(nome || "").slice(0, 60) })); return true; }
       catch (_) { return false; }
     },
     sair() {
-      try { sessionStorage.removeItem(CHAVE_SESSAO); } catch (_) { /* navegador sem armazenamento */ }
+      [sessionStorage, localStorage].forEach((a) => { try { a.removeItem(CHAVE_SESSAO); } catch (_) { /* sem armazenamento */ } });
     }
   };
 
@@ -228,15 +231,15 @@
     if (s.nome) document.body.dataset.nome = s.nome;
   })();
 
-  /* ---------- 3b. PROTEÇÃO DAS PÁGINAS (só no modo demonstração) ----------
+  /* ---------- 3b. PROTEÇÃO DAS PÁGINAS (na TELA) ----------
      A página diz no <body> qual regra de seguranca/acesso.js ela usa:
        data-recurso="perfil-adm"                        → regra da página
        data-recurso-publico="perfil-prestador-publico"  → (opcional) versão pública
      Sem permissão: visitante vai para o login; quem já entrou vai para o início.
-     No site real quem bloqueia é o SERVIDOR, antes de enviar a página. */
+     Os DADOS de verdade são protegidos pelas regras do banco (firebase/firestore.rules). */
   (function protegerPagina() {
     const b = document.body;
-    if (!CONFIG.modoDemonstracao || !b || !acesso || !b.dataset.recurso) return;
+    if (!b || !acesso || !b.dataset.recurso) return;
     const s = sessaoDemo.ler();
     const tipo = s ? s.tipo : "visitante";
     if (acesso.pode(tipo, b.dataset.recurso)) return;

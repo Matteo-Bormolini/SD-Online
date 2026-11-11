@@ -2,8 +2,13 @@
 
 **Tela pronta (v0.5.1) · servidor no Ciclo 2 (Contas reais) · História US05**
 
+> **Atualização 11/11/2026 — Firebase:** quem faz a parte do servidor agora é o **Firebase Authentication**
+> (`firebase/firebase.js`). Mudou: link vale **1 hora** (padrão do Firebase), senha com hash do Google (não Argon2id),
+> e-mails pelo Firebase (sem Brevo/domínio próprio por enquanto), login só por e-mail no MVP.
+> Ainda **não** existe: "nova senha igual à anterior" e o e-mail "Sua senha foi alterada".
+> As seções abaixo ficam como referência para um servidor próprio no futuro.
+
 A tela já está pronta (pop-ups na página de login). Este arquivo diz **o que o servidor tem de fazer** quando existir.
-Nada aqui cria banco de dados: é o plano.
 
 ---
 

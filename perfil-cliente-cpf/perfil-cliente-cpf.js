@@ -79,7 +79,10 @@
   }
 
   /* ---------- 4. INÍCIO ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Conta real (Firebase): troca o exemplo pelos dados da conta; o histórico
+    // de exemplo some (os serviços reais chegam no Ciclo 3).
+    if (await P.carregarDadosReais(perfil, "cliente-cpf")) servicos.length = 0;
     P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({
@@ -107,10 +110,18 @@
       ligado: perfil.compartilharDados,
       aoMudar: (ligado) => {
         perfil.compartilharDados = ligado;
-        U.mostrarMensagem($("#msg-privacidade"), "atencao",
-          (ligado ? "Ligado: prestadores dos seus pedidos verão seu primeiro nome e bairro." : "Desligado: prestadores verão só a região aproximada.") +
-          " Demonstração: ainda não foi salvo no servidor.");
-        P.atualizarAltura();
+        const texto = ligado ? "Ligado: prestadores dos seus pedidos verão seu primeiro nome e bairro." : "Desligado: prestadores verão só a região aproximada.";
+        if (!perfil._real) {
+          U.mostrarMensagem($("#msg-privacidade"), "atencao", texto + " Demonstração: ainda não foi salvo no servidor.");
+          P.atualizarAltura();
+          return;
+        }
+        // Conta real: grava a escolha e a data (consentimento LGPD)
+        perfil.compartilharDadosEm = new Date().toISOString();
+        P.salvarDadosReais(perfil, ["compartilharDados", "compartilharDadosEm"])
+          .then(() => U.mostrarMensagem($("#msg-privacidade"), "sucesso", texto + " Salvo."))
+          .catch((e) => U.mostrarMensagem($("#msg-privacidade"), "erro", "Não foi salvo: " + window.SDFirebase.mensagemErro(e)))
+          .finally(() => P.atualizarAltura());
       }
     });
     P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });

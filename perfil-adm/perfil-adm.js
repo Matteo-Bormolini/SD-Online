@@ -123,7 +123,9 @@
   }
 
   /* ---------- 5. INÍCIO ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Conta real (Firebase): troca o exemplo pelos dados do adm logado
+    await P.carregarDadosReais(perfil, "adm");
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     renderizarDados();
     renderizarGaleria();

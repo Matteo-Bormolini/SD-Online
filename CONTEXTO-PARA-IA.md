@@ -25,12 +25,13 @@
 
 ## 4. Regras técnicas obrigatórias
 - Página nova nasce de `modelo-pagina/index.html`.
-- Scripts: `seguranca/acesso.js` → `configuracoes/config.js` → (`configuracoes/interruptores.js`) → `navbar` → `rodape` → componentes → página.
+- Scripts: `seguranca/acesso.js` → `configuracoes/config.js` → (`configuracoes/interruptores.js`) → `navbar` → `rodape` → componentes → página → **`firebase/firebase.js` por último** (`type="module"`).
+- **Servidor = Firebase** (Auth + Firestore, plano grátis). Só `firebase/firebase.js` fala com ele. Regras do banco: `firebase/firestore.rules` (colar no console). Login do MVP só por e-mail.
 - Navbar e rodapé são montados por JS. **Nunca escrever à mão.** Links só em `configuracoes/config.js`.
 - Só cores do `base.css` (`var(--cor-...)`).
 - **Excluir ou editar:** sempre `SDConfirmar(...)` (`componentes/confirmacao/`).
 - **Botões liga/desliga:** desligado cinza escuro, ligado vinho; todos cadastrados em `configuracoes/interruptores.js`.
-- Bloqueio real é do servidor; a tela só esconde. Senha: Argon2id no servidor.
+- Bloqueio real é das **regras do banco** (`firebase/firestore.rules`); a tela só esconde. Senha: só o Firebase guarda (com hash); o site nunca grava senha.
 - Prestador **nunca** vê a área "Serviços" nem outros prestadores. Avaliações anônimas por padrão.
 
 ## 5. Fluxo do pedido

@@ -4,6 +4,21 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 11/11/2026 — servidor: Firebase (Ciclo 2 · Contas reais)
+- **Servidor:** **Firebase**, plano grátis (Spark): Authentication + Firestore. Site continua no **GitHub Pages**.
+- **Login do MVP: só e-mail + senha.** CPF/CNPJ continua obrigatório e **único** no cadastro, mas não serve para entrar. Volta depois (obrigatório no futuro).
+- **Nova senha:** o link do e-mail abre o **pop-up do site** ("Criar nova senha"). O link vale **1 hora** (padrão do Firebase; antes: 30 min).
+- **Senha:** continua a regra do site (12 a 128 caracteres, sem obrigar misturar). No Firebase: política "Exigir", mínimo 12, máximo 128, sem exigências de caracteres. O hash da senha é feito pelo Firebase (não é mais Argon2id próprio).
+- **"Não pode ser igual à anterior":** o Firebase não confere. Fica pendente.
+- **Administrador:** cria a conta pelo site (como cliente) e troca `tipo` para `adm` **pelo console** do Firebase. Ninguém vira adm pelo site.
+- **E-mail não confirmado:** a pessoa entra e usa o site normalmente; aparece aviso com botão de reenviar. Pedidos (Ciclo 3) vão exigir e-mail confirmado.
+- **Fotos:** continuam só na tela. Guardar fotos precisa do Cloud Storage, que exige o plano pago (Blaze). Decidir antes do Ciclo 3.
+- **E-mails próprios** (avisos de pedido): ficam para o Ciclo 3 (Firebase grátis só manda e-mails de conta).
+- **E-mail de recuperação:** pelo Firebase (remetente padrão do Firebase), sem precisar de domínio.
+- **CNPJ do prestador (decidido em 09/11):** a S.D confere — dígitos/letras + API pública (ativo, MEI, nome e CNAE do serviço principal). O que não bater vai para aprovação manual antes do selo "Verificado".
+- **Domínio (decidido em 09/11):** não compra antes do Ciclo 2. No 1º ano fica o endereço grátis; .com.br (~R$ 40/ano) só se o projeto der resultado.
+- **Ciclo 1 concluído → v0.6.0.**
+
 ### 09/11/2026 (tarde) — funcionamento do pedido
 - **Pedido:** o cliente cria **uma solicitação** e, na página Localizar prestador, marca os prestadores que quer (depois de ver avaliações, serviços e localização). O mesmo pedido vai para todos os marcados.
 - **Fotos do pedido:** **3 obrigatórias** (ângulos diferentes), **limite de 6**.
@@ -47,9 +62,6 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 ### Em aberto
 | Decisão | Opções | Até |
 |---|---|---|
-| Servidor do lançamento | Cloudflare (recomendado) · Firebase | Ciclo 1 |
-| E-mail de recuperação precisa de domínio | Comprar domínio já · usar o e-mail do Firebase Auth | Ciclo 1 |
-| Conferir o CNPJ do prestador | Selo "Verificado" · não conferir e avisar nos Termos | Ciclo 1 |
 | Onde registrar acompanhante e nº de visitas (US48) | Avaliação · Serviços realizados · fechamento do pedido | Depois |
 | E-mail definitivo do Suporte | Manter o atual · e-mail do domínio da S.D | Ciclo 6 |
 

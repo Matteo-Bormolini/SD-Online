@@ -7,12 +7,12 @@
    cidade e UF sozinho). Senha: regra única em componentes/senha.
    Recuperação de acesso (pop-ups): login-cadastro/recuperacao.js.
 
-   DEMONSTRAÇÃO (sem servidor): nenhuma senha é guardada ou enviada.
-   Ao entrar/criar conta, guarda só { tipo, nome } nesta aba do navegador
-   (configuracoes/config.js → SD.sessaoDemo) e leva para a página certa,
-   para dar para testar a navegação logado entre as páginas.
-   Na versão final: o SERVIDOR confere login e senha, cria a sessão segura
-   (cookie HttpOnly) e devolve o tipo de usuário.
+   LOGIN REAL (desde 11/11/2026): firebase/firebase.js (window.SDFirebase).
+     - Entrar: só com E-MAIL + senha (MVP). CPF/CNPJ voltam depois.
+     - Criar conta: cria o login, salva o perfil e reserva o CPF/CNPJ
+       (1 conta por documento). Envia o e-mail de confirmação.
+   DEMONSTRAÇÃO (modoDemonstracao: true em config.js): nenhuma senha é
+   guardada; escolhe o tipo de conta e navega logado só nesta aba.
    ===================================================================== */
 (function () {
   "use strict";
@@ -91,6 +91,12 @@
 
   // "?perfil=" aceito na URL → cadastro que abre
   const PERFIL_URL = { prestador: "prest", cpf: "cpf", "cliente-cpf": "cpf", cliente_cpf: "cpf", cnpj: "cnpj", "cliente-cnpj": "cnpj", cliente_cnpj: "cnpj" };
+
+  // firebase/firebase.js carrega por último (type="module"): espera até 8 s por ele
+  const firebase = () => (window.SDFirebase ? Promise.resolve(window.SDFirebase) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDFirebase), 8000);
+    document.addEventListener("sd:firebase-pronto", () => { clearTimeout(t); ok(window.SDFirebase); }, { once: true });
+  }));
 
   /* ---------- 2. ESTADO DA TELA ---------- */
   const estado = { loginAberto: true, criarAberto: true, tipoAberto: null };   // tipoAberto: cpf | cnpj | prest | null
@@ -281,10 +287,71 @@
     }
     U.limparMensagem(msg);
 
-    // Aqui entrará o envio ao servidor. Senhas NUNCA são guardadas no navegador.
-    const nome = id === "cpf" ? pegar("nome").value.trim().split(/\s+/)[0] : (pegar("nome").value.trim() || SD_ACESSO_NOME(tipo.perfil));
-    senha.value = ""; senha2.value = "";
-    entrar(tipo.perfil, nome);
+    // DEMONSTRAÇÃO: não envia nada. Senhas NUNCA são guardadas no navegador.
+    if (SD.config.modoDemonstracao) {
+      const nome = id === "cpf" ? pegar("nome").value.trim().split(/\s+/)[0] : (pegar("nome").value.trim() || SD_ACESSO_NOME(tipo.perfil));
+      senha.value = ""; senha2.value = "";
+      entrar(tipo.perfil, nome);
+      return;
+    }
+    criarContaReal(id, form, msg);
+  }
+
+  // Monta os dados do perfil (mesmos nomes usados nas páginas de perfil)
+  function dadosDoCadastro(id) {
+    const tipo = TIPOS[id];
+    const v = (chave) => { const e = document.getElementById(`${id}-${chave}`); return e ? e.value.trim() : ""; };
+    const autorizou = document.getElementById(`${id}-priv`).checked;
+    const dados = {
+      tipo: tipo.perfil,
+      email: v("email").toLowerCase(),
+      senha: document.getElementById(`${id}-senha`).value,
+      documento: id === "cpf" ? U.soDigitos(v("cpf")) : U.normalizarCnpj(v("cnpj")),
+      telefones: [{ numero: U.soDigitos(v("tel")), principal: true }],
+      ...enderecos[id].ler(),
+      interruptores: {}
+    };
+    if (id === "cpf") {
+      dados.nome = v("nome");
+      dados.compartilharDados = autorizou;           // prestador vê 1º nome e bairro
+      dados.compartilharDadosEm = new Date().toISOString();
+    } else {
+      dados.razaoSocial = v("nome");
+      dados.responsavelNome = v("resp");
+      dados.autorizacaoExibir = autorizou;           // nome/perfil aparece para prestadores ou nas buscas
+    }
+    // Botões liga/desliga do cadastro (ex.: "Mostrar meus contatos")
+    (tipo.interruptores || []).forEach((idBotao) => {
+      const b = document.querySelector(`#cadastro-${id} [data-interruptor="${idBotao}"]`);
+      dados.interruptores[idBotao] = b ? b.getAttribute("aria-checked") === "true" : true;
+    });
+    return dados;
+  }
+
+  async function criarContaReal(id, form, msg) {
+    const F = await firebase();
+    if (!F || !F.ativo) { U.mostrarMensagem(msg, "atencao", "O cadastro ainda não está disponível: o Firebase não foi configurado."); return; }
+    const botao = form.querySelector('[type="submit"]');
+    botao.disabled = true; botao.setAttribute("aria-busy", "true");
+    U.mostrarMensagem(msg, "info", "Criando sua conta…");
+    try {
+      await F.cadastrar(dadosDoCadastro(id));
+      document.getElementById(`${id}-senha`).value = "";
+      document.getElementById(`${id}-senha2`).value = "";
+      // Volta a esta página já conectado, com o aviso de confirmar o e-mail
+      const url = new URL(location.href);
+      url.search = "";
+      url.searchParams.set("conta", "criada");
+      if (parametros.get("destino")) url.searchParams.set("destino", parametros.get("destino"));
+      location.href = url.href;
+    } catch (e) {
+      botao.disabled = false; botao.removeAttribute("aria-busy");
+      const campo = e.code === "auth/email-already-in-use" ? document.getElementById(`${id}-email`)
+        : e.code === "DOCUMENTO_EM_USO" ? document.getElementById(`${id}-${id === "cpf" ? "cpf" : "cnpj"}`)
+        : (e.code === "auth/weak-password" || e.code === "auth/password-does-not-meet-requirements") ? document.getElementById(`${id}-senha`) : null;
+      if (campo) { mostrarErro(campo, F.mensagemErro(e)); campo.focus(); }
+      U.mostrarMensagem(msg, "erro", F.mensagemErro(e));
+    }
   }
 
   const SD_ACESSO_NOME = (perfil) => (window.SD_ACESSO ? window.SD_ACESSO.nomePerfil(perfil) : perfil);
@@ -295,21 +362,17 @@
     const id = $("#login-id"), senha = $("#login-senha"), msg = $("#msg-login");
     [id, senha].forEach(limparErro);
     U.limparMensagem(msg);
-    // Qual identificador foi digitado? (servicos/identificadores.js: e-mail, CPF ou CNPJ)
-    const identificador = ID.identificar(id.value);
-    if (!id.value.trim()) mostrarErro(id, `Informe seu ${ID.nomesAtivos()}.`);
-    else if (!identificador.valido) mostrarErro(id, `Digite um ${ID.nomesAtivos()} válido.`);
+    // MVP: só e-mail (servicos/identificadores.js; CPF/CNPJ voltam depois)
+    const identificador = ID.identificar(id.value, SD.config.modoDemonstracao ? undefined : ["email"]);
+    if (!id.value.trim()) mostrarErro(id, "Informe seu e-mail.");
+    else if (!identificador.valido) mostrarErro(id, "Digite um e-mail válido.");
     if (!senha.value) mostrarErro(senha, "Informe a senha.");
     if (!identificador.valido || !senha.value) {
       U.mostrarMensagem(msg, "erro", "Preencha os campos destacados.");
       (identificador.valido ? senha : id).focus();
       return;
     }
-    if (!SD.config.modoDemonstracao) {
-      // Sem servidor e sem demonstração: não há como conferir a senha
-      U.mostrarMensagem(msg, "atencao", "O login ainda não está disponível: o servidor não foi conectado.");
-      return;
-    }
+    if (!SD.config.modoDemonstracao) { entrarReal(identificador.valor, senha, msg); return; }
     // Aqui entrará a consulta ao servidor ({ tipo do identificador, valor normalizado, senha }),
     // que devolve o tipo real do usuário. O nome exibido vem do servidor; na demonstração,
     // nunca mostramos o documento: só o e-mail ou o tipo de conta.
@@ -318,16 +381,38 @@
     entrar(tipoDemo, identificador.tipo === "email" ? identificador.valor : SD_ACESSO_NOME(tipoDemo));
   }
 
-  // Guarda a sessão de demonstração e leva para o destino (se permitido) ou para o início
-  function entrar(perfil, nome) {
-    if (!SD.config.modoDemonstracao || !SD.sessaoDemo.entrar(perfil, nome)) {
-      U.mostrarMensagem($("#aviso"), "atencao", "Cadastro validado, mas o login ainda depende do servidor (não conectado).");
-      return;
+  // Login REAL (Firebase)
+  async function entrarReal(email, senha, msg) {
+    const F = await firebase();
+    if (!F || !F.ativo) { U.mostrarMensagem(msg, "atencao", "O login ainda não está disponível: o Firebase não foi configurado."); return; }
+    const botao = $('#form-login [type="submit"]');
+    botao.disabled = true; botao.setAttribute("aria-busy", "true");
+    try {
+      const r = await F.entrar(email, senha.value, $("#login-manter").checked);
+      senha.value = "";
+      irParaDestino(r.tipo);
+    } catch (e) {
+      botao.disabled = false; botao.removeAttribute("aria-busy");
+      U.mostrarMensagem(msg, "erro", e.code === "SEM_CADASTRO" ? e.message : F.mensagemErro(e));
+      senha.focus();
     }
+  }
+
+  // Leva para o destino pedido (se o tipo de conta puder ver) ou para o início
+  function irParaDestino(perfil) {
     const destino = parametros.get("destino");
     const item = SD.config.menu.find((m) => m.id === destino);
     const permitido = item && window.SD_ACESSO && window.SD_ACESSO.pode(perfil, item.id);
     location.href = permitido ? SD.caminho(item.href) : SD.urlPagina("inicio");
+  }
+
+  // Guarda a sessão de DEMONSTRAÇÃO e leva para o destino
+  function entrar(perfil, nome) {
+    if (!SD.config.modoDemonstracao || !SD.sessaoDemo.entrar(perfil, nome)) {
+      U.mostrarMensagem($("#aviso"), "atencao", "Login de demonstração desligado.");
+      return;
+    }
+    irParaDestino(perfil);
   }
 
   /* ---------- 7. ATUALIZA O QUE APARECE ---------- */
@@ -350,7 +435,26 @@
     $("#btn-sair-conta").href = SD.urlPagina("sair");
     $("#ja-conectado").hidden = false;
     $("#login-colunas").hidden = true;
+    avisoConfirmarEmail();
     return true;
+  }
+
+  // Conta criada agora / e-mail ainda não confirmado → aviso + botão de reenviar
+  async function avisoConfirmarEmail() {
+    const caixa = $("#aviso-verificacao"), botao = $("#btn-reenviar-verificacao");
+    if (parametros.get("conta") === "criada") U.mostrarMensagem($("#aviso"), "sucesso", "Conta criada! Seja bem-vindo(a) à S.D.");
+    const F = await firebase();
+    if (!F || !F.ativo || await F.emailConfirmado()) return;
+    const email = F.emailAtual();
+    if (!email) return;
+    U.mostrarMensagem(caixa, "atencao", `Enviamos um link de confirmação para ${email}. Abra o e-mail e clique no link (confira também o spam).`);
+    botao.hidden = false;
+    botao.onclick = async () => {
+      botao.disabled = true;
+      try { await F.reenviarVerificacao(); U.mostrarMensagem(caixa, "sucesso", `E-mail de confirmação enviado de novo para ${email}.`); }
+      catch (e) { U.mostrarMensagem(caixa, "erro", F.mensagemErro(e)); }
+      setTimeout(() => { botao.disabled = false; }, 60000);       // espera 1 min para pedir de novo
+    };
   }
 
   // Abre a parte certa conforme o endereço (links da Home e da NavBar)

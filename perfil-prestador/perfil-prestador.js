@@ -503,7 +503,10 @@
   }
 
   /* ---------- 9. INÍCIO ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Conta real (Firebase): troca o exemplo pelos dados do prestador logado.
+    // Avaliações e quadro de exemplo somem (os reais chegam nos Ciclos 3 e 4).
+    if (await P.carregarDadosReais(perfil, "prestador")) { avaliacoes.length = 0; servicosKanban.length = 0; }
     quadro = window.SDKanban.criar({
       alvo: $("#kanban"), resumo: $("#kanban-resumo"), total: $("#servicos-total"), anuncio: $("#kanban-anuncio"),
       encerrados: $("#kanban-encerrados"),

@@ -9,8 +9,10 @@
    Cada perfil (pasta perfil-<tipo>, arquivo perfil-<tipo>.js) só guarda o que é exclusivo dele.
    Depende de: componentes/utilidades/utilidades.js, componentes/senha/senha.js
    e componentes/endereco/endereco.js (CEP primeiro, preenche o resto).
-   IMPORTANTE: tudo roda só no navegador (demonstração). Salvar, excluir
-   e enviar fotos de verdade dependem do servidor (etapa futura).
+   DADOS REAIS (Firebase, desde 11/11/2026): carregarDadosReais() troca os
+   dados de exemplo pelos da conta logada; "Editar perfil" e "Excluir perfil"
+   salvam no banco. Fotos ainda NÃO são enviadas (precisam do Cloud Storage,
+   que exige o plano pago do Firebase): ficam só na tela.
    ===================================================================== */
 (function () {
   "use strict";
@@ -37,6 +39,59 @@
   // conteúdo muda. Antes das abas existirem, não faz nada.
   let controleAbas = null;
   const atualizarAltura = () => { if (controleAbas) controleAbas.atualizarAltura(); };
+
+  /* ---------- 0b. DADOS REAIS (Firebase) ----------
+     Uso em cada perfil, no início:  const real = await P.carregarDadosReais(perfil, "cliente-cpf");
+     - Só carrega se a pessoa logada for desse tipo e a página NÃO for de
+       outra pessoa (?id=...). Senão devolve false e a tela fica no exemplo.
+     - Apaga os valores de exemplo (para não mostrar dado falso) e coloca os do banco. */
+  const firebase = () => (window.SDFirebase ? Promise.resolve(window.SDFirebase) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDFirebase), 8000);
+    document.addEventListener("sd:firebase-pronto", () => { clearTimeout(t); ok(window.SDFirebase); }, { once: true });
+  }));
+  // Campos de exemplo que continuam (textos fixos da página)
+  const MANTER_EXEMPLO = ["tipoConta", "cargoBase", "raioKm"];
+
+  function zerar(valor) {
+    if (Array.isArray(valor)) return [];
+    if (valor === null) return null;
+    if (typeof valor === "string") return "";
+    if (typeof valor === "number") return 0;
+    if (typeof valor === "boolean") return false;
+    if (typeof valor === "object") return Object.fromEntries(Object.entries(valor).map(([k, v]) => [k, zerar(v)]));
+    return valor;
+  }
+
+  async function carregarDadosReais(perfil, tipo) {
+    if (window.SD && window.SD.config.modoDemonstracao) return false;
+    if (new URLSearchParams(location.search).get("id")) return false;    // perfil de outra pessoa
+    const F = await firebase();
+    if (!F || !F.ativo) return false;
+    let dados = null;
+    try { dados = await F.meusDados(); }
+    catch (e) { console.warn("[S.D] Não foi possível carregar o perfil:", e.code || e); return false; }
+    if (!dados || dados.tipo !== tipo) return false;
+
+    Object.keys(perfil).forEach((k) => { if (!MANTER_EXEMPLO.includes(k)) perfil[k] = zerar(perfil[k]); });
+    const { criadoEm, atualizadoEm, uid, documentoChave, interruptores, ...resto } = dados;
+    Object.assign(perfil, resto);
+    // Documento sempre formatado na tela (o banco guarda só números/letras)
+    if (dados.documento) perfil.documento = dados.documento.length === 11 ? U.formatarCpf(dados.documento) : U.formatarCnpj(dados.documento);
+    if (!Array.isArray(perfil.telefones) || !perfil.telefones.length) perfil.telefones = [{ numero: "", principal: true }];
+    if ("membroDesde" in perfil && criadoEm && criadoEm.toDate) perfil.membroDesde = String(criadoEm.toDate().getFullYear());
+    // Botões liga/desliga salvos na conta → valem nesta tela
+    if (interruptores && window.SD_INTERRUPTORES) Object.entries(interruptores).forEach(([id, v]) => window.SD_INTERRUPTORES.gravar(id, v));
+    Object.defineProperty(perfil, "_real", { value: true, enumerable: false });
+    return true;
+  }
+
+  // Salva os campos do perfil que mudaram (nomes = chaves do objeto perfil)
+  async function salvarDadosReais(perfil, chaves) {
+    const F = await firebase();
+    const campos = {};
+    chaves.forEach((k) => { if (k in perfil) campos[k] = perfil[k]; });
+    await F.atualizarCampos(campos);
+  }
 
   /* ---------- 1. PREENCHER DADOS NA TELA ---------- */
   // <td data-campo="email"> recebe valores.email (sempre como texto, nunca HTML)
@@ -202,6 +257,7 @@
             const ok = await confirmar({ titulo: "Excluir este telefone?", texto: `O número ${U.formatarTelefone(t.numero)} será removido do seu perfil.`, sim: "Sim, excluir" });
             if (!ok) return;
             perfil.telefones.splice(i, 1); renderizar(); btn.focus();
+            salvarTelefones();
           });
           li.append(rem);
         }
@@ -228,7 +284,14 @@
       perfil.telefones.push({ numero: d, principal: false });
       renderizar();
       abrir(false);
+      salvarTelefones();
     };
+    // Conta real: grava a lista de telefones no banco
+    async function salvarTelefones() {
+      if (!perfil._real) return;
+      try { await salvarDadosReais(perfil, ["telefones"]); }
+      catch (e) { erro.textContent = "Não foi salvo: " + (window.SDFirebase ? window.SDFirebase.mensagemErro(e) : "tente de novo."); }
+    }
     btn.addEventListener("click", () => abrir(caixa.hidden));
     $("#btn-cancelar-telefone").addEventListener("click", () => abrir(false));
     $("#btn-salvar-telefone").addEventListener("click", salvar);
@@ -380,6 +443,10 @@
       if (!ok) { U.mostrarMensagem(msg, "info", "Alteração cancelada. Nada foi mudado e o que você digitou continua no formulário."); return; }
 
       // Aplica somente os campos preenchidos; vazios mantêm o anterior
+      // (cópia para desfazer se o banco recusar)
+      const copia = perfil._real ? JSON.parse(JSON.stringify(perfil)) : null;
+      const emailNovo = perfil._real && dados.email && dados.email !== perfil.email ? dados.email : "";
+      if (emailNovo) dados.email = "";            // o e-mail só muda depois do link de confirmação
       const alterados = [];
       // CEP novo → troca o endereço inteiro (inclusive complemento vazio)
       if (cepMudou(dados, perfil)) {
@@ -395,9 +462,34 @@
       if (aplicarExtra) aplicarExtra(dados, alterados);
       if (dados.senha) alterados.push("senha");  // a senha real é enviada só ao servidor (nunca exibida)
 
+      if (emailNovo) alterados.push("email");
       if (!alterados.length) {
         U.mostrarMensagem(msg, "info", "Nenhuma alteração informada. Os dados atuais foram mantidos.");
         return;
+      }
+
+      // CONTA REAL: grava no banco (senha e e-mail vão pelo login do Firebase)
+      const avisos = [];
+      if (perfil._real) {
+        const botao = form.querySelector('[type="submit"]');
+        botao.disabled = true; botao.setAttribute("aria-busy", "true");
+        U.mostrarMensagem(msg, "info", "Salvando…");
+        const F = await firebase();
+        try {
+          const campos = [...new Set(alterados.filter((c) => !["senha", "email", "telefone"].includes(c)))];
+          if (alterados.includes("telefone")) campos.push("telefones");
+          if (campos.length) await salvarDadosReais(perfil, campos);
+          if (dados.senha) await F.trocarSenha(dados.senha);
+          if (emailNovo) { await F.trocarEmail(emailNovo); avisos.push(`Enviamos um link para ${emailNovo}: o e-mail só muda depois que você clicar nele.`); }
+        } catch (e) {
+          Object.keys(copia).forEach((k) => { perfil[k] = copia[k]; });   // desfaz na tela
+          botao.disabled = false; botao.removeAttribute("aria-busy");
+          if (aoConcluir) aoConcluir();
+          U.mostrarMensagem(msg, "erro", "Não foi salvo: " + F.mensagemErro(e));
+          atualizarAltura();
+          return;
+        }
+        botao.disabled = false; botao.removeAttribute("aria-busy");
       }
 
       form.reset();
@@ -406,7 +498,8 @@
       if (aoConcluir) aoConcluir();
       form.querySelectorAll(".btn-olho[data-alvo]").forEach((b) => { if (b.getAttribute("aria-pressed") === "true") b.click(); });
       const total = new Set(alterados).size;
-      U.mostrarMensagem(msg, "atencao",
+      if (perfil._real) U.mostrarMensagem(msg, "sucesso", `Alteração salva (${total} ${total === 1 ? "campo" : "campos"}). ${avisos.join(" ")}`.trim());
+      else U.mostrarMensagem(msg, "atencao",
         `Alteração aplicada nesta tela (${total} ${total === 1 ? "campo" : "campos"}). ` +
         "Demonstração: ainda não foi salva no servidor.");
       atualizarAltura();
@@ -462,11 +555,22 @@
     const modal = U.ligarPopup($("#modal-excluir"));        // clique fora fecha e o foco volta ao botão
     $("#btn-excluir").addEventListener("click", () => modal.abrir());
     $("#modal-cancelar").addEventListener("click", () => modal.close());
-    $("#modal-confirmar").addEventListener("click", () => {
+    $("#modal-confirmar").addEventListener("click", async () => {
       modal.close();
-      // A exclusão real será feita pelo servidor; aqui não apagamos nada
-      U.mostrarMensagem($("#msg-geral"), "atencao", "Exclusão não executada: esta é uma demonstração sem servidor. Na versão final, o perfil será apagado e você sairá da conta.");
-      atualizarAltura();
+      const F = window.SD && !window.SD.config.modoDemonstracao ? await firebase() : null;
+      if (!F || !F.ativo) {
+        U.mostrarMensagem($("#msg-geral"), "atencao", "Exclusão não executada: esta é uma demonstração sem servidor. Na versão final, o perfil será apagado e você sairá da conta.");
+        atualizarAltura();
+        return;
+      }
+      U.mostrarMensagem($("#msg-geral"), "info", "Excluindo a conta…");
+      try {
+        await F.excluirConta();
+        location.href = window.SD.urlPagina("sair");               // volta ao login, já sem conta
+      } catch (e) {
+        U.mostrarMensagem($("#msg-geral"), "erro", "A conta não foi excluída. " + F.mensagemErro(e));
+        atualizarAltura();
+      }
     });
   }
 
@@ -516,6 +620,7 @@
   }
 
   window.SDPerfil = Object.freeze({
+    carregarDadosReais, salvarDadosReais,
     PADRAO, ICONES, $, ouTraco, atualizarAltura, enderecoParaTela, placeholdersEndereco,
     preencherCampos, preencherPlaceholders, preencherSelect, preencherLinkAvaliacoes,
     iniciarAbas, iniciarTelefones, iniciarSanfona, abrirSanfona,

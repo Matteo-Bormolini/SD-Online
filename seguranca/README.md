@@ -17,8 +17,10 @@ Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precis
 - Senha: só *hash* no servidor. Ninguém vê, nem o adm.
 
 ## Importante
-- Hoje o bloqueio é **só na tela**. Qualquer pessoa pode se passar por adm mexendo no navegador.
-  Isso só deixa de acontecer com o servidor (Ciclo 2). Resultado completo dos testes: [`docs/testes-e-seguranca.md`](../docs/testes-e-seguranca.md).
+- **Páginas:** o bloqueio continua na tela (o site é estático no GitHub Pages).
+- **Dados:** protegidos pelas regras do banco ([`firebase/firestore.rules`](../firebase/firestore.rules)) desde 11/11/2026.
+  Mexer no navegador pode mostrar uma página de adm vazia, mas **não** dá acesso aos dados de ninguém.
+  Resultado completo dos testes: [`docs/testes-e-seguranca.md`](../docs/testes-e-seguranca.md).
 
 ## LGPD
 | Cuidado | Situação |

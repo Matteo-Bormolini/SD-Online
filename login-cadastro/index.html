@@ -28,6 +28,8 @@
 <script src="../servicos/recuperacao.js" defer></script>
 <script src="login-cadastro.js" defer></script>
 <script src="recuperacao.js" defer></script>
+<!-- Firebase (login e banco). Sempre o ÚLTIMO script, com type="module" -->
+<script type="module" src="../firebase/firebase.js"></script>
 </head>
 <!-- Endereços aceitos (usados pela Home e pela NavBar):
        ?acao=criar-conta                       → abre só o "Criar login"
@@ -47,10 +49,13 @@
   <!-- Avisos gerais (sair, destino bloqueado, sucesso) -->
   <div class="mensagem" id="aviso" role="status" aria-live="polite"></div>
 
-  <!-- Já conectado (sessão de demonstração ativa) -->
+  <!-- Já conectado (sessão ativa) -->
   <section class="login-cartao login-conectado" id="ja-conectado" hidden aria-labelledby="titulo-conectado">
     <h2 id="titulo-conectado">Você já está conectado</h2>
     <p id="texto-conectado"></p>
+    <!-- E-mail ainda não confirmado (preenchido por login-cadastro.js) -->
+    <div class="mensagem" id="aviso-verificacao" role="status" aria-live="polite"></div>
+    <button type="button" class="link-botao" id="btn-reenviar-verificacao" hidden>Enviar o e-mail de confirmação de novo</button>
     <div class="login-acoes">
       <a class="btn" id="btn-ir-inicio" href="../home/index.html">Ir para o início</a>
       <a class="btn" id="btn-ir-perfil" href="../home/index.html">Meu perfil</a>
@@ -71,8 +76,9 @@
 
       <form id="form-login" class="login-corpo" novalidate>
         <div class="campo">
-          <label for="login-id">E-mail, CPF ou CNPJ</label>
-          <input type="text" id="login-id" name="login" autocomplete="username" placeholder="seu@email.com ou 000.000.000-00" aria-describedby="e-login-id" maxlength="254">
+          <!-- MVP: login só com e-mail (decisão de 11/11/2026). CPF/CNPJ voltam depois. -->
+          <label for="login-id">E-mail</label>
+          <input type="email" id="login-id" name="login" autocomplete="username" inputmode="email" placeholder="seu@email.com" aria-describedby="e-login-id" maxlength="254">
           <span class="campo-erro" id="e-login-id"></span>
         </div>
 
@@ -228,7 +234,7 @@
   </div>
 
   <div class="popup-etapa" data-etapa="concluido" hidden>
-    <div class="mensagem sucesso" role="status">Senha alterada. Por segurança, encerramos as sessões abertas em outros aparelhos. Entre com a nova senha.</div>
+    <div class="mensagem sucesso" role="status">Senha alterada. Entre com a nova senha.</div>
   </div>
 
   <div class="popup-rodape">
@@ -249,7 +255,7 @@
     <p>O que você não lembra?</p>
     <div class="opcoes-acesso">
       <button type="button" class="opcao-acesso" data-opcao="documento">
-        <strong>Não lembro meu e-mail</strong><span>Entre com o seu CPF ou CNPJ.</span>
+        <strong>Não lembro meu e-mail</strong><span>Informe o CPF ou CNPJ para ver como recuperar.</span>
       </button>
       <button type="button" class="opcao-acesso" data-opcao="email">
         <strong>Não lembro meu CPF/CNPJ</strong><span>Entre com o seu e-mail cadastrado.</span>
@@ -271,9 +277,8 @@
       <button type="submit" class="btn">Continuar</button>
     </form>
     <div class="popup-resultado" id="pl-resultado-documento" hidden>
-      <div class="mensagem info" role="status">Se este documento estiver cadastrado e liberado para entrar, use-o no campo de login com a sua senha. Por segurança, não mostramos o e-mail da conta.</div>
-      <button type="button" class="btn" data-usar="documento">Usar este documento para entrar</button>
-      <p class="nota">Esqueceu a senha também? O link de nova senha vai para o e-mail cadastrado. Sem acesso ao e-mail, <a class="link" data-link-suporte href="../suporte/index.html">fale com o suporte</a>.</p>
+      <div class="mensagem info" role="status">Por enquanto o login é feito só com o e-mail. Por segurança, não mostramos o e-mail da conta: fale com o suporte e informe este documento para recuperar o acesso.</div>
+      <a class="btn" data-link-suporte href="../suporte/index.html">Falar com o suporte</a>
     </div>
     <button type="button" class="link-botao" data-voltar-opcoes>Escolher outra opção</button>
   </div>

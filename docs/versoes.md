@@ -23,6 +23,8 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 
 | Versão | Data | O que entrou |
 |---|---|---|
+| v0.6.0 | 11/11/2026 | Fim do Ciclo 1: decisões fechadas (servidor Firebase, CNPJ conferido com selo, sem domínio no 1º ano). |
+| v0.7.0-alpha.1 | 11/11/2026 | Firebase: pasta `firebase/` (login, cadastro com CPF/CNPJ único, sair, esqueci a senha pelo pop-up, confirmação de e-mail, perfil real com editar/excluir, botões liga/desliga salvos) e regras do banco (`firebase/firestore.rules`). Login só por e-mail no MVP. Modo demonstração desligado. |
 | v0.6.0-alpha.2 | 09/11/2026 | Decisões do funcionamento do pedido (fotos 3 obrigatórias até 6; sem contraproposta); quadro: A orçar expira em 10 dias, só o cliente finaliza (Prestados); aviso quando "Mostrar meus contatos" está desligado; botão também no cadastro do Prestador; backlog com parceiros/ofertas e explicação das versões. |
 | v0.6.0-alpha.1 | 09/11/2026 | READMEs para projeto individual; quadro do prestador com A orçar, sanfona no celular e Encerrados; pop-up de confirmação padrão; botões Localização e Mostrar meus contatos; lista única de botões liga/desliga; WhatsApp/Ligar no "Ver como cliente"; e-mail do Suporte; relatório de testes. |
 | v0.5.1 | 06/11/2026 | Recuperação de acesso e componentes (tag aponta para f53503f). |
