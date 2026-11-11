@@ -27,6 +27,8 @@
 - Página nova nasce de `modelo-pagina/index.html`.
 - Scripts: `seguranca/acesso.js` → `configuracoes/config.js` → (`configuracoes/interruptores.js`) → `navbar` → `rodape` → componentes → página → **`firebase/firebase.js` por último** (`type="module"`).
 - **Servidor = Firebase** (Auth + Firestore, plano grátis). Só `firebase/firebase.js` fala com ele. Regras do banco: `firebase/firestore.rules` (colar no console). Login do MVP só por e-mail.
+- **Nada pago no MVP.** O que só funciona pagando fica em "Pós-MVP · precisa pagar" (`docs/backlog.md`, seção 2).
+- Conferência de CPF/CNPJ: botão do adm `conferir-documentos` (`configuracoes/site` no banco). CNPJ do prestador: `servicos/consulta-cnpj.js`. Selo `verificado` só pelo adm.
 - Navbar e rodapé são montados por JS. **Nunca escrever à mão.** Links só em `configuracoes/config.js`.
 - Só cores do `base.css` (`var(--cor-...)`).
 - **Excluir ou editar:** sempre `SDConfirmar(...)` (`componentes/confirmacao/`).

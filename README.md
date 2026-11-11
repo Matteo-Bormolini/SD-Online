@@ -31,6 +31,20 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 2. Console → Firestore Database → `usuarios` → documento dessa conta → campo `tipo` → troque para `adm` → Atualizar.
 3. Saia e entre de novo no site. Ninguém consegue virar adm pelo site (as regras bloqueiam).
 
+## Configurações do site (`configuracoes/site`)
+- Criado sozinho na 1ª vez que o adm mexe no botão **Conferir CPF e CNPJ** (Perfil do adm → aba Administração).
+- `conferirDocumentos`: `true` = confere CPF/CNPJ e consulta o CNPJ do prestador · `false` = **modo teste**.
+- Todos leem; só o adm muda (regras).
+
+## Selo de prestador verificado (pelo console, até existir a fila no site)
+1. Firestore → `usuarios` → perfil do prestador → veja `cnpjConsulta` (`resultado`: ok, divergente, nao-encontrado, sem-resposta ou modo-teste).
+2. Conferiu (se precisar, peça o CCMEI ou cartão CNPJ)? Adicione o campo `verificado` (booleano) = `true`.
+3. A própria pessoa não consegue criar nem mudar `verificado` nem `cnpjConsulta` (regras).
+
+## Padrão de e-mail confirmado
+- Sem confirmar: entra, vê/edita o próprio perfil, exclui a conta. Aviso com "Reenviar e-mail" em todas as páginas.
+- Ações com outras pessoas (busca, pedidos, orçamentos, avaliações — Ciclos 3 e 4): usar `emailConfirmado()` nas regras.
+
 ## Limites do plano grátis (conferido em 10/11/2026)
 - Login: cerca de 3.000 usuários ativos por dia · e-mails de confirmação 1.000/dia · nova senha 150/dia.
 - Banco: 1 GiB · 50 mil leituras e 20 mil gravações por dia.
@@ -39,4 +53,6 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 ## Situação
 - ✅ Login por e-mail, cadastro (CPF/CNPJ único), sair, nova senha pelo pop-up, confirmação de e-mail.
 - ✅ Perfis com dados reais: editar, telefones, botões liga/desliga, excluir conta.
-- ⬜ Pedidos, orçamentos e avaliações reais (Ciclos 3 e 4) · fotos · login por CPF/CNPJ.
+- ✅ Botão do adm "Conferir CPF e CNPJ", consulta do CNPJ do prestador, limpeza de cadastro parado no meio, aviso de e-mail em todas as páginas (v0.7.5).
+- ⬜ Pedidos, orçamentos e avaliações reais (Ciclos 3 e 4) · login por CPF/CNPJ.
+- ⏸️ Pago (pós-MVP): fotos no Storage, cookie HttpOnly, selo automático, limpeza automática de contas.
