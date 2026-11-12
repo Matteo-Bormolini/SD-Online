@@ -13,7 +13,7 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 | Versão | Quando |
 |---|---|
 | v0.6.0 | Fim do Ciclo 1 (decisões: servidor, domínio, CNPJ verificado) |
-| v0.7.0 | Fim do Ciclo 2 (contas reais) |
+| v0.7.5 | Fim do Ciclo 2 (contas reais) — número escolhido pelo Marco (11/11/2026) |
 | v0.8.0 | Fim do Ciclo 3 (encontrar e pedir) |
 | v0.9.0 | Fim do Ciclo 4 (orçar e decidir) |
 | v0.10.0 | Fim do Ciclo 5 (segurança e LGPD) |
@@ -23,8 +23,11 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 
 | Versão | Data | O que entrou |
 |---|---|---|
-| v0.6.0 | 11/11/2026 | Fim do Ciclo 1: decisões fechadas (servidor Firebase, CNPJ conferido com selo, sem domínio no 1º ano). |
+| v0.7.5 | 11/11/2026 | **Fim do Ciclo 2.** Correções da auditoria: arquivos da alpha.2 nas pastas certas e README restaurado; botão do adm "Conferir CPF e CNPJ" (modo teste); consulta do CNPJ do prestador (CNPJá/CNPJ.ws); cadastro parado no meio não prende o e-mail; aviso de e-mail confirmado em todas as páginas; regras do banco (configurações do site, selo `verificado` só pelo adm, reserva do documento só some junto com o perfil); `.gitignore`; backlog e decisões atualizados. |
+| v0.7.0-alpha.2 | 11/11/2026 | Senha mínima de 6 caracteres (antes 12), no site e no Firebase. |
 | v0.7.0-alpha.1 | 11/11/2026 | Firebase: pasta `firebase/` (login, cadastro com CPF/CNPJ único, sair, esqueci a senha pelo pop-up, confirmação de e-mail, perfil real com editar/excluir, botões liga/desliga salvos) e regras do banco (`firebase/firestore.rules`). Login só por e-mail no MVP. Modo demonstração desligado. |
+| v0.6.1 | 11/11/2026 | Release "Fim do Ciclo 1" + nova frase da Home. |
+| v0.6.0 | 11/11/2026 | Fim do Ciclo 1: decisões fechadas (servidor Firebase, CNPJ conferido com selo, sem domínio no 1º ano). |
 | v0.6.0-alpha.2 | 09/11/2026 | Decisões do funcionamento do pedido (fotos 3 obrigatórias até 6; sem contraproposta); quadro: A orçar expira em 10 dias, só o cliente finaliza (Prestados); aviso quando "Mostrar meus contatos" está desligado; botão também no cadastro do Prestador; backlog com parceiros/ofertas e explicação das versões. |
 | v0.6.0-alpha.1 | 09/11/2026 | READMEs para projeto individual; quadro do prestador com A orçar, sanfona no celular e Encerrados; pop-up de confirmação padrão; botões Localização e Mostrar meus contatos; lista única de botões liga/desliga; WhatsApp/Ligar no "Ver como cliente"; e-mail do Suporte; relatório de testes. |
 | v0.5.1 | 06/11/2026 | Recuperação de acesso e componentes (tag aponta para f53503f). |
@@ -34,5 +37,7 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 | v0.3.0 | 30/10/2026 | READMEs, backlog e fluxos. |
 | v0.2.0-alpha.1 | 30/10/2026 | Página Suporte. |
 | v0.0.0 | — | Perfis. |
+
+Tags apagadas em 11/11/2026 por estarem fora do padrão: `0.7.0` (sem "v", trocada por `v0.7.0-alpha.1`) e `v.0.6.0` (repetia a `v0.6.0`).
 
 Observação: também existe a tag `V0.4.0` (V maiúsculo), fora do padrão. Fica guardada, não apagar.

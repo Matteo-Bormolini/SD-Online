@@ -52,7 +52,7 @@ A confirmação de identidade pelo Suporte será definida depois.
 - **Não bloquear a conta** por causa de pedidos de recuperação (alguém poderia travar a conta de outra pessoa).
 
 ### Nova senha
-- Mesma regra da tela (`componentes/senha/senha.js`): **mínimo 12 caracteres**, máximo 128; letras, números, espaços e símbolos.
+- Mesma regra da tela (`componentes/senha/senha.js`): **mínimo 6 caracteres** (era 12 até 11/11/2026), máximo 128; letras, números, espaços e símbolos.
 - Recusar senhas comuns/previsíveis (de preferência, também conferir uma lista de senhas vazadas).
 - Recusar se for **igual à senha atual** (comparar com o hash) → código `SENHA_IGUAL`.
   Mensagem: "A nova senha não pode ser igual à sua senha anterior."

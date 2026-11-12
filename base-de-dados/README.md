@@ -55,7 +55,7 @@ Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avalia�
 | Antes (planejado) | Agora |
 |---|---|
 | `identificadores_acesso` | E-mail = Firebase Authentication · CPF/CNPJ = coleção `documentos` |
-| `credenciais` (Argon2id) | Senha guardada pelo Firebase Authentication (hash próprio do Google) |
+| `credenciais` (antes: Argon2id próprio) | Senha guardada pelo Firebase Authentication (hash próprio do Google) |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer

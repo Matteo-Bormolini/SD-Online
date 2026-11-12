@@ -52,18 +52,25 @@ Feito no Google Chrome 153. O Cliente CPF que abre o perfil de um prestador vê 
 | Mandar a pessoa para um site falso depois do login (`?destino=https://...`) | ✅ Bloqueado |
 | Tipo de conta inventado no navegador | ✅ Ignorado |
 | Nome gigante ou com código na sessão | ✅ Sem efeito |
-| **Virar adm mexendo no navegador** (sessionStorage) | ⚠️ Funciona — é só demonstração |
+| **Virar adm mexendo no navegador** (sessionStorage) | ✅ Desde v0.7.0: a tela pode até mudar, mas **nenhum dado** vem — o banco confere o tipo da conta (regras) |
 | **Colocar o site dentro de outro site** (iframe / clickjacking) | ⚠️ Funciona |
 | Chaves ou senhas esquecidas no GitHub | ✅ Nenhuma encontrada |
 | Links que abrem outra aba sem proteção | ✅ Todos com `noopener` |
+
+## 3b. Testes do fechamento do Ciclo 2 (11/11/2026, v0.7.5)
+Chromium (Playwright) + Firebase FALSO em memória (o emulador do Firestore não baixa no ambiente de testes).
+- ✅ 28 verificações de ponta a ponta: cadastro CPF/CNPJ/prestador, CPF inválido, documento repetido, e-mail repetido, cadastro parado no meio (apagado no login / reaproveitado no cadastro), CNPJ ativo/baixado/nome diferente/APIs fora do ar (reserva CNPJ.ws), botão do adm (modo teste), não-adm não muda a configuração, excluir conta, aviso de e-mail em todas as páginas.
+- ✅ 32 aberturas de página (16 páginas, visitante e logado): 0 erros.
+- ✅ No site publicado: leitura do banco sem login negada; APIs CNPJá, CNPJ.ws e BrasilAPI respondem do navegador (CORS liberado).
+- ❌ Não testado aqui: regras reais com login (testar no "Playground de regras" do console) e o projeto real com e-mail de verdade.
 
 ## 4. Piores cenários e como contornar
 
 | Cenário | Risco | Como contornar | Quando |
 |---|---|---|---|
-| Alguém se passa por adm ou por outro usuário | Alto (hoje só tela) | Sessão criada pelo **servidor** em cookie protegido (HttpOnly, Secure, SameSite); `modoDemonstracao: false` no site publicado; o servidor confere a permissão em toda página e consulta. | Ciclo 2 |
+| Alguém se passa por adm ou por outro usuário | Médio | ✅ Login do Firebase + regras do banco conferem o tipo em toda consulta; demonstração desligada. ⏸️ Cookie HttpOnly: pausado (precisa de servidor pago). | Feito no Ciclo 2 |
 | Alguém quer dados de outras pessoas | Alto | Servidor só envia o que o tipo de conta pode ver (`permissoes.json`); prestador recebe só região aproximada; nada de CPF/telefone de cliente no navegador. | Ciclos 2 e 4 |
-| Prestador falso para descobrir endereço de condomínios | Alto | Conferir o CNPJ antes de mostrar (decisão em aberto) e só mostrar região aproximada. | Ciclo 1 (decidir) |
+| Prestador falso para descobrir endereço de condomínios | Alto | ✅ CNPJ consultado na Receita no cadastro (inativo não entra) + selo dado pelo adm. Falta: só mostrar região aproximada. | Ciclo 2 (consulta) · Ciclo 4 |
 | Robô copiando a lista de prestadores | Médio | Lista só para clientes logados (já é assim); limite de consultas por conta e por IP. | Ciclo 5 |
 | Derrubar o site (muitos acessos de uma vez) | Médio | Páginas estáticas em CDN aguentam bem. No servidor: proteção grátis da Cloudflare, limite de tentativas e verificação anti-robô grátis (Cloudflare Turnstile) em login, cadastro e Suporte. | Ciclos 2 e 5 |
 | Gastar a cota grátis do banco (ex.: 100 mil gravações/dia) com pedidos falsos | Médio | Limite de pedidos por conta/dia e anti-robô. Isso também protege a regra "tudo grátis". | Ciclo 5 |

@@ -122,7 +122,30 @@
     });
   }
 
-  /* ---------- 5. INÍCIO ---------- */
+  /* ---------- 5. CONFIGURAÇÕES DO SITE (aba Administração) ----------
+     Monta os botões depois de ler o banco, para começarem no estado real. */
+  async function iniciarConfigSite() {
+    const caixa = $("#adm-config-site"), msg = $("#msg-config-site");
+    const F = window.SDFirebase;
+    if (!caixa) return;
+    if (!F || !F.ativo) { caixa.textContent = "Disponível só com o Firebase ligado."; return; }
+    const cfg = await F.configSite(true);
+    caixa.innerHTML = "";
+    // id do botão → campo em configuracoes/site
+    const BOTOES = { "conferir-documentos": "conferirDocumentos" };
+    for (const [id, campo] of Object.entries(BOTOES)) {
+      window.SD_INTERRUPTORES.gravar(id, cfg[campo] !== false);
+      const b = document.createElement("button");
+      b.className = "interruptor";
+      b.dataset.interruptor = id;
+      caixa.append(b);
+    }
+    window.SD_INTERRUPTORES_LIGAR(caixa);
+    document.addEventListener("sd:interruptor-erro", (ev) => U.mostrarMensagem(msg, "erro", "Não foi possível salvar: " + ev.detail.erro));
+    P.atualizarAltura();
+  }
+
+  /* ---------- 6. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
     // Conta real (Firebase): troca o exemplo pelos dados do adm logado
     await P.carregarDadosReais(perfil, "adm");
@@ -142,5 +165,6 @@
     iniciarFotos();
     P.iniciarExclusao();
     P.iniciarAbas({ abas: ["#aba-perfil", "#aba-admin"] });
+    iniciarConfigSite();
   });
 })();

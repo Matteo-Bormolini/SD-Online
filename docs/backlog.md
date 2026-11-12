@@ -11,13 +11,15 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje o site é um **protótipo**: as telas funcionam, mas nada é salvo.
+Hoje (11/11/2026): **contas reais** (cadastro, login, perfil, nova senha) pelo Firebase grátis. Pedidos e orçamentos ainda são demonstração.
+
+> **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
 ---
 
 ## 2. Agora · Próximo · Depois
 
-### 🟡 Agora — Ciclo 1 · Fechar pendências e decidir (v0.6.0)
+### ✅ Ciclo 1 · Fechar pendências e decidir (v0.6.0)
 > Os textos legais (US28) saíram deste Ciclo e foram para o Ciclo 6 (decisão de 09/11).
 - [x] READMEs reescritos para projeto individual (09/11).
 - [x] E-mail do Suporte definido (09/11).
@@ -31,15 +33,41 @@ Hoje o site é um **protótipo**: as telas funcionam, mas nada é salvo.
 - [x] Domínio .com.br antes do Ciclo 2: **não**. No 1º ano fica o endereço grátis; o .com.br (~R$ 40/ano) só se o projeto der resultado (09/11).
 - ✅ **Ciclo 1 concluído em 11/11/2026 → v0.6.0.**
 
-### ⬜ Próximo — Ciclo 2 · Contas reais (v0.7.0)
-US03, US04, US05 de verdade · US30 · US31 no servidor · modo demonstração desligado no site publicado.
+### 🟡 Agora — Ciclo 2 · Contas reais (v0.7.5)
+> Versão de fechamento: **v0.7.5** (decisão do Marco, 11/11). O Ciclo 3 continua sendo a v0.8.0.
+- [x] US03 Cadastro real (Cliente CPF, Cliente CNPJ, Prestador) — CPF/CNPJ único (11/11).
+- [x] US04 Login real (senha conferida pelo Firebase) + bloqueio temporário do próprio Firebase após muitas tentativas (11/11).
+- [x] US05 Nova senha pelo e-mail, abrindo o pop-up do site (11/11).
+- [x] US30 Senha só com hash no Firebase (ninguém vê, nem o adm); regras do banco publicadas (11/11).
+- [x] US31 Dados bloqueados por tipo de conta nas regras do banco. Páginas: bloqueio na tela (site estático; o que precisa de proteção são os dados) (11/11).
+- [x] Modo demonstração desligado no site publicado (11/11).
+- [x] Senha mínima de **6** caracteres no site e no Firebase (decisão do Marco, 11/11).
+- [x] US56 Botão do adm **Conferir CPF e CNPJ** (desligado = modo teste) (11/11).
+- [x] US57 Consulta do CNPJ do prestador na Receita (CNPJá; reserva CNPJ.ws). Bloqueia só CNPJ inativo (11/11).
+- [x] US58 Cadastro que parou no meio é apagado/reaproveitado sozinho (11/11).
+- [x] US59 Padrão de e-mail confirmado + aviso em todas as páginas (11/11).
+- [x] Arquivos da v0.7.0-alpha.2 levados para as pastas certas; README principal restaurado (11/11).
+- [ ] **Marco:** política de senha do Firebase em "Exigir" (6 a 128), publicar regras novas, testes do roteiro de fechamento, Release **v0.7.5**.
+- ~~Sessão em cookie protegido (HttpOnly)~~ → **pausado** (precisa de servidor pago). Ver "Pós-MVP · precisa pagar".
 
 ### ⬜ Depois (na ordem)
-- **Ciclo 3 · Encontrar e pedir (v0.8.0):** US11 real, US13, US14, US15, US24 (pedidos reais em A orçar). **Decidir a Home do prestador no fim do Ciclo 3 (US46).**
+- **Ciclo 3 · Encontrar e pedir (v0.8.0):** US11 real, US13, US14, US15, US24 (pedidos reais em A orçar). **Decidir a Home do prestador no fim do Ciclo 3 (US46).** ⚠️ **Decidir antes:** fotos do pedido (3 obrigatórias) precisam de lugar grátis para guardar (o Cloud Storage é pago).
 - **Ciclo 4 · Orçar e decidir (v0.9.0):** US16–US20, US22, US23, US26.
 - **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
 - **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.
-- **Depois do MVP:** Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
+- **Depois do MVP:** segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
+
+### ⏸️ Pós-MVP · precisa pagar (pausado)
+> Regra do Marco (11/11/2026): no MVP **nada pago** (nem plano com cartão "grátis até um limite", como o Blaze do Firebase). Cada item volta quando o projeto der resultado.
+
+| O quê | Por que precisa pagar | Enquanto isso (grátis) |
+|---|---|---|
+| Sessão em cookie protegido (HttpOnly, Secure, SameSite) | Precisa de código no servidor (Cloud Functions = plano Blaze) | Sessão do próprio Firebase no navegador |
+| Selo de CNPJ **automático** e fila de aprovação no servidor | Cloud Functions (Blaze) | Consulta no navegador + selo dado pelo adm no console |
+| Apagar sozinho contas que nunca confirmaram o e-mail | Cloud Functions (Blaze) | Adm apaga no console; cadastro parado é limpo quando a pessoa tenta de novo |
+| Fotos (perfil, galeria, pedidos) no Cloud Storage | Storage exige Blaze | Fotos só na tela; **pedidos: decidir no Ciclo 3** |
+| Segunda verificação no login (SMS) — US60 | SMS é cobrado | Senha + bloqueio de tentativas do Firebase |
+| Domínio .com.br | ~R$ 40/ano | Endereço grátis do site |
 
 ---
 
@@ -69,9 +97,13 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 |---|---|---|---|---|
 | US01 | Todas as páginas com a mesma aparência e o mesmo menu. | M | — | ✅ |
 | US02 | Usar no celular, tablet, computador e TV, tema claro ou escuro. | M | — | ✅ |
-| US03 | Criar conta como Cliente CPF, Cliente CNPJ ou Prestador. | M | 2 | 🟡 Tela pronta |
-| US04 | Entrar e sair com segurança, vendo só as páginas do meu tipo. | M | 2 | 🟡 Tela pronta |
-| US05 | Recuperar senha ou login. | M | 2 | 🟡 Pop-ups prontos |
+| US03 | Criar conta como Cliente CPF, Cliente CNPJ ou Prestador. | M | 2 | ✅ Real (11/11) |
+| US04 | Entrar e sair com segurança, vendo só as páginas do meu tipo. | M | 2 | ✅ Real, só e-mail no MVP (11/11) |
+| US05 | Recuperar senha ou login. | M | 2 | ✅ Senha real (11/11). "Esqueci o login" volta com login por CPF/CNPJ |
+| US56 | Adm liga/desliga a conferência de CPF/CNPJ (desligado = modo teste). | M | 2 | ✅ (11/11) |
+| US57 | CNPJ do prestador consultado na Receita (API pública grátis); selo dado pelo adm. | M | 2 | ✅ Consulta (11/11) · selo pelo console |
+| US58 | Cadastro que parou no meio não prende o e-mail. | M | 2 | ✅ (11/11) |
+| US59 | Aviso "confirme seu e-mail" em todas as páginas; ações com outras pessoas exigem e-mail confirmado. | M | 2 | ✅ Aviso (11/11) · regra usada nos Ciclos 3–4 |
 
 ### Perfis
 | Nº | História | Prior. | Ciclo | Situação |
@@ -122,8 +154,8 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 ### Servidor, segurança e LGPD
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US30 | Dados guardados com segurança; senha nunca visível. | M | 2 | ⬜ |
-| US31 | Servidor bloqueia páginas e dados por tipo de conta. | M | 2 | 🟡 Regras escritas |
+| US30 | Dados guardados com segurança; senha nunca visível. | M | 2 | ✅ (11/11) |
+| US31 | Servidor bloqueia os **dados** por tipo de conta (páginas: bloqueio na tela). | M | 2 | ✅ Regras publicadas (11/11) |
 | US32 | Ver, corrigir, baixar e apagar meus dados (LGPD). | M | 5 | 🟡 |
 | US33 | Fotos sem localização escondida (EXIF). | M | 5 | ⬜ |
 | US34 | Plano de aviso de vazamento (ANPD). | M | 5 | ⬜ |
@@ -146,6 +178,7 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | US48 | Registrar acompanhante e número de visitas. | C |
 | US49 | Entrar com o telefone principal. | C |
 | US50 | Trocar de conta pelo perfil. | C |
+| US60 | Segunda verificação no login (ex.: código por e-mail ou SMS). **Pausado: SMS é pago.** | S |
 
 **Não agora:** pagamento dentro do app · chat dentro do app · prestador só com CPF · categorias guardadas (Serviços domésticos, Aulas, Eventos, Beleza, Automóveis, Pets).
 

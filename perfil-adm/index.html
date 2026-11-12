@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="perfil-adm.css">
 <script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
+<script src="../configuracoes/interruptores.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
 <script src="../componentes/utilidades/utilidades.js" defer></script>
@@ -212,8 +213,14 @@
 
       <!-- ===================== PAINEL ADMINISTRAÇÃO ===================== -->
       <div class="painel painel-admin" role="tabpanel" id="painel-admin" aria-labelledby="aba-admin" tabindex="0">
-        <h2>Work in progress</h2>
-        <p>em desenvolvimento</p>
+        <h2>Administração</h2>
+        <!-- Botões que valem para o SITE TODO (salvos no banco: configuracoes/site) -->
+        <h3>Cadastro</h3>
+        <div id="adm-config-site" class="adm-config-site">
+          <p class="nota" id="adm-config-carregando">Carregando configurações…</p>
+        </div>
+        <div class="mensagem" id="msg-config-site" role="status"></div>
+        <p class="nota">Selo de prestador verificado: por enquanto pelo console do Firebase (campo <code>verificado</code> = true no perfil). Fila de aprovação no site: pós-MVP.</p>
         <p><a class="link" href="../interruptores/index.html">Ver todos os botões liga/desliga do site</a></p>
       </div>
 

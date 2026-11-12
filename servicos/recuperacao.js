@@ -12,7 +12,7 @@
 
    Quem faz a segurança de verdade é o SERVIDOR (ver seguranca/recuperacao-acesso.md):
      token aleatório (32 bytes), guardado só como hash, uso único, 30 minutos,
-     novo pedido invalida os anteriores, limite de pedidos, senha com Argon2id,
+     novo pedido invalida os anteriores, limite de pedidos, senha com hash (Firebase),
      não aceitar a senha atual, encerrar sessões, e-mail de aviso depois da troca.
    Depende de: configuracoes/config.js (SD.config.api e modoDemonstracao).
    ===================================================================== */
@@ -147,7 +147,7 @@
       const d = ler(), l = d.link;
       if (!token || !l || l.usado || Date.now() > l.expira || l.hash !== await hash(token)) return resposta("LINK_INVALIDO");
       if (window.SDSenha && !window.SDSenha.avaliar(novaSenha).ok) return resposta("SENHA_FRACA");
-      // O servidor real confere com o hash Argon2id da senha atual
+      // Só na demonstração: o Firebase não confere "senha igual à anterior"
       if (novaSenha === DEMO.senhaAtual) return resposta("SENHA_IGUAL");
       l.usado = true;                                   // uso único
       gravar(d);

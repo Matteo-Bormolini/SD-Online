@@ -22,3 +22,4 @@ Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das conta
 
 - 🟡 Perfil pronto (US10).
 - ⬜ Painel com números e controles — depois do MVP (US35). Perfil Master — depois do MVP (US47).
+- ✅ Aba **Administração**: botão **Conferir CPF e CNPJ** (desligado = modo teste para cadastrar qualquer CPF/CNPJ). Salvo no banco, vale para o site todo (US56, 11/11/2026).

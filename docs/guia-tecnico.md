@@ -126,7 +126,7 @@ Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mest
 - Chaves de API, fotos de usuários e cópias do banco **nunca** vão para o GitHub. O `.gitignore` da raiz bloqueia esses arquivos.
 - Localização: o servidor envia ao navegador só uma área aproximada, nunca o endereço exato.
 - Recuperação de acesso (senha e login): regras completas em [`seguranca/recuperacao-acesso.md`](../seguranca/recuperacao-acesso.md).
-- Senhas: mínimo de 12 caracteres, guardadas com **Argon2id** no servidor (regra da tela em `componentes/senha/`).
+- Senhas: mínimo de 6 caracteres (desde 11/11/2026), guardadas pelo **Firebase Authentication** (regra da tela em `componentes/senha/`).
 
 ## 9. Modelo de README de pasta
 

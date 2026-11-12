@@ -9,6 +9,7 @@ rules_version = '2';
 //   usuarios/{uid}        → dados da conta (cada pessoa só vê/edita a sua; adm vê todas)
 //   documentos/{chave}    → "reserva" do CPF/CNPJ (chave = cpf-<11 números> ou cnpj-<14>)
 //                           garante 1 conta por documento. Ninguém lê (só o adm).
+//   configuracoes/site    → configurações gerais (ex.: conferirDocumentos). Todos leem; só o adm muda.
 // Administrador: criado como conta comum e trocado para tipo "adm" PELO CONSOLE.
 // =====================================================================
 service cloud.firestore {
@@ -21,10 +22,13 @@ service cloud.firestore {
     function ehAdm() { return logado() && exists(usuario(request.auth.uid)) && get(usuario(request.auth.uid)).data.tipo == 'adm'; }
     function novo() { return request.resource.data; }
     function mudou() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    // E-mail confirmado (padrão 11/11/2026): exigir em tudo que envolve OUTRA pessoa
+    // (aparecer na busca, pedidos, orçamentos, avaliações — Ciclos 3 e 4).
+    function emailConfirmado() { return logado() && request.auth.token.email_verified == true; }
 
     // Campos que a própria pessoa nunca muda (tipo de conta, documento, selo de destaque...)
     function protegidos() {
-      return ['tipo', 'documento', 'documentoChave', 'criadoEm', 'tags', 'avaliacao', 'servicosAnteriores', 'cargoBase'];
+      return ['tipo', 'documento', 'documentoChave', 'criadoEm', 'tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado', 'cnpjConsulta'];
     }
     // O botão "destaque" é pago: só o adm liga/desliga
     function destaqueIgual() {
@@ -49,7 +53,7 @@ service cloud.firestore {
         && novo().tipo in ['cliente-cpf', 'cliente-cnpj', 'prestador']
         && novo().email == request.auth.token.email
         && chaveValida(novo())
-        && !novo().keys().hasAny(['tags', 'avaliacao', 'servicosAnteriores', 'cargoBase'])
+        && !novo().keys().hasAny(['tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado'])
         && novo().get('interruptores', {}).get('destaque', false) == false
         && tamanhoOk(novo())
         && getAfter(/databases/$(database)/documents/documentos/$(novo().documentoChave)).data.uid == uid;
@@ -77,7 +81,16 @@ service cloud.firestore {
         && novo().keys().hasOnly(['uid', 'criadoEm'])
         && getAfter(usuario(request.auth.uid)).data.documentoChave == chave;
       allow update: if false;
-      allow delete: if logado() && (resource.data.uid == request.auth.uid || ehAdm());
+      // Dono só apaga a reserva JUNTO com o próprio perfil (botão "Excluir perfil")
+      allow delete: if ehAdm()
+        || (logado() && resource.data.uid == request.auth.uid && !existsAfter(usuario(request.auth.uid)));
+    }
+
+    // ---------- configuracoes/site (configurações gerais) ----------
+    // Leitura pública: o cadastro precisa saber se confere CPF/CNPJ. Nada sigiloso aqui.
+    match /configuracoes/{id} {
+      allow read: if true;
+      allow write: if ehAdm();
     }
   }
 }

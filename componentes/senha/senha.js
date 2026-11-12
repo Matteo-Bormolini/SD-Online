@@ -3,8 +3,8 @@
    UMA regra de senha para o site todo: cadastro, Editar perfil e
    "Esqueceu a senha?". Mudou a regra? Mude só aqui (e no servidor).
 
-   Regra atual (aprovada em 06/11/2026):
-     - mínimo de 12 caracteres (máximo 128);
+   Regra atual (mínimo trocado de 12 para 6 em 11/11/2026, pedido do Marco):
+     - mínimo de 6 caracteres (máximo 128) — igual à política do Firebase;
      - aceita letras, números, espaços e símbolos (não obriga misturar);
      - bloqueia senhas comuns e previsíveis (123456..., "senha2026",
        "qwerty", repetições, sequências e variações como "S3nh@");
@@ -23,11 +23,11 @@
 
   /* ---------- 1. CONFIGURAÇÃO ---------- */
   const REGRA = {
-    minimo: 12,
+    minimo: 6,
     maximo: 128,
     textoIgualAnterior: "A nova senha não pode ser igual à sua senha anterior."
   };
-  const DICA = `Mínimo de ${REGRA.minimo} caracteres. Pode usar letras, números, espaços e símbolos. Dica: junte 3 ou 4 palavras (ex.: "janela azul chove cedo").`;
+  const DICA = `Mínimo de ${REGRA.minimo} caracteres. Pode usar letras, números, espaços e símbolos. Quanto maior, mais segura (ex.: "janela azul chove cedo").`;
 
   // Palavras e senhas muito usadas (comparadas sem acentos, em minúsculas e sem números/símbolos no fim)
   const COMUNS = new Set(("senha password passw0rd admin administrador root usuario user login entrar acesso " +
@@ -104,7 +104,7 @@
     [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9\s]/, /\s/].forEach((r) => { if (r.test(s)) variedade++; });
     let nivel = 0;
     if (!erros.length) {
-      nivel = 2;
+      nivel = s.length >= 10 ? 2 : 1;                 // curta: aceita, mas mostra "Fraca"
       if (s.length >= 16 || variedade >= 3) nivel = 3;
       if (s.length >= 20 || (s.length >= 16 && variedade >= 3)) nivel = 4;
     } else if (s.length >= 8) nivel = 1;

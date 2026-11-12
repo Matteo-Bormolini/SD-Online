@@ -63,6 +63,17 @@
       onde: "Barra do menu (ícone de lua/sol)",
       situacao: "ativo"
     },
+    "conferir-documentos": {
+      nome: "Conferir CPF e CNPJ",
+      oQueFaz: "No cadastro, confere os dígitos do CPF/CNPJ e consulta o CNPJ do prestador na Receita Federal (API pública). Vale para o SITE TODO.",
+      ligado: "Só aceita CPF/CNPJ válido; prestador com CNPJ baixado, inapto ou suspenso não se cadastra.",
+      desligado: "MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo, sem consultar a Receita.",
+      padrao: true,
+      quem: ["adm"],
+      onde: "Perfil do adm — aba Administração",
+      situacao: "ativo",
+      avisoDesligado: "Modo teste ligado: CPF e CNPJ não estão sendo conferidos. Ligue de novo antes de abrir o site ao público."
+    },
     "destaque": {
       nome: "Destaque",
       oQueFaz: "Marca o prestador como destaque (contorno vermelho e etiqueta). Assinatura mensal, cancelável.",

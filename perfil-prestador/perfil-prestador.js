@@ -214,11 +214,12 @@
   // Números da vitrine (somente números, sem gráficos)
   function renderizarNumeros() {
     const concluidos = perfil.servicosAnteriores + (quadro ? quadro.contar("prestado") : 0);
-    const anos = new Date().getFullYear() - Number(perfil.anoInicio);
+    // Ano de início vazio (conta nova) → "Não informado" (antes mostrava "2026 anos")
+    const anos = Number(perfil.anoInicio) > 0 ? new Date().getFullYear() - Number(perfil.anoInicio) : null;
     $("#num-concluidos").textContent = concluidos.toLocaleString("pt-BR");
     $("#num-avaliacao").textContent = `${U.decimal(perfil.avaliacao.media)} / 5`;
-    $("#num-experiencia").textContent = anos > 0 ? `${anos} ${anos === 1 ? "ano" : "anos"}` : "Menos de 1 ano";
-    $("#num-desde").textContent = perfil.membroDesde;
+    $("#num-experiencia").textContent = anos === null ? "Não informado" : anos > 0 ? `${anos} ${anos === 1 ? "ano" : "anos"}` : "Menos de 1 ano";
+    $("#num-desde").textContent = perfil.membroDesde || "—";
   }
 
   /* ---------- 4. LOGO (foto de perfil OBRIGATÓRIA) ---------- */

@@ -4,11 +4,22 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 11/11/2026 (noite) — fechamento do Ciclo 2 (v0.7.5)
+- **Nada pago no MVP.** Nem plano com cartão "grátis até um limite" (Blaze). O que só funciona pagando fica **pausado** em "Pós-MVP · precisa pagar" (backlog, seção 2): cookie HttpOnly, selo automático de CNPJ, limpeza automática de contas, fotos no Storage, SMS, domínio.
+- **Senha:** mínimo **6** fica (decisão do Marco: facilidade de uso). Segunda verificação no login → pós-MVP (US60).
+- **Política de senha do Firebase:** modo **Exigir**, mínimo 6, máximo 128, sem exigências de caracteres (estava desligada).
+- **E-mail confirmado (padrão):** sem confirmar, a pessoa entra, vê/edita o próprio perfil e pode excluir a conta. Tudo que envolve **outra pessoa** (aparecer na busca, pedir orçamento, orçar, avaliar) exige e-mail confirmado (regra do banco `emailConfirmado()`). Aviso com "Reenviar" em todas as páginas.
+- **CPF:** só dígitos verificadores (não existe API pública grátis de CPF).
+- **CNPJ do prestador:** consulta grátis no navegador — **CNPJá** (principal) e **CNPJ.ws** (reserva), sem chave. Só **bloqueia** CNPJ baixado/inapto/suspenso/nulo. Não achou, nome diferente ou API fora do ar → entra e fica para o adm. Guardado no perfil (`cnpjConsulta`): fonte, situação, MEI, nome da Receita, CNAEs e data. O **selo** (`verificado`) só o adm dá, pelo console (fila no site = pós-MVP).
+- **Botão do adm "Conferir CPF e CNPJ"** (aba Administração): desligado = **modo teste** (aceita qualquer CPF/CNPJ com o tamanho certo). Salvo em `configuracoes/site` no banco; todos leem, só o adm muda.
+- **Cadastro que parou no meio** (login sem perfil): ao tentar entrar, o login é apagado e a pessoa cria de novo; ao cadastrar de novo com o mesmo e-mail e senha, o login é reaproveitado.
+- **Versão do fechamento do Ciclo 2: v0.7.5** (pedido do Marco). Ciclo 3 continua v0.8.0.
+
 ### 11/11/2026 — servidor: Firebase (Ciclo 2 · Contas reais)
 - **Servidor:** **Firebase**, plano grátis (Spark): Authentication + Firestore. Site continua no **GitHub Pages**.
 - **Login do MVP: só e-mail + senha.** CPF/CNPJ continua obrigatório e **único** no cadastro, mas não serve para entrar. Volta depois (obrigatório no futuro).
 - **Nova senha:** o link do e-mail abre o **pop-up do site** ("Criar nova senha"). O link vale **1 hora** (padrão do Firebase; antes: 30 min).
-- **Senha:** continua a regra do site (12 a 128 caracteres, sem obrigar misturar). No Firebase: política "Exigir", mínimo 12, máximo 128, sem exigências de caracteres. O hash da senha é feito pelo Firebase (não é mais Argon2id próprio).
+- **Senha:** mínimo **6** caracteres (antes 12; pedido do Marco), máximo 128, sem obrigar misturar. Continua bloqueando senhas comuns, sequências, só números e dados pessoais. No Firebase: política "Exigir", mínimo 6, máximo 128, sem exigências de caracteres. O hash da senha é feito pelo Firebase (não é mais Argon2id próprio).
 - **"Não pode ser igual à anterior":** o Firebase não confere. Fica pendente.
 - **Administrador:** cria a conta pelo site (como cliente) e troca `tipo` para `adm` **pelo console** do Firebase. Ninguém vira adm pelo site.
 - **E-mail não confirmado:** a pessoa entra e usa o site normalmente; aparece aviso com botão de reenviar. Pedidos (Ciclo 3) vão exigir e-mail confirmado.
@@ -47,7 +58,7 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 ### 06/11/2026
 - Menu: "Para clientes" → **Serviços**; "Seja um prestador" → **Seus Serviços**. Prestador nunca vê "Serviços".
 - Linha "Login" saiu dos 4 perfis. Entrar com e-mail, CPF ou CNPJ (futuro: telefone). Nome completo não.
-- Recuperação de acesso só em pop-ups. Senha 12+ caracteres, Argon2id no servidor.
+- Recuperação de acesso só em pop-ups. Senha 12+ caracteres, Argon2id no servidor. *(Substituído em 11/11/2026: mínimo 6, hash pelo Firebase.)*
 - Avaliações anônimas por padrão. Horário de visitas CNPJ com dias + rodinhas.
 - Selos das lojas: só arquivos oficiais.
 

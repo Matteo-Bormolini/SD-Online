@@ -9,7 +9,7 @@ Peças prontas usadas por várias páginas. Mude aqui e todas as páginas mudam 
 | `confirmacao/` | Pop-up **"Tem certeza?"** antes de excluir ou editar. **Padrão do site.** | Perfis e quadro |
 | `formulario/` | Visual dos campos (caixas de texto, listas, erros). | Formulários |
 | `endereco/` | Campos de endereço: o CEP preenche rua, bairro, cidade e UF. | Cadastro e perfis |
-| `senha/` | Regra da senha (12+ caracteres) e medidor de força. | Cadastro, perfis, recuperação |
+| `senha/` | Regra da senha (6+ caracteres) e medidor de força. | Cadastro, perfis, recuperação |
 | `perfil-base/` | Partes comuns dos 4 perfis: abas, telefones, editar, excluir, botões liga/desliga. | Perfis |
 | `carrossel/` | Fotos passando para os lados, com legenda. | Perfis e quadro |
 | `kanban-servicos/` | Quadro do prestador: A orçar → Orçando → Aceito → A realizar → Prestados + Encerrados. | Perfil do prestador |

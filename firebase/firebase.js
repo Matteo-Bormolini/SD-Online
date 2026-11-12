@@ -28,7 +28,7 @@ import {
   onAuthStateChanged, updatePassword, verifyBeforeUpdateEmail
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, updateDoc, writeBatch, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 /* ---------- 1. CONFIGURAÇÃO (cole aqui o bloco do console do Firebase) ----------
@@ -43,13 +43,19 @@ const firebaseConfig = {
 };
 
 // Nomes das coleções do banco (Firestore)
-const COLECAO = { usuarios: "usuarios", documentos: "documentos" };
+const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes" };
+// Configurações gerais do site (configuracoes/site no banco; só o adm muda)
+// conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
+//                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
+const CONFIG_SITE_PADRAO = { conferirDocumentos: true };
 // Tipos que a própria pessoa pode criar (adm só é marcado pelo console)
 const TIPOS_CADASTRO = ["cliente-cpf", "cliente-cnpj", "prestador"];
 // Campos que a pessoa NÃO pode mudar sozinha (as regras do banco também bloqueiam)
-const PROTEGIDOS = ["tipo", "documento", "documentoChave", "email", "criadoEm", "tags", "avaliacao", "servicosAnteriores", "cargoBase"];
+const PROTEGIDOS = ["tipo", "documento", "documentoChave", "email", "criadoEm", "tags", "avaliacao", "servicosAnteriores", "cargoBase", "verificado", "cnpjConsulta"];
 // Botões liga/desliga que NÃO são salvos pela própria pessoa
 const INTERRUPTORES_SO_ADM = ["destaque"];
+// Botões do adm que valem para o SITE TODO (salvos em configuracoes/site)
+const INTERRUPTORES_DO_SITE = { "conferir-documentos": "conferirDocumentos" };
 // Chave da "sessão da tela" (mesma de configuracoes/config.js)
 const CHAVE_SESSAO = "sd-sessao";
 
@@ -76,7 +82,8 @@ const ERROS = {
   "unavailable": "Sem conexão com o servidor. Verifique a internet e tente de novo.",
   DOCUMENTO_EM_USO: "Este CPF/CNPJ já tem uma conta. Use \"Esqueceu o login?\" ou fale com o suporte.",
   NAO_CONFIGURADO: "O login ainda não está disponível: o Firebase não foi configurado (firebase/firebase.js).",
-  SEM_LOGIN: "Sua sessão terminou. Entre de novo."
+  SEM_LOGIN: "Sua sessão terminou. Entre de novo.",
+  CADASTRO_INCOMPLETO: "O cadastro anterior com este e-mail ficou incompleto e foi apagado. Crie a conta de novo."
 };
 const mensagemErro = (e) => ERROS[(e && e.code) || e] || "Não foi possível concluir agora. Tente de novo em instantes.";
 // Erro com código próprio (para as telas tratarem)
@@ -166,12 +173,29 @@ async function entrar(email, senha, manter) {
   await persistencia(manter);
   await signInWithEmailAndPassword(auth, String(email).trim().toLowerCase(), senha);
   const dados = await meusDados(true);
-  if (!dados) {                                       // conta sem cadastro no banco (cadastro interrompido)
-    await signOut(auth);
-    throw Object.assign(new Error("Cadastro incompleto. Crie a conta de novo ou fale com o suporte."), { code: "SEM_CADASTRO" });
+  if (!dados) {                                       // login sem perfil (cadastro interrompido)
+    // Acabou de entrar, então o Firebase deixa apagar: libera o e-mail para um novo cadastro
+    try { await deleteUser(auth.currentUser); } catch (_) { await signOut(auth); }
+    throw erro("CADASTRO_INCOMPLETO");
   }
   sessaoTela.gravar({ uid: dados.uid, tipo: dados.tipo, nome: nomeCurto(dados) }, manter);
   return { tipo: dados.tipo, nome: nomeCurto(dados), emailConfirmado: auth.currentUser.emailVerified };
+}
+
+/* Cria o login. Se o e-mail já tiver um login SEM perfil (cadastro que parou no meio)
+   e a senha for a mesma, reaproveita esse login em vez de dar "e-mail em uso". */
+async function criarOuReaproveitarLogin(email, senha) {
+  try {
+    return await createUserWithEmailAndPassword(auth, email, senha);
+  } catch (e) {
+    if (e.code !== "auth/email-already-in-use") throw e;
+    let cred;
+    try { cred = await signInWithEmailAndPassword(auth, email, senha); } catch (_) { throw e; }
+    const perfil = await getDoc(doc(db, COLECAO.usuarios, cred.user.uid)).catch(() => null);
+    if (perfil && !perfil.exists()) return cred;      // login órfão → continua o cadastro
+    await signOut(auth);
+    throw e;                                          // conta completa: e-mail realmente em uso
+  }
 }
 
 /* Cria a conta. dados = {
@@ -186,7 +210,7 @@ async function cadastrar(dados) {
   const email = String(resto.email).trim().toLowerCase();
 
   await persistencia(false);
-  const cred = await createUserWithEmailAndPassword(auth, email, senha);
+  const cred = await criarOuReaproveitarLogin(email, senha);
   const uid = cred.user.uid;
 
   // Perfil + "reserva" do CPF/CNPJ no MESMO envio (tudo ou nada).
@@ -299,7 +323,11 @@ async function tratarLinkDoEmail() {
   try {
     if (modo === "verifyEmail") {
       await applyActionCode(auth, codigo);
-      if (auth.currentUser) await auth.currentUser.reload();
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        await auth.currentUser.getIdToken(true);       // regras do banco passam a ver "e-mail confirmado"
+      }
+      document.getElementById("sd-aviso-email")?.remove();
       avisar("sucesso", "E-mail confirmado. Obrigado!");
     } else if (modo === "verifyAndChangeEmail") {
       await applyActionCode(auth, codigo);
@@ -358,6 +386,58 @@ async function sincronizarSessao() {
   location.reload();
 }
 
+/* ---------- 10b. CONFIGURAÇÕES DO SITE (configuracoes/site) ----------
+   Qualquer pessoa lê (o cadastro precisa saber se confere CPF/CNPJ).
+   Só o adm salva (regras do banco). Sem resposta do banco → usa o padrão SEGURO. */
+let cacheConfigSite = null;
+async function configSite(forcar = false) {
+  if (!configurado) return { ...CONFIG_SITE_PADRAO };
+  if (!forcar && cacheConfigSite) return cacheConfigSite;
+  try {
+    const s = await getDoc(doc(db, COLECAO.configuracoes, "site"));
+    cacheConfigSite = { ...CONFIG_SITE_PADRAO, ...(s.exists() ? s.data() : {}) };
+  } catch (_) {
+    return { ...CONFIG_SITE_PADRAO };
+  }
+  return cacheConfigSite;
+}
+async function salvarConfigSite(campos) {
+  await pronto;
+  if (!auth || !auth.currentUser) throw erro("SEM_LOGIN");
+  await setDoc(doc(db, COLECAO.configuracoes, "site"), { ...campos, atualizadoEm: serverTimestamp() }, { merge: true });
+  cacheConfigSite = null;
+}
+
+/* ---------- 10c. AVISO "CONFIRME SEU E-MAIL" (todas as páginas) ----------
+   PADRÃO (11/11/2026): sem confirmar, a pessoa entra, vê e edita o próprio perfil
+   e pode excluir a conta. Tudo que envolve OUTRA pessoa (aparecer na busca,
+   pedir orçamento, orçar, avaliar — Ciclos 3 e 4) exige e-mail confirmado
+   (regras do banco: função emailConfirmado()). */
+async function avisoEmailGlobal() {
+  const u = await pronto;
+  if (!u || u.emailVerified) return;
+  if (document.getElementById("aviso-verificacao")) return;   // página de login já tem o aviso dela
+  const main = document.querySelector("main");
+  if (!main || document.getElementById("sd-aviso-email")) return;
+  const caixa = document.createElement("div");
+  caixa.id = "sd-aviso-email";
+  caixa.className = "mensagem atencao";
+  caixa.setAttribute("role", "status");
+  caixa.textContent = `Confirme seu e-mail (${u.email}) para pedir e receber orçamentos. Confira também o spam. `;
+  const botao = document.createElement("button");
+  botao.type = "button";
+  botao.className = "btn";
+  botao.textContent = "Reenviar e-mail";
+  botao.addEventListener("click", async () => {
+    botao.disabled = true;
+    try { await sendEmailVerification(u); botao.textContent = "Enviado"; }
+    catch (e) { botao.textContent = mensagemErro(e); }
+    setTimeout(() => { botao.disabled = false; botao.textContent = "Reenviar e-mail"; }, 60000);
+  });
+  caixa.append(botao);
+  main.prepend(caixa);
+}
+
 /* ---------- 11. BOTÕES LIGA/DESLIGA → BANCO ----------
    configuracoes/interruptores.js avisa cada troca com o evento "sd:interruptor". */
 document.addEventListener("sd:interruptor", async (ev) => {
@@ -365,6 +445,11 @@ document.addEventListener("sd:interruptor", async (ev) => {
   if (!configurado || !id || INTERRUPTORES_SO_ADM.includes(id) || id === "tema-escuro") return;
   await pronto;
   if (!auth.currentUser) return;
+  if (INTERRUPTORES_DO_SITE[id]) {                   // botão do site todo (só o adm consegue salvar)
+    try { await salvarConfigSite({ [INTERRUPTORES_DO_SITE[id]]: !!ligado }); }
+    catch (e) { console.warn("[S.D] Não foi possível salvar", id, e.code || e); document.dispatchEvent(new CustomEvent("sd:interruptor-erro", { detail: { id, erro: mensagemErro(e) } })); }
+    return;
+  }
   try { await updateDoc(doc(db, COLECAO.usuarios, auth.currentUser.uid), { [`interruptores.${id}`]: !!ligado, atualizadoEm: serverTimestamp() }); cacheDados.promessa = null; }
   catch (e) { console.warn("[S.D] Não foi possível salvar o botão", id, e.code || e); }
 });
@@ -375,6 +460,7 @@ window.SDFirebase = Object.freeze({
   pronto,                          // Promessa: resolve quando o login foi conferido
   mensagemErro,                    // erro → texto para a pessoa
   entrar, cadastrar, sair, reenviarVerificacao, emailConfirmado,
+  configSite, salvarConfigSite,    // configurações do site (ex.: conferir CPF/CNPJ)
   meusDados, atualizarCampos, trocarSenha, trocarEmail, excluirConta,
   solicitarLinkSenha, validarLinkSenha, redefinirSenha,
   emailAtual: () => (auth && auth.currentUser ? auth.currentUser.email : "")
@@ -384,4 +470,6 @@ document.dispatchEvent(new CustomEvent("sd:firebase-pronto"));
 if (configurado) {
   tratarLinkDoEmail();
   sincronizarSessao();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", avisoEmailGlobal);
+  else avisoEmailGlobal();
 }

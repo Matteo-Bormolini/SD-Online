@@ -82,6 +82,8 @@
     // Botões liga/desliga salvos na conta → valem nesta tela
     if (interruptores && window.SD_INTERRUPTORES) Object.entries(interruptores).forEach(([id, v]) => window.SD_INTERRUPTORES.gravar(id, v));
     Object.defineProperty(perfil, "_real", { value: true, enumerable: false });
+    // Conta real: esconde o selo "Dados de demonstração" do topo da página
+    document.querySelectorAll('.selo-demo[role="note"]').forEach((selo) => { selo.hidden = true; });
     return true;
   }
 
@@ -367,7 +369,7 @@
     if (d.senha || d.senha2) {
       const r = window.SDSenha
         ? window.SDSenha.avaliar(d.senha, { nome: perfil.nome || perfil.responsavelNome, email: perfil.email, documento: perfil.documento })
-        : { ok: d.senha.length >= 12, erros: ["Use pelo menos 12 caracteres."] };
+        : { ok: d.senha.length >= 6, erros: ["Use pelo menos 6 caracteres."] };
       if (!d.senha) marcar("f-senha", "Informe a nova senha.");
       else if (!r.ok) marcar("f-senha", r.erros[0]);
       else if (d.senha !== d.senha2) marcar("f-senha2", "As senhas não coincidem.");

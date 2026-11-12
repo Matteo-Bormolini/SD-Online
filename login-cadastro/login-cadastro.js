@@ -101,6 +101,11 @@
   /* ---------- 2. ESTADO DA TELA ---------- */
   const estado = { loginAberto: true, criarAberto: true, tipoAberto: null };   // tipoAberto: cpf | cnpj | prest | null
 
+  // Conferir CPF/CNPJ? Vem do botão do adm (configuracoes/site no banco).
+  // Começa LIGADO (padrão seguro) até o banco responder.
+  let conferirDocumentos = true;
+  firebase().then((F) => F && F.ativo && F.configSite()).then((c) => { if (c) conferirDocumentos = c.conferirDocumentos !== false; }).catch(() => {});
+
   /* ---------- 3. UTILIDADES ---------- */
   const ICONE_OLHO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const ICONE_OLHO_RISCADO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
@@ -259,8 +264,15 @@
       limparErro(input);
       if (c.obrigatorio && !valor) { erro(input, "Campo obrigatório."); continue; }
       if (!valor) continue;
-      if (c.mascara === "cpf" && !U.cpfValido(valor)) erro(input, U.soDigitos(valor).length === 11 ? "CPF inválido. Confira os números." : "CPF incompleto.");
-      if (c.mascara === "cnpj" && !U.cnpjValido(valor)) erro(input, U.normalizarCnpj(valor).length === 14 ? "CNPJ inválido. Confira os caracteres." : "CNPJ incompleto.");
+      // Modo teste do adm (conferirDocumentos desligado): só confere o tamanho
+      if (c.mascara === "cpf") {
+        if (U.soDigitos(valor).length !== 11) erro(input, "CPF incompleto.");
+        else if (conferirDocumentos && !U.cpfValido(valor)) erro(input, "CPF inválido. Confira os números.");
+      }
+      if (c.mascara === "cnpj") {
+        if (!/^[0-9A-Z]{12}\d{2}$/.test(U.normalizarCnpj(valor))) erro(input, "CNPJ incompleto.");
+        else if (conferirDocumentos && !U.cnpjValido(valor)) erro(input, "CNPJ inválido. Confira os caracteres.");
+      }
       if (c.mascara === "tel" && !U.telefoneValido(valor)) erro(input, "Telefone incompleto.");
       if (c.tipo === "email" && !U.emailValido(valor)) erro(input, "E-mail inválido.");
     }
@@ -335,7 +347,28 @@
     botao.disabled = true; botao.setAttribute("aria-busy", "true");
     U.mostrarMensagem(msg, "info", "Criando sua conta…");
     try {
-      await F.cadastrar(dadosDoCadastro(id));
+      const dados = dadosDoCadastro(id);
+      // Prestador: consulta o CNPJ na Receita (API pública). Só BLOQUEIA CNPJ baixado/inapto/suspenso.
+      // O resto (não achou, nome diferente, API fora do ar) entra e fica para o adm conferir antes do selo.
+      if (id === "prest") {
+        if (conferirDocumentos && window.SDConsultaCnpj) {
+          U.mostrarMensagem(msg, "info", "Consultando o CNPJ na Receita Federal…");
+          const consulta = await window.SDConsultaCnpj.consultar(dados.documento, dados.razaoSocial);
+          if (consulta.resultado === "inativo") {
+            botao.disabled = false; botao.removeAttribute("aria-busy");
+            const campo = document.getElementById("prest-cnpj");
+            const texto = `Este CNPJ está com situação "${consulta.situacao}" na Receita Federal. Só CNPJ ativo pode se cadastrar como prestador.`;
+            mostrarErro(campo, texto); campo.focus();
+            U.mostrarMensagem(msg, "erro", texto);
+            return;
+          }
+          dados.cnpjConsulta = consulta;
+        } else {
+          dados.cnpjConsulta = { resultado: "modo-teste", consultadoEm: new Date().toISOString() };
+        }
+        U.mostrarMensagem(msg, "info", "Criando sua conta…");
+      }
+      await F.cadastrar(dados);
       document.getElementById(`${id}-senha`).value = "";
       document.getElementById(`${id}-senha2`).value = "";
       // Volta a esta página já conectado, com o aviso de confirmar o e-mail
@@ -393,7 +426,7 @@
       irParaDestino(r.tipo);
     } catch (e) {
       botao.disabled = false; botao.removeAttribute("aria-busy");
-      U.mostrarMensagem(msg, "erro", e.code === "SEM_CADASTRO" ? e.message : F.mensagemErro(e));
+      U.mostrarMensagem(msg, "erro", F.mensagemErro(e));
       senha.focus();
     }
   }

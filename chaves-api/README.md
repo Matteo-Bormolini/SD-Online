@@ -19,5 +19,5 @@ Elas **nunca** podem ficar no GitHub.
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-- ✅ Modelo `.env.example` e `.gitignore`.
-- ⬜ Chaves reais no servidor — **Ciclo 2**.
+- ✅ Modelo `.env.example` e `.gitignore` (criados pelo GitHub em 11/11/2026: arquivos com ponto no começo não sobem arrastando).
+- ✅ Ciclo 2 sem chaves secretas: a chave do Firebase é pública por natureza (quem protege são as regras) e as APIs de CNPJ não pedem chave.
