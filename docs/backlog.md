@@ -11,7 +11,7 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje (11/11/2026): **contas reais** (cadastro, login, perfil, nova senha) pelo Firebase grátis. Pedidos e orçamentos ainda são demonstração.
+Hoje (13/11/2026): **Ciclos 1 e 2 concluídos.** Contas reais (cadastro em 2 passos, login, perfil, nova senha) pelo Firebase grátis. Pedidos e orçamentos ainda são demonstração.
 
 > **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
