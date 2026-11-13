@@ -61,7 +61,8 @@ O trabalho é dividido em **Ciclos**. Cada Ciclo tem **um objetivo**. Terminou o
 
 | Ciclo | Objetivo | Versão | Situação |
 |---|---|---|---|
-| 1 | Fechar pendências e decidir (servidor, domínio, regras do pedido) | v0.6.0 | 🟡 Agora |
+| 1 | Fechar pendências e decidir (servidor, domínio, regras do pedido) | v0.6.0 | ✅ |
+| 2 | Contas reais (servidor, banco, login de verdade) | v0.7.5 | ✅ |
 | 2 | Contas reais (servidor, banco, login de verdade) | v0.7.0 | ⬜ |
 | 3 | Encontrar e pedir (busca real, pedido, A orçar) | v0.8.0 | ⬜ |
 | 4 | Orçar e decidir (comparar, aceitar, liberar contato, avaliar) | v0.9.0 | ⬜ |
@@ -117,7 +118,7 @@ Duas semanas por Ciclo é a meta, não uma obrigação.
 - Avaliações são anônimas, a menos que quem avaliou queira mostrar o nome.
 - CPF, telefone e endereço completo de clientes **nunca** ficam públicos.
 - O prestador escolhe se mostra os contatos. A localização do cliente aparece só aproximada.
-- Na demonstração as regras funcionam **só na tela**. A proteção real chega com o servidor (Ciclo 2).
+- Os dados são protegidos pelas regras do banco (Firebase) desde o Ciclo 2.
   Testes feitos: [`docs/testes-e-seguranca.md`](docs/testes-e-seguranca.md).
 
 > **Nunca** coloque senhas, chaves ou dados reais de pessoas neste repositório. Ele é público.
