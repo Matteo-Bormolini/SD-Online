@@ -41,7 +41,7 @@
       botao: "Criar login de Cliente CPF",
       // Sem "Nome de login": e-mail, CPF ou CNPJ já identificam a conta (decisão de 06/11/2026)
       campos: [
-        { chave: "nome", rotulo: "Nome completo", obrigatorio: true, largo: true, auto: "name" },
+        { chave: "nome", rotulo: "Nome completo", obrigatorio: true, largo: true, auto: "name", max: 120 },
         { chave: "cpf", rotulo: "CPF", obrigatorio: true, mascara: "cpf", ph: "000.000.000-00" },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
         { ...CAMPO_EMAIL, largo: true },
@@ -58,8 +58,8 @@
       botao: "Criar login de Cliente CNPJ",
       campos: [
         { chave: "cnpj", rotulo: "CNPJ", obrigatorio: true, mascara: "cnpj", ph: "00.000.000/0000-00" },
-        { chave: "nome", rotulo: "Nome da empresa / condomínio", auto: "organization" },
-        { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo" },
+        { chave: "nome", rotulo: "Nome da empresa / condomínio", auto: "organization", max: 150 },
+        { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo", max: 120 },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
         { ...CAMPO_EMAIL, largo: true },
         ENDERECO,
@@ -75,8 +75,8 @@
       botao: "Criar login de Prestador",
       campos: [
         { chave: "cnpj", rotulo: "CNPJ", obrigatorio: true, mascara: "cnpj", ph: "00.000.000/0000-00" },
-        { chave: "nome", rotulo: "Nome da empresa", auto: "organization" },
-        { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo" },
+        { chave: "nome", rotulo: "Nome da empresa", auto: "organization", max: 150 },
+        { chave: "resp", rotulo: "Responsável principal", dica: "Opcional – pode mudar com o tempo", max: 120 },
         { chave: "tel", rotulo: "Telefone", obrigatorio: true, mascara: "tel", ph: "(00) 00000-0000", tipo: "tel", auto: "tel" },
         { ...CAMPO_EMAIL, largo: true },
         ENDERECO,
@@ -192,7 +192,7 @@
           placeholder: c.ph, autocomplete: c.auto || "off",
           inputmode: c.mascara === "cnpj" ? "text" : (c.mascara ? "numeric" : (c.tipo === "email" ? "email" : undefined)),
           autocapitalize: c.mascara === "cnpj" ? "characters" : undefined,
-          maxlength: c.senha ? SENHA.REGRA.maximo : (c.tipo === "email" ? 254 : undefined),
+          maxlength: c.senha ? SENHA.REGRA.maximo : (c.tipo === "email" ? 254 : c.max),   // tamanhos = firebase/firestore.rules (LIMITES)
           required: c.obrigatorio || undefined,
           "aria-describedby": descricao
         });
@@ -371,10 +371,10 @@
       await F.cadastrar(dados);
       document.getElementById(`${id}-senha`).value = "";
       document.getElementById(`${id}-senha2`).value = "";
-      // Volta a esta página já conectado, com o aviso de confirmar o e-mail
+      // Passo 1 concluído: volta a esta página com o aviso "confirme o e-mail" (passo 2)
       const url = new URL(location.href);
       url.search = "";
-      url.searchParams.set("conta", "criada");
+      url.searchParams.set("conta", "pendente");
       if (parametros.get("destino")) url.searchParams.set("destino", parametros.get("destino"));
       location.href = url.href;
     } catch (e) {
@@ -426,6 +426,12 @@
       irParaDestino(r.tipo);
     } catch (e) {
       botao.disabled = false; botao.removeAttribute("aria-busy");
+      if (e.code === "EMAIL_NAO_CONFIRMADO") {          // cadastro esperando o e-mail
+        senha.value = "";
+        U.mostrarMensagem(msg, "atencao", F.mensagemErro(e));
+        avisoCadastroPendente();
+        return;
+      }
       U.mostrarMensagem(msg, "erro", F.mensagemErro(e));
       senha.focus();
     }
@@ -490,6 +496,44 @@
     };
   }
 
+  // Cadastro esperando o e-mail (passo 2 de 2) → aviso + "Reenviar" + "Já confirmei"
+  async function avisoCadastroPendente() {
+    const F = await firebase();
+    if (!F || !F.ativo || !F.estadoCadastro) return;
+    const est = await F.estadoCadastro();
+    if (!est.logado || est.perfil || !est.pendente) return;
+    const caixa = $("#aviso-verificacao"), botao = $("#btn-reenviar-verificacao");
+    U.mostrarMensagem(caixa, "atencao", `Falta 1 passo: enviamos um link para ${est.email}. Abra o e-mail e clique no link para concluir o cadastro (confira também o spam).`);
+    botao.hidden = false;
+    botao.onclick = async () => {
+      botao.disabled = true;
+      try { await F.reenviarVerificacao(); U.mostrarMensagem(caixa, "sucesso", `E-mail de confirmação enviado de novo para ${est.email}.`); }
+      catch (e) { U.mostrarMensagem(caixa, "erro", F.mensagemErro(e)); }
+      setTimeout(() => { botao.disabled = false; }, 60000);       // espera 1 min para pedir de novo
+    };
+    // "Já cliquei no link" (link aberto em outro aparelho, por exemplo)
+    let jaConfirmei = $("#btn-ja-confirmei");
+    if (!jaConfirmei) {
+      jaConfirmei = document.createElement("button");
+      jaConfirmei.type = "button";
+      jaConfirmei.className = "link-botao";
+      jaConfirmei.id = "btn-ja-confirmei";
+      jaConfirmei.textContent = "Já cliquei no link";
+      botao.after(jaConfirmei);
+    }
+    jaConfirmei.onclick = async () => {
+      jaConfirmei.disabled = true;
+      try {
+        const r = await F.concluirCadastro();
+        U.mostrarMensagem(caixa, "sucesso", "Cadastro concluído!");
+        irParaDestino(r.tipo);
+      } catch (e) {
+        U.mostrarMensagem(caixa, e.code === "EMAIL_NAO_CONFIRMADO" ? "atencao" : "erro", F.mensagemErro(e));
+        jaConfirmei.disabled = false;
+      }
+    };
+  }
+
   // Abre a parte certa conforme o endereço (links da Home e da NavBar)
   function lerEndereco() {
     if (parametros.get("acao") === "criar-conta") {
@@ -524,6 +568,7 @@
 
     lerEndereco();
     atualizarTela();
+    avisoCadastroPendente();
     if (parametros.get("acao") === "criar-conta") requestAnimationFrame(() => $("#cartao-criar").scrollIntoView({ block: "start" }));
   }
 

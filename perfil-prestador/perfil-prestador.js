@@ -23,6 +23,8 @@
     ...P.PADRAO,                                 // telefones (4), fotos (JPG/PNG/WEBP até 5 MB)
     maxFotosTrabalho: 12,
     maxEspecialidades: 8,
+    maxCertificacoes: 10,          // limites iguais aos de firebase/firestore.rules
+    maxCaracteresItem: 40,
     tamanhoMinLogoPx: 200,                       // logo menor que isso fica borrada
     urlAvaliacoes: SD.urlPagina("avaliacoes"),
     // Fotos padrão do sistema (arquivos ainda a criar). Sem o arquivo, aparece um ícone provisório.
@@ -485,6 +487,10 @@
         if (d.nomeFantasia && d.nomeFantasia.length < 2) marcar("f-fantasia", "Nome fantasia muito curto.");
         if (d.sobre && d.sobre.length < 30) marcar("f-sobre", "Escreva pelo menos 30 caracteres para apresentar a empresa.");
         if (d.especialidades && U.listaDeTexto(d.especialidades).length > CONFIG.maxEspecialidades) marcar("f-especialidades", `Informe no máximo ${CONFIG.maxEspecialidades} especialidades.`);
+        // Cada item com no máximo 40 caracteres (mesmo limite de firebase/firestore.rules)
+        if (d.especialidades && U.listaDeTexto(d.especialidades).some((x) => x.length > CONFIG.maxCaracteresItem)) marcar("f-especialidades", `Cada especialidade pode ter no máximo ${CONFIG.maxCaracteresItem} caracteres.`);
+        if (d.certificacoes && U.listaDeTexto(d.certificacoes).length > CONFIG.maxCertificacoes) marcar("f-certificacoes", `Informe no máximo ${CONFIG.maxCertificacoes} certificações.`);
+        if (d.certificacoes && U.listaDeTexto(d.certificacoes).some((x) => x.length > CONFIG.maxCaracteresItem)) marcar("f-certificacoes", `Cada certificação pode ter no máximo ${CONFIG.maxCaracteresItem} caracteres.`);
         if (d.responsavelNome && d.responsavelNome.split(/\s+/).length < 2) marcar("f-resp-nome", "Informe nome e sobrenome.");
         if (d.responsavelCargo && d.responsavelCargo.length < 2) marcar("f-resp-cargo", "Cargo muito curto.");
         if (d.anoInicio && (!/^\d{4}$/.test(d.anoInicio) || +d.anoInicio < 1900 || +d.anoInicio > anoAtual)) marcar("f-inicio", `Informe um ano entre 1900 e ${anoAtual}.`);

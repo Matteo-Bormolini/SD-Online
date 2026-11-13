@@ -9,7 +9,8 @@
     GitHub Pages ou um servidor local, ex.: Live Server do VS Code.)
 
    O que ele faz:
-     1. Entrar, sair, criar conta (CPF/CNPJ único), apagar conta.
+     1. Entrar, sair, criar conta em 2 passos (dados → confirma o e-mail → perfil
+        e reserva do CPF/CNPJ), apagar conta.
      2. "Esqueci a senha" com o pop-up do site (link do e-mail).
      3. Confirma o e-mail quando a pessoa clica no link de verificação.
      4. Lê e salva os dados do perfil (coleção "usuarios").
@@ -28,7 +29,7 @@ import {
   onAuthStateChanged, updatePassword, verifyBeforeUpdateEmail
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 /* ---------- 1. CONFIGURAÇÃO (cole aqui o bloco do console do Firebase) ----------
@@ -43,7 +44,8 @@ const firebaseConfig = {
 };
 
 // Nomes das coleções do banco (Firestore)
-const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes" };
+// cadastrosPendentes = dados do cadastro esperando o e-mail ser confirmado (passo 1 de 2)
+const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes" };
 // Configurações gerais do site (configuracoes/site no banco; só o adm muda)
 // conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
 //                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
@@ -83,7 +85,9 @@ const ERROS = {
   DOCUMENTO_EM_USO: "Este CPF/CNPJ já tem uma conta. Use \"Esqueceu o login?\" ou fale com o suporte.",
   NAO_CONFIGURADO: "O login ainda não está disponível: o Firebase não foi configurado (firebase/firebase.js).",
   SEM_LOGIN: "Sua sessão terminou. Entre de novo.",
-  CADASTRO_INCOMPLETO: "O cadastro anterior com este e-mail ficou incompleto e foi apagado. Crie a conta de novo."
+  CADASTRO_INCOMPLETO: "O cadastro anterior com este e-mail ficou incompleto e foi apagado. Crie a conta de novo.",
+  EMAIL_NAO_CONFIRMADO: "Falta confirmar o e-mail. Abra o link que enviamos (confira também o spam) para concluir o cadastro.",
+  SEM_CADASTRO_PENDENTE: "Não encontramos um cadastro esperando confirmação. Crie a conta de novo."
 };
 const mensagemErro = (e) => ERROS[(e && e.code) || e] || "Não foi possível concluir agora. Tente de novo em instantes.";
 // Erro com código próprio (para as telas tratarem)
@@ -172,11 +176,19 @@ async function entrar(email, senha, manter) {
   if (!configurado) throw erro("NAO_CONFIGURADO");
   await persistencia(manter);
   await signInWithEmailAndPassword(auth, String(email).trim().toLowerCase(), senha);
-  const dados = await meusDados(true);
-  if (!dados) {                                       // login sem perfil (cadastro interrompido)
-    // Acabou de entrar, então o Firebase deixa apagar: libera o e-mail para um novo cadastro
-    try { await deleteUser(auth.currentUser); } catch (_) { await signOut(auth); }
-    throw erro("CADASTRO_INCOMPLETO");
+  let dados = await meusDados(true);
+  if (!dados) {                                       // login sem perfil
+    if (await lerPendente()) {
+      // Passo 2 do cadastro: com o e-mail confirmado, cria o perfil agora.
+      // Sem confirmar: continua conectado (para reenviar o e-mail) e avisa.
+      if (!(await emailConfirmadoAgora())) throw erro("EMAIL_NAO_CONFIRMADO");
+      await concluirCadastro();
+      dados = await meusDados(true);
+    } else {
+      // Cadastro interrompido (sem dados guardados): libera o e-mail para um novo cadastro
+      try { await deleteUser(auth.currentUser); } catch (_) { await signOut(auth); }
+      throw erro("CADASTRO_INCOMPLETO");
+    }
   }
   sessaoTela.gravar({ uid: dados.uid, tipo: dados.tipo, nome: nomeCurto(dados) }, manter);
   return { tipo: dados.tipo, nome: nomeCurto(dados), emailConfirmado: auth.currentUser.emailVerified };
@@ -198,40 +210,106 @@ async function criarOuReaproveitarLogin(email, senha) {
   }
 }
 
-/* Cria a conta. dados = {
-     tipo: "cliente-cpf" | "cliente-cnpj" | "prestador",
-     email, senha, documento (só números/letras), ...outros campos do perfil } */
+/* ---------- CADASTRO EM 2 PASSOS (padrão 13/11/2026) ----------
+   Passo 1 (cadastrar): cria o login, guarda os dados em cadastrosPendentes/{uid}
+            e envia o link de confirmação. NÃO reserva o CPF/CNPJ ainda.
+   Passo 2 (concluirCadastro): com o e-mail confirmado, cria o perfil + a reserva
+            do CPF/CNPJ no MESMO envio e apaga o pendente. Acontece sozinho ao
+            clicar no link (mesmo aparelho) ou ao entrar com e-mail e senha.
+   Assim, ninguém com e-mail falso consegue reservar o CPF/CNPJ de outra pessoa. */
+
+// dados = { tipo: "cliente-cpf" | "cliente-cnpj" | "prestador", email, senha, documento, ...outros campos }
 async function cadastrar(dados) {
   if (!configurado) throw erro("NAO_CONFIGURADO");
   const { senha, ...resto } = dados;
   if (!TIPOS_CADASTRO.includes(resto.tipo)) throw erro("permission-denied");
-  const prefixo = resto.tipo === "cliente-cpf" ? "cpf" : "cnpj";
-  const chave = `${prefixo}-${resto.documento}`;
   const email = String(resto.email).trim().toLowerCase();
 
   await persistencia(false);
   const cred = await criarOuReaproveitarLogin(email, senha);
-  const uid = cred.user.uid;
+  try {
+    await setDoc(doc(db, COLECAO.pendentes, cred.user.uid), { dados: { ...resto, email }, criadoEm: serverTimestamp() });
+  } catch (e) {
+    try { await deleteUser(cred.user); } catch (_) { await signOut(auth); }
+    throw e;
+  }
+  try { await sendEmailVerification(cred.user); } catch (_) { /* a tela tem "Reenviar" */ }
+  return { pendente: true, email };
+}
 
-  // Perfil + "reserva" do CPF/CNPJ no MESMO envio (tudo ou nada).
-  // Se o documento já tiver dono, o banco recusa → a conta recém-criada é apagada.
+// Lê os dados guardados no passo 1 (null = não há cadastro esperando)
+async function lerPendente() {
+  await pronto;
+  const u = auth && auth.currentUser;
+  if (!u) return null;
+  try {
+    const s = await getDoc(doc(db, COLECAO.pendentes, u.uid));
+    return s.exists() ? s.data().dados : null;
+  } catch (_) { return null; }
+}
+
+// Confere no servidor se o e-mail já foi confirmado (o link pode ter sido aberto em outro aparelho)
+async function emailConfirmadoAgora() {
+  const u = auth && auth.currentUser;
+  if (!u) return false;
+  try { await u.reload(); } catch (_) { /* sem internet */ }
+  if (!auth.currentUser.emailVerified) return false;
+  await auth.currentUser.getIdToken(true);             // regras do banco passam a ver "e-mail confirmado"
+  return true;
+}
+
+// Passo 2: cria perfil + reserva do CPF/CNPJ (tudo ou nada) e apaga o pendente.
+// Uma vez só por vez (o link do e-mail e a conferência da sessão podem chamar juntos).
+let concluindo = null;
+function concluirCadastro() {
+  if (!concluindo) concluindo = concluirCadastroAgora().finally(() => { concluindo = null; });
+  return concluindo;
+}
+async function concluirCadastroAgora() {
+  await pronto;
+  const u = auth && auth.currentUser;
+  if (!u) throw erro("SEM_LOGIN");
+  const dados = await lerPendente();
+  if (!dados) throw erro("SEM_CADASTRO_PENDENTE");
+  if (!(await emailConfirmadoAgora())) throw erro("EMAIL_NAO_CONFIRMADO");
+
+  const prefixo = dados.tipo === "cliente-cpf" ? "cpf" : "cnpj";
+  const chave = `${prefixo}-${dados.documento}`;
   const lote = writeBatch(db);
-  const perfil = { ...resto, email, documentoChave: chave, criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp() };
-  lote.set(doc(db, COLECAO.usuarios, uid), perfil);
-  lote.set(doc(db, COLECAO.documentos, chave), { uid, criadoEm: serverTimestamp() });
+  const perfil = { ...dados, email: u.email, documentoChave: chave, criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp() };
+  lote.set(doc(db, COLECAO.usuarios, u.uid), perfil);
+  lote.set(doc(db, COLECAO.documentos, chave), { uid: u.uid, tipo: dados.tipo, criadoEm: serverTimestamp() });
+  lote.delete(doc(db, COLECAO.pendentes, u.uid));
   try {
     await lote.commit();
   } catch (e) {
-    try { await deleteUser(cred.user); } catch (_) { await signOut(auth); }
-    throw e && e.code === "permission-denied" ? erro("DOCUMENTO_EM_USO") : e;
+    if (e && e.code === "permission-denied") {
+      // Já foi concluído (outra aba/aparelho)? Então está tudo certo.
+      cacheDados = { uid: null, promessa: null };
+      const ja = await meusDados(true).catch(() => null);
+      if (ja) return { tipo: ja.tipo, nome: nomeCurto(ja) };
+      // O CPF/CNPJ ganhou dono antes (ou é inválido): libera o e-mail para cadastrar de novo
+      try { await deleteDoc(doc(db, COLECAO.pendentes, u.uid)); } catch (_) { /* segue */ }
+      try { await deleteUser(u); } catch (_) { await signOut(auth); }
+      throw erro("DOCUMENTO_EM_USO");
+    }
+    throw e;
   }
-
-  // E-mail "confirme seu endereço" (não impede o uso; só avisa)
-  try { await sendEmailVerification(cred.user); } catch (_) { /* tenta de novo pela tela */ }
   cacheDados = { uid: null, promessa: null };
   const salvo = await meusDados(true);
-  sessaoTela.gravar({ uid, tipo: salvo.tipo, nome: nomeCurto(salvo) }, false);
+  const manter = (() => { try { return !!localStorage.getItem(CHAVE_SESSAO); } catch (_) { return false; } })();
+  sessaoTela.gravar({ uid: u.uid, tipo: salvo.tipo, nome: nomeCurto(salvo) }, manter);
   return { tipo: salvo.tipo, nome: nomeCurto(salvo) };
+}
+
+// Situação do cadastro de quem está conectado (para a tela de login)
+async function estadoCadastro() {
+  await pronto;
+  const u = auth && auth.currentUser;
+  if (!u) return { logado: false };
+  const perfil = await meusDados().catch(() => null);
+  const pendente = perfil ? null : await lerPendente();
+  return { logado: true, email: u.email, perfil: !!perfil, pendente: !!pendente, emailConfirmado: u.emailVerified };
 }
 
 async function sair() {
@@ -274,6 +352,7 @@ async function excluirConta() {
   const lote = writeBatch(db);
   if (dados && dados.documentoChave) lote.delete(doc(db, COLECAO.documentos, dados.documentoChave));
   lote.delete(doc(db, COLECAO.usuarios, u.uid));
+  lote.delete(doc(db, COLECAO.pendentes, u.uid));     // se existir (cadastro esperando confirmação)
   // Confere antes se o login aceita ser apagado agora (pede login recente)
   if (Date.now() - new Date(u.metadata.lastSignInTime).getTime() > 5 * 60 * 1000) throw erro("auth/requires-recent-login");
   await lote.commit();
@@ -323,11 +402,20 @@ async function tratarLinkDoEmail() {
   try {
     if (modo === "verifyEmail") {
       await applyActionCode(auth, codigo);
-      if (auth.currentUser) {
-        await auth.currentUser.reload();
-        await auth.currentUser.getIdToken(true);       // regras do banco passam a ver "e-mail confirmado"
-      }
+      await pronto;
       document.getElementById("sd-aviso-email")?.remove();
+      if (!auth.currentUser) {
+        avisar("sucesso", "E-mail confirmado! Para concluir o cadastro, entre com seu e-mail e senha aqui (ou volte à aba do cadastro e clique em \"Já cliquei no link\").");
+        return;
+      }
+      await emailConfirmadoAgora();
+      if (await lerPendente()) {                        // passo 2 do cadastro
+        await concluirCadastro();
+        const url = new URL(location.href);
+        url.search = "?conta=criada";
+        location.replace(url.href);
+        return;
+      }
       avisar("sucesso", "E-mail confirmado. Obrigado!");
     } else if (modo === "verifyAndChangeEmail") {
       await applyActionCode(auth, codigo);
@@ -359,6 +447,13 @@ async function sincronizarSessao() {
   if (u) {
     let dados = null;
     try { dados = await meusDados(); } catch (_) { return; }   // sem internet: não mexe
+    if (!dados && (await lerPendente())) {
+      // Cadastro esperando o e-mail: se já confirmou (até em outro aparelho), conclui agora
+      if (await emailConfirmadoAgora()) {
+        try { await concluirCadastro(); location.reload(); } catch (e) { console.warn("[S.D] Cadastro não concluído:", e.code || e); }
+      }
+      return;                                          // continua conectado, sem perfil na tela
+    }
     if (!dados) { await sair(); }
     else {
       correta = { uid: u.uid, tipo: dados.tipo, nome: nomeCurto(dados) };
@@ -409,10 +504,10 @@ async function salvarConfigSite(campos) {
 }
 
 /* ---------- 10c. AVISO "CONFIRME SEU E-MAIL" (todas as páginas) ----------
-   PADRÃO (11/11/2026): sem confirmar, a pessoa entra, vê e edita o próprio perfil
-   e pode excluir a conta. Tudo que envolve OUTRA pessoa (aparecer na busca,
-   pedir orçamento, orçar, avaliar — Ciclos 3 e 4) exige e-mail confirmado
-   (regras do banco: função emailConfirmado()). */
+   PADRÃO (13/11/2026): o perfil e a reserva do CPF/CNPJ só são criados DEPOIS
+   de confirmar o e-mail (cadastro em 2 passos). Contas antigas sem confirmação
+   continuam vendo este aviso. Busca, pedidos, orçamentos e avaliações (Ciclos 3
+   e 4) também exigem e-mail confirmado (regras do banco: emailConfirmado()). */
 async function avisoEmailGlobal() {
   const u = await pronto;
   if (!u || u.emailVerified) return;
@@ -423,7 +518,7 @@ async function avisoEmailGlobal() {
   caixa.id = "sd-aviso-email";
   caixa.className = "mensagem atencao";
   caixa.setAttribute("role", "status");
-  caixa.textContent = `Confirme seu e-mail (${u.email}) para pedir e receber orçamentos. Confira também o spam. `;
+  caixa.textContent = `Confirme seu e-mail (${u.email}) para concluir o cadastro e usar a S.D. Confira também o spam. `;
   const botao = document.createElement("button");
   botao.type = "button";
   botao.className = "btn";
@@ -459,7 +554,7 @@ window.SDFirebase = Object.freeze({
   ativo: configurado,
   pronto,                          // Promessa: resolve quando o login foi conferido
   mensagemErro,                    // erro → texto para a pessoa
-  entrar, cadastrar, sair, reenviarVerificacao, emailConfirmado,
+  entrar, cadastrar, concluirCadastro, estadoCadastro, sair, reenviarVerificacao, emailConfirmado,
   configSite, salvarConfigSite,    // configurações do site (ex.: conferir CPF/CNPJ)
   meusDados, atualizarCampos, trocarSenha, trocarEmail, excluirConta,
   solicitarLinkSenha, validarLinkSenha, redefinirSenha,

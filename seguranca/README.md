@@ -9,6 +9,8 @@ Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precis
 | `permissoes.json` | As mesmas regras, para o servidor. **Manter igual ao `acesso.js`.** |
 | `index.html` | Tabela de consulta das regras. |
 | `recuperacao-acesso.md` | Regras de "esqueci a senha / o login". |
+| `csp.md` | Lista do que o site pode carregar (proteção contra código malicioso). |
+| `seguranca.css` / `seguranca.js` | Estilo e tabela da página `index.html`. |
 
 ## Regras principais
 - CPF, telefone e endereço completo de clientes **nunca** são públicos.
@@ -21,6 +23,7 @@ Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precis
 - **Dados:** protegidos pelas regras do banco ([`firebase/firestore.rules`](../firebase/firestore.rules)) desde 11/11/2026.
   Mexer no navegador pode mostrar uma página de adm vazia, mas **não** dá acesso aos dados de ninguém.
   Resultado completo dos testes: [`docs/testes-e-seguranca.md`](../docs/testes-e-seguranca.md).
+- **CSP** em todas as páginas desde v0.7.6: [`csp.md`](csp.md).
 
 ## LGPD
 | Cuidado | Situação |

@@ -1,0 +1,12 @@
+/* Estilos só da página de consulta das regras (seguranca/index.html).
+   Fora do HTML por causa da CSP (seguranca/csp.md). */
+.tabela-rolagem { overflow-x: auto; border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); background: var(--cor-superficie); }
+.tabela-acesso { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: .9375rem; }
+.tabela-acesso th, .tabela-acesso td { padding: .625rem .75rem; text-align: left; border-bottom: 1px solid var(--cor-divisoria); vertical-align: top; }
+.tabela-acesso thead th { background: var(--cor-menu-fundo); color: #FFFFFF; font-size: .8125rem; }
+.tabela-acesso code { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.sim, .nao { display: inline-block; min-width: 3.5rem; padding: .125rem .5rem; border-radius: 6px; font-weight: 600; text-align: center; }
+.sim { color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
+.nao { color: var(--cor-erro); background: var(--cor-erro-fundo); }
+.caixa { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); }
+.caixa h2 { margin: 0 0 .5rem; font-size: 1.125rem; }

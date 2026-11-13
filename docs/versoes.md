@@ -23,6 +23,7 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 
 | Versão | Data | O que entrou |
 |---|---|---|
+| v0.7.6 | 13/11/2026 | **Segurança do banco** (após os 187 testes de 12/11): cadastro em 2 passos (perfil e reserva do CPF/CNPJ só depois de confirmar o e-mail); dígitos do CPF/CNPJ conferidos nas regras; tipo da conta guardado na reserva; limite de tamanho em cada campo e lista fechada de campos; CSP em todas as páginas. |
 | v0.7.5 | 11/11/2026 | **Fim do Ciclo 2.** Correções da auditoria: arquivos da alpha.2 nas pastas certas e README restaurado; botão do adm "Conferir CPF e CNPJ" (modo teste); consulta do CNPJ do prestador (CNPJá/CNPJ.ws); cadastro parado no meio não prende o e-mail; aviso de e-mail confirmado em todas as páginas; regras do banco (configurações do site, selo `verificado` só pelo adm, reserva do documento só some junto com o perfil); `.gitignore`; backlog e decisões atualizados. |
 | v0.7.0-alpha.2 | 11/11/2026 | Senha mínima de 6 caracteres (antes 12), no site e no Firebase. |
 | v0.7.0-alpha.1 | 11/11/2026 | Firebase: pasta `firebase/` (login, cadastro com CPF/CNPJ único, sair, esqueci a senha pelo pop-up, confirmação de e-mail, perfil real com editar/excluir, botões liga/desliga salvos) e regras do banco (`firebase/firestore.rules`). Login só por e-mail no MVP. Modo demonstração desligado. |

@@ -2,25 +2,15 @@
 <html lang="pt-BR" data-tema="claro">
 <head>
 <meta charset="utf-8">
+<!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Regras de acesso — S.D Serviços Digitais</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="../configuracoes/base.css">
 <link rel="stylesheet" href="../navbar/navbar.css">
 <link rel="stylesheet" href="../rodape/rodape.css">
-<style>
-  /* Estilos só desta página de consulta (tabela gerada a partir de acesso.js) */
-  .tabela-rolagem { overflow-x: auto; border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); background: var(--cor-superficie); }
-  .tabela-acesso { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: .9375rem; }
-  .tabela-acesso th, .tabela-acesso td { padding: .625rem .75rem; text-align: left; border-bottom: 1px solid var(--cor-divisoria); vertical-align: top; }
-  .tabela-acesso thead th { background: var(--cor-menu-fundo); color: #FFFFFF; font-size: .8125rem; }
-  .tabela-acesso code { font-size: .8125rem; color: var(--cor-texto-secundario); }
-  .sim, .nao { display: inline-block; min-width: 3.5rem; padding: .125rem .5rem; border-radius: 6px; font-weight: 600; text-align: center; }
-  .sim { color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
-  .nao { color: var(--cor-erro); background: var(--cor-erro-fundo); }
-  .caixa { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); }
-  .caixa h2 { margin: 0 0 .5rem; font-size: 1.125rem; }
-</style>
+<link rel="stylesheet" href="seguranca.css">
 <script src="acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
@@ -59,20 +49,6 @@
   </section>
 </main>
 <footer id="sd-rodape"></footer>
-<script>
-  // Monta a tabela a partir de window.SD_ACESSO (mesmos dados usados pela NavBar)
-  document.addEventListener("DOMContentLoaded", function () {
-    var A = window.SD_ACESSO, tabela = document.getElementById("tabela-acesso");
-    if (!A) return;
-    var perfis = Object.keys(A.PERFIS);
-    var cab = "<thead><tr><th scope=\"col\">Recurso</th>" + perfis.map(function (p) { return "<th scope=\"col\">" + A.PERFIS[p] + "</th>"; }).join("") + "</tr></thead>";
-    var linhas = Object.keys(A.REGRAS).map(function (r) {
-      return "<tr><th scope=\"row\"><code>" + r + "</code></th>" + perfis.map(function (p) {
-        return A.pode(p, r) ? "<td><span class=\"sim\">Sim</span></td>" : "<td><span class=\"nao\">Não</span></td>";
-      }).join("") + "</tr>";
-    }).join("");
-    tabela.insertAdjacentHTML("beforeend", cab + "<tbody>" + linhas + "</tbody>");
-  });
-</script>
+<script src="seguranca.js"></script>
 </body>
 </html>

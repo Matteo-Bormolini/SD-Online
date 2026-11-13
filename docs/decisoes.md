@@ -4,11 +4,21 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 13/11/2026 — segurança do banco (v0.7.6)
+- **Cadastro em 2 passos:** preenche tudo → recebe o link → ao clicar, o perfil e a reserva do CPF/CNPJ são criados. Antes de confirmar, os dados ficam em `cadastrosPendentes` (só o dono vê) e **nenhum CPF/CNPJ fica reservado**. Substitui "E-mail não confirmado" de 11/11.
+- **CPF/CNPJ conferido no servidor:** com o botão "Conferir CPF e CNPJ" ligado, as regras do banco conferem os dígitos verificadores (também o CNPJ com letras). Desligado = modo teste.
+- **CPF real (existe e é da pessoa):** não há API grátis (Serpro é paga). Se alguém usar o CPF/CNPJ de outra pessoa, o dono fala com o Suporte e o adm libera a reserva.
+- **CNPJ ativo conferido sem dar para pular:** precisa de código no servidor (Cloud Functions = plano pago; ou Cloudflare Worker grátis). Fica para depois do MVP. Até lá: consulta na tela + selo `verificado` só pelo adm.
+- **Tipo da conta travado (opção B):** a reserva do CPF/CNPJ guarda o tipo da conta; o perfil precisa ser igual. Excluir conta apaga perfil + reserva juntos. Trocar de tipo = excluir a conta e cadastrar de novo.
+- **Limite de tamanho em cada campo** (regras do banco, bloco 1 "LIMITES") e lista fechada de campos do perfil.
+- **CSP** (Content-Security-Policy) em todas as páginas. Explicação: `seguranca/csp.md`.
+- **E-mail já cadastrado:** o cadastro avisa que o e-mail já tem conta e indica "Esqueceu a senha?" (limite do Firebase; aceito).
+
 ### 11/11/2026 (noite) — fechamento do Ciclo 2 (v0.7.5)
 - **Nada pago no MVP.** Nem plano com cartão "grátis até um limite" (Blaze). O que só funciona pagando fica **pausado** em "Pós-MVP · precisa pagar" (backlog, seção 2): cookie HttpOnly, selo automático de CNPJ, limpeza automática de contas, fotos no Storage, SMS, domínio.
 - **Senha:** mínimo **6** fica (decisão do Marco: facilidade de uso). Segunda verificação no login → pós-MVP (US60).
 - **Política de senha do Firebase:** modo **Exigir**, mínimo 6, máximo 128, sem exigências de caracteres (estava desligada).
-- **E-mail confirmado (padrão):** sem confirmar, a pessoa entra, vê/edita o próprio perfil e pode excluir a conta. Tudo que envolve **outra pessoa** (aparecer na busca, pedir orçamento, orçar, avaliar) exige e-mail confirmado (regra do banco `emailConfirmado()`). Aviso com "Reenviar" em todas as páginas.
+- **E-mail confirmado (padrão, substituído em 13/11 pelo cadastro em 2 passos):** sem confirmar, a pessoa entra, vê/edita o próprio perfil e pode excluir a conta. Tudo que envolve **outra pessoa** (aparecer na busca, pedir orçamento, orçar, avaliar) exige e-mail confirmado (regra do banco `emailConfirmado()`). Aviso com "Reenviar" em todas as páginas.
 - **CPF:** só dígitos verificadores (não existe API pública grátis de CPF).
 - **CNPJ do prestador:** consulta grátis no navegador — **CNPJá** (principal) e **CNPJ.ws** (reserva), sem chave. Só **bloqueia** CNPJ baixado/inapto/suspenso/nulo. Não achou, nome diferente ou API fora do ar → entra e fica para o adm. Guardado no perfil (`cnpjConsulta`): fonte, situação, MEI, nome da Receita, CNAEs e data. O **selo** (`verificado`) só o adm dá, pelo console (fila no site = pós-MVP).
 - **Botão do adm "Conferir CPF e CNPJ"** (aba Administração): desligado = **modo teste** (aceita qualquer CPF/CNPJ com o tamanho certo). Salvo em `configuracoes/site` no banco; todos leem, só o adm muda.

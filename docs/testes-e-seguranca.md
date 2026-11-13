@@ -1,4 +1,23 @@
-# Testes e segurança — 09/11/2026
+# Testes e segurança
+
+## 12/11/2026 — testes automáticos no Firebase real (v0.7.5)
+187 testes (57 por conta: cliente CPF, cliente CNPJ, prestador + 16 sem login/força bruta/ciclo de vida).
+Contas de teste @example.com, apagadas no fim. Adm não testado. **178 passaram, 9 falharam** → corrigidos na v0.7.6:
+
+| Falha | Correção (v0.7.6) |
+|---|---|
+| Servidor aceitava CPF/CNPJ com dígito errado | Dígitos conferidos nas regras do banco |
+| Campo de texto sem limite (aceitou 700 KB) | `LIMITES()` + lista fechada de campos |
+| Apagar só o perfil e recriar com outro tipo | Tipo guardado na reserva; perfil só sai junto com a reserva |
+| Cadastro revela e-mail já usado | Aceito (limite do Firebase) |
+| E-mail não confirmado criava perfil | Cadastro em 2 passos |
+| Site sem CSP | CSP em todas as páginas (`seguranca/csp.md`) |
+
+**Protegido (passou):** dados de outra conta, listar usuários/reservas, virar adm, campos protegidos, destaque, configurações, cadastro forjado, senha 6–128 no servidor, mesma mensagem no login errado, bloqueio após ~5 senhas erradas.
+
+---
+
+## 09/11/2026 — cópia local (v0.6.0-alpha.1)
 
 Testes feitos numa **cópia local** do site (versão v0.6.0-alpha.1).
 O site publicado **não** foi atacado: ele roda no GitHub, e atacar a estrutura de outra empresa é proibido.

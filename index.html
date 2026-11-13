@@ -2,13 +2,15 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>S.D Serviços Digitais</title>
 <!-- Entrada do site: leva para a página inicial (funciona no GitHub Pages e abrindo o arquivo no PC) -->
 <meta http-equiv="refresh" content="0; url=home/index.html">
 <link rel="canonical" href="home/index.html">
 <link rel="icon" type="image/svg+xml" href="fotos/marca/logo.svg">
-<style>body{font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#F2ECE6;color:#1F1A17;margin:0;min-height:100vh;display:grid;place-items:center}a{color:#800000;font-weight:600}</style>
+<link rel="stylesheet" href="configuracoes/base.css">
 </head>
 <body>
 <p>Abrindo a página inicial… <a href="home/index.html">Clique aqui se não abrir.</a></p>

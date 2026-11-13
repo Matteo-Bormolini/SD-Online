@@ -1,96 +1,371 @@
 rules_version = '2';
 
 // =====================================================================
-// S.D — REGRAS DE SEGURANÇA DO BANCO (firebase/firestore.rules)
+// S.D — REGRAS DE SEGURANÇA DO BANCO (firebase/firestore.rules) — v0.7.6
 // Copiar TUDO e colar em: Console do Firebase → Firestore Database → Regras → Publicar.
 // Regra geral: tudo que não está liberado aqui é PROIBIDO.
 //
 // Coleções:
-//   usuarios/{uid}        → dados da conta (cada pessoa só vê/edita a sua; adm vê todas)
-//   documentos/{chave}    → "reserva" do CPF/CNPJ (chave = cpf-<11 números> ou cnpj-<14>)
-//                           garante 1 conta por documento. Ninguém lê (só o adm).
-//   configuracoes/site    → configurações gerais (ex.: conferirDocumentos). Todos leem; só o adm muda.
+//   cadastrosPendentes/{uid} → dados do cadastro ESPERANDO o e-mail ser confirmado
+//                              (só o dono e o adm leem; não reserva CPF/CNPJ)
+//   usuarios/{uid}           → perfil (cada pessoa só vê/edita o seu; adm vê todos)
+//   documentos/{chave}       → "reserva" do CPF/CNPJ (chave = cpf-<11> ou cnpj-<14>)
+//                              guarda o dono (uid) e o TIPO da conta. Ninguém lê (só o adm).
+//   configuracoes/site       → configurações gerais (ex.: conferirDocumentos). Todos leem; só o adm muda.
 // Administrador: criado como conta comum e trocado para tipo "adm" PELO CONSOLE.
 // =====================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- Funções de apoio ----------
+    // =================================================================
+    // 1. LIMITES DE TAMANHO  ← MUDE AQUI
+    //    Número = máximo de CARACTERES (letras, números, espaços).
+    //    Ao mudar, mude também o maxlength do campo na tela (lista em firebase/README.md).
+    // =================================================================
+    function LIMITES() {
+      return {
+        // Pessoa / empresa
+        'nome': 120,                // nome completo (cliente CPF e adm)
+        'razaoSocial': 150,         // razão social (CNPJ)
+        'nomeFantasia': 120,        // nome fantasia
+        'responsavelNome': 120,     // nome do responsável
+        'responsavelCargo': 60,     // cargo do responsável (síndico, gerente...)
+        'tipoEstabelecimento': 60,  // condomínio residencial, comercial...
+        'email': 254,               // máximo da norma de e-mail
+        // Contato no local (cliente CNPJ)
+        'contatoNome': 120,
+        'contatoFuncao': 60,
+        // Prestador
+        'areaAtuacao': 80,          // área principal
+        'sobre': 600,               // texto de apresentação
+        'horario': 80,              // horário de atendimento
+        'bairrosAtendidos': 200,    // bairros/cidades atendidos
+        'especialidade': 40,        // cada especialidade
+        'certificacao': 40,         // cada certificação (NR-10, NR-35...)
+        // Endereço
+        'endereco': 150,
+        'numero': 10,
+        'complemento': 60,
+        'bairro': 80,
+        'cidade': 80,
+        // Horário de visitas (cliente CNPJ)
+        'horarioObs': 80,
+        // Consulta do CNPJ (guardada no cadastro do prestador)
+        'nomeReceita': 150,
+        // Campos do adm
+        'cargoBase': 30,
+        'tag': 30
+      };
+    }
+    // Quantidade máxima de ITENS nas listas  ← MUDE AQUI
+    function MAXIMOS() {
+      return {
+        'telefones': 5,             // 1 principal + 4 secundários (máx. técnico: 5)
+        'especialidades': 8,        // (máx. técnico: 20)
+        'certificacoes': 10,        // (máx. técnico: 20)
+        'faixasHorario': 3,         // faixas do horário de visitas (máx. técnico: 3)
+        'cnaesSecundarios': 20,     // (máx. técnico: 20)
+        'tags': 10,                 // (máx. técnico: 20)
+        'raioKmMaximo': 200         // distância máxima de atendimento (km)
+      };
+    }
+
+    // =================================================================
+    // 2. FUNÇÕES DE APOIO
+    // =================================================================
     function logado() { return request.auth != null; }
     function eDono(uid) { return logado() && request.auth.uid == uid; }
     function usuario(uid) { return /databases/$(database)/documents/usuarios/$(uid); }
+    function reserva(chave) { return /databases/$(database)/documents/documentos/$(chave); }
     function ehAdm() { return logado() && exists(usuario(request.auth.uid)) && get(usuario(request.auth.uid)).data.tipo == 'adm'; }
     function novo() { return request.resource.data; }
     function mudou() { return request.resource.data.diff(resource.data).affectedKeys(); }
-    // E-mail confirmado (padrão 11/11/2026): exigir em tudo que envolve OUTRA pessoa
-    // (aparecer na busca, pedidos, orçamentos, avaliações — Ciclos 3 e 4).
+    // E-mail confirmado: exigido para criar o perfil e reservar o CPF/CNPJ
+    // (e, nos Ciclos 3 e 4, para busca, pedidos, orçamentos e avaliações)
     function emailConfirmado() { return logado() && request.auth.token.email_verified == true; }
+    function TIPOS_CADASTRO() { return ['cliente-cpf', 'cliente-cnpj', 'prestador']; }
 
-    // Campos que a própria pessoa nunca muda (tipo de conta, documento, selo de destaque...)
+    // Campos que a própria pessoa nunca muda (tipo de conta, documento, selo...)
     function protegidos() {
       return ['tipo', 'documento', 'documentoChave', 'criadoEm', 'tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado', 'cnpjConsulta'];
     }
-    // O botão "destaque" é pago: só o adm liga/desliga
+    // Campos que só o adm coloca
+    function camposAdm() { return ['tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado']; }
+    // TODOS os campos que um perfil pode ter (qualquer outro nome é recusado)
+    function camposPermitidos() {
+      return ['tipo', 'email', 'documento', 'documentoChave', 'criadoEm', 'atualizadoEm',
+              'nome', 'razaoSocial', 'nomeFantasia', 'responsavelNome', 'responsavelCargo', 'tipoEstabelecimento',
+              'contatoNome', 'contatoFuncao', 'contatoTelefone', 'horarioVisitas',
+              'areaAtuacao', 'sobre', 'horario', 'bairrosAtendidos', 'especialidades', 'certificacoes',
+              'anoInicio', 'raioKm', 'emergencia',
+              'telefones', 'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
+              'interruptores', 'compartilharDados', 'compartilharDadosEm', 'autorizacaoExibir',
+              'cnpjConsulta', 'tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado'];
+    }
+
+    // ---------- Conferência dos campos ----------
+    // Texto opcional com no máximo "max" caracteres
+    function texto(d, campo, max) { return !(campo in d) || (d[campo] is string && d[campo].size() <= max); }
+    function booleano(d, campo) { return !(campo in d) || d[campo] is bool; }
+    // Lista de textos: até 20 itens, cada um com no máximo "tam" caracteres
+    function textosAte20(l, tam) {
+      return l is list && l.size() <= 20 &&
+        (l.size() <= 0 || (l[0] is string && l[0].size() <= tam)) &&
+        (l.size() <= 1 || (l[1] is string && l[1].size() <= tam)) &&
+        (l.size() <= 2 || (l[2] is string && l[2].size() <= tam)) &&
+        (l.size() <= 3 || (l[3] is string && l[3].size() <= tam)) &&
+        (l.size() <= 4 || (l[4] is string && l[4].size() <= tam)) &&
+        (l.size() <= 5 || (l[5] is string && l[5].size() <= tam)) &&
+        (l.size() <= 6 || (l[6] is string && l[6].size() <= tam)) &&
+        (l.size() <= 7 || (l[7] is string && l[7].size() <= tam)) &&
+        (l.size() <= 8 || (l[8] is string && l[8].size() <= tam)) &&
+        (l.size() <= 9 || (l[9] is string && l[9].size() <= tam)) &&
+        (l.size() <= 10 || (l[10] is string && l[10].size() <= tam)) &&
+        (l.size() <= 11 || (l[11] is string && l[11].size() <= tam)) &&
+        (l.size() <= 12 || (l[12] is string && l[12].size() <= tam)) &&
+        (l.size() <= 13 || (l[13] is string && l[13].size() <= tam)) &&
+        (l.size() <= 14 || (l[14] is string && l[14].size() <= tam)) &&
+        (l.size() <= 15 || (l[15] is string && l[15].size() <= tam)) &&
+        (l.size() <= 16 || (l[16] is string && l[16].size() <= tam)) &&
+        (l.size() <= 17 || (l[17] is string && l[17].size() <= tam)) &&
+        (l.size() <= 18 || (l[18] is string && l[18].size() <= tam)) &&
+        (l.size() <= 19 || (l[19] is string && l[19].size() <= tam));
+    }
+    function listaTextos(d, campo, maxItens, tam) { return !(campo in d) || (d[campo] is list && d[campo].size() <= maxItens && textosAte20(d[campo], tam)); }
+    // Telefone: { numero: só dígitos (até 11), principal: sim/não }
+    function telefoneOk(t) {
+      return t is map && t.keys().hasOnly(['numero', 'principal'])
+        && t.get('numero', '') is string && t.get('numero', '').matches('^[0-9]{0,11}$')
+        && t.get('principal', false) is bool;
+    }
+    function telefonesOk(d) {
+      return !('telefones' in d) || (d.telefones is list && d.telefones.size() <= MAXIMOS().telefones && telefones5(d.telefones));
+    }
+    function telefones5(l) {
+      return l.size() <= 5 &&
+        (l.size() <= 0 || telefoneOk(l[0])) &&
+        (l.size() <= 1 || telefoneOk(l[1])) &&
+        (l.size() <= 2 || telefoneOk(l[2])) &&
+        (l.size() <= 3 || telefoneOk(l[3])) &&
+        (l.size() <= 4 || telefoneOk(l[4]));
+    }
+    // Horário de visitas: { faixas: [{ dias: [0..6], inicio: 'HH:MM', fim: 'HH:MM' }], obs }
+    function horaOk(h) { return h is string && h.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'); }
+    function diasOk(l) {
+      return l is list && l.size() <= 7 &&
+        (l.size() <= 0 || (l[0] is int && l[0] >= 0 && l[0] <= 6)) &&
+        (l.size() <= 1 || (l[1] is int && l[1] >= 0 && l[1] <= 6)) &&
+        (l.size() <= 2 || (l[2] is int && l[2] >= 0 && l[2] <= 6)) &&
+        (l.size() <= 3 || (l[3] is int && l[3] >= 0 && l[3] <= 6)) &&
+        (l.size() <= 4 || (l[4] is int && l[4] >= 0 && l[4] <= 6)) &&
+        (l.size() <= 5 || (l[5] is int && l[5] >= 0 && l[5] <= 6)) &&
+        (l.size() <= 6 || (l[6] is int && l[6] >= 0 && l[6] <= 6));
+    }
+    function faixaOk(x) {
+      return x is map && x.keys().hasOnly(['dias', 'inicio', 'fim'])
+        && diasOk(x.get('dias', [])) && horaOk(x.get('inicio', '00:00')) && horaOk(x.get('fim', '00:00'));
+    }
+    function faixas3(f) {
+      return f is list && f.size() <= 3 &&
+        (f.size() <= 0 || faixaOk(f[0])) &&
+        (f.size() <= 1 || faixaOk(f[1])) &&
+        (f.size() <= 2 || faixaOk(f[2]));
+    }
+    function horarioVisitasOk(d) {
+      return !('horarioVisitas' in d) || (
+        d.horarioVisitas is map && d.horarioVisitas.keys().hasOnly(['faixas', 'obs'])
+        && faixas3(d.horarioVisitas.get('faixas', [])) && d.horarioVisitas.get('faixas', []).size() <= MAXIMOS().faixasHorario
+        && texto(d.horarioVisitas, 'obs', LIMITES().horarioObs));
+    }
+    // Botões liga/desliga salvos na conta (o "destaque" só o adm liga)
+    function interruptoresOk(d) {
+      return !('interruptores' in d) || (
+        d.interruptores is map
+        && d.interruptores.keys().hasOnly(['localizacao', 'mostrar-contatos', 'compartilhar-dados-cpf', 'destaque'])
+        && booleano(d.interruptores, 'localizacao') && booleano(d.interruptores, 'mostrar-contatos')
+        && booleano(d.interruptores, 'compartilhar-dados-cpf') && booleano(d.interruptores, 'destaque'));
+    }
+    // Resultado da consulta do CNPJ (feita no cadastro do prestador)
+    function cnpjConsultaOk(d) {
+      return !('cnpjConsulta' in d) || (
+        d.cnpjConsulta is map
+        && d.cnpjConsulta.keys().hasOnly(['consultadoEm', 'fonte', 'resultado', 'situacao', 'mei', 'nomeReceita', 'cnaePrincipal', 'cnaesSecundarios'])
+        && texto(d.cnpjConsulta, 'consultadoEm', 30) && texto(d.cnpjConsulta, 'fonte', 30)
+        && texto(d.cnpjConsulta, 'resultado', 20) && texto(d.cnpjConsulta, 'situacao', 40)
+        && booleano(d.cnpjConsulta, 'mei') && texto(d.cnpjConsulta, 'nomeReceita', LIMITES().nomeReceita)
+        && texto(d.cnpjConsulta, 'cnaePrincipal', 10)
+        && listaTextos(d.cnpjConsulta, 'cnaesSecundarios', MAXIMOS().cnaesSecundarios, 10));
+    }
+    // Avaliação (só o adm/servidor grava): { media: 0 a 5, total }
+    function avaliacaoOk(d) {
+      return !('avaliacao' in d) || (
+        d.avaliacao is map && d.avaliacao.keys().hasOnly(['media', 'total'])
+        && (d.avaliacao.get('media', 0) is number) && d.avaliacao.get('media', 0) >= 0 && d.avaliacao.get('media', 0) <= 5
+        && (d.avaliacao.get('total', 0) is int) && d.avaliacao.get('total', 0) >= 0);
+    }
+
+    // PERFIL VÁLIDO: só campos conhecidos, cada um no tipo e tamanho certos
+    function perfilValido(d) {
+      let L = LIMITES();
+      return d.keys().hasOnly(camposPermitidos())
+        && texto(d, 'email', L.email)
+        && texto(d, 'nome', L.nome) && texto(d, 'razaoSocial', L.razaoSocial) && texto(d, 'nomeFantasia', L.nomeFantasia)
+        && texto(d, 'responsavelNome', L.responsavelNome) && texto(d, 'responsavelCargo', L.responsavelCargo)
+        && texto(d, 'tipoEstabelecimento', L.tipoEstabelecimento)
+        && texto(d, 'contatoNome', L.contatoNome) && texto(d, 'contatoFuncao', L.contatoFuncao)
+        && (!('contatoTelefone' in d) || (d.contatoTelefone is string && d.contatoTelefone.matches('^[0-9]{0,11}$')))
+        && texto(d, 'areaAtuacao', L.areaAtuacao) && texto(d, 'sobre', L.sobre) && texto(d, 'horario', L.horario)
+        && texto(d, 'bairrosAtendidos', L.bairrosAtendidos)
+        && listaTextos(d, 'especialidades', MAXIMOS().especialidades, L.especialidade)
+        && listaTextos(d, 'certificacoes', MAXIMOS().certificacoes, L.certificacao)
+        && (!('anoInicio' in d) || (d.anoInicio is string && d.anoInicio.matches('^(|[12][0-9]{3})$')))
+        && (!('raioKm' in d) || (d.raioKm is number && d.raioKm >= 0 && d.raioKm <= MAXIMOS().raioKmMaximo))
+        && booleano(d, 'emergencia')
+        && telefonesOk(d)
+        && (!('cep' in d) || (d.cep is string && d.cep.matches('^[0-9]{0,8}$')))
+        && texto(d, 'endereco', L.endereco) && texto(d, 'numero', L.numero) && texto(d, 'complemento', L.complemento)
+        && texto(d, 'bairro', L.bairro) && texto(d, 'cidade', L.cidade)
+        && (!('uf' in d) || (d.uf is string && d.uf.matches('^([A-Z]{2})?$')))
+        && horarioVisitasOk(d) && interruptoresOk(d)
+        && booleano(d, 'compartilharDados') && texto(d, 'compartilharDadosEm', 30) && booleano(d, 'autorizacaoExibir')
+        && cnpjConsultaOk(d)
+        && listaTextos(d, 'tags', MAXIMOS().tags, L.tag) && avaliacaoOk(d)
+        && (!('servicosAnteriores' in d) || (d.servicosAnteriores is int && d.servicosAnteriores >= 0))
+        && texto(d, 'cargoBase', L.cargoBase) && booleano(d, 'verificado')
+        && (!('criadoEm' in d) || d.criadoEm is timestamp)
+        && (!('atualizadoEm' in d) || d.atualizadoEm is timestamp);
+    }
+
+    // ---------- CPF / CNPJ ----------
+    // Botão do adm "Conferir CPF e CNPJ" (configuracoes/site → conferirDocumentos).
+    // Ligado (ou sem configuração) = confere os dígitos verificadores AQUI NO SERVIDOR.
+    // Desligado = MODO TESTE: aceita qualquer número no formato certo.
+    function conferirDocumentos() {
+      let cfg = /databases/$(database)/documents/configuracoes/site;
+      return !exists(cfg) || get(cfg).data.get('conferirDocumentos', true) != false;
+    }
+    // Dígito verificador: resto da divisão por 11 (0 ou 1 → dígito 0; senão 11 - resto)
+    function dvOk(soma, digito) {
+      return (soma % 11 < 2 && digito == 0) || (soma % 11 >= 2 && digito == 11 - (soma % 11));
+    }
+    function cpfValido(c) {
+      return c.matches('^[0-9]{11}$')
+        && !(c in ['00000000000', '11111111111', '22222222222', '33333333333', '44444444444', '55555555555', '66666666666', '77777777777', '88888888888', '99999999999'])
+        && dvOk(int(c[0]) * 10 + int(c[1]) * 9 + int(c[2]) * 8 + int(c[3]) * 7 + int(c[4]) * 6 + int(c[5]) * 5 + int(c[6]) * 4 + int(c[7]) * 3 + int(c[8]) * 2, int(c[9]))
+        && dvOk(int(c[0]) * 11 + int(c[1]) * 10 + int(c[2]) * 9 + int(c[3]) * 8 + int(c[4]) * 7 + int(c[5]) * 6 + int(c[6]) * 5 + int(c[7]) * 4 + int(c[8]) * 3 + int(c[9]) * 2, int(c[10]));
+    }
+    // CNPJ (também o novo CNPJ com letras, julho/2026): letra vale (código ASCII - 48)
+    function valoresCnpj() {
+      return {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'A': 17, 'B': 18, 'C': 19, 'D': 20, 'E': 21, 'F': 22, 'G': 23, 'H': 24, 'I': 25, 'J': 26, 'K': 27, 'L': 28, 'M': 29, 'N': 30, 'O': 31, 'P': 32, 'Q': 33, 'R': 34, 'S': 35, 'T': 36, 'U': 37, 'V': 38, 'W': 39, 'X': 40, 'Y': 41, 'Z': 42};
+    }
+    function cnpjValido(c) {
+      let v = valoresCnpj();
+      return c.matches('^[0-9A-Z]{12}[0-9]{2}$') && c != '00000000000000'
+        && dvOk(v[c[0]] * 5 + v[c[1]] * 4 + v[c[2]] * 3 + v[c[3]] * 2 + v[c[4]] * 9 + v[c[5]] * 8 + v[c[6]] * 7 + v[c[7]] * 6 + v[c[8]] * 5 + v[c[9]] * 4 + v[c[10]] * 3 + v[c[11]] * 2, v[c[12]])
+        && dvOk(v[c[0]] * 6 + v[c[1]] * 5 + v[c[2]] * 4 + v[c[3]] * 3 + v[c[4]] * 2 + v[c[5]] * 9 + v[c[6]] * 8 + v[c[7]] * 7 + v[c[8]] * 6 + v[c[9]] * 5 + v[c[10]] * 4 + v[c[11]] * 3 + v[c[12]] * 2, v[c[13]]);
+    }
+    // Formato + chave coerente com o tipo de conta
+    function chaveValida(d) {
+      return (d.tipo == 'cliente-cpf' && d.documento is string && d.documento.matches('^[0-9]{11}$') && d.documentoChave == 'cpf-' + d.documento)
+          || (d.tipo in ['cliente-cnpj', 'prestador'] && d.documento is string && d.documento.matches('^[0-9A-Z]{12}[0-9]{2}$') && d.documentoChave == 'cnpj-' + d.documento);
+    }
+    function documentoReal(d) {
+      return !conferirDocumentos()
+        || (d.tipo == 'cliente-cpf' && cpfValido(d.documento))
+        || (d.tipo != 'cliente-cpf' && cnpjValido(d.documento));
+    }
+    // O "destaque" é pago: só o adm liga/desliga
     function destaqueIgual() {
       return (resource.data.get('interruptores', {}).get('destaque', false))
           == (novo().get('interruptores', {}).get('destaque', false));
     }
-    // Chave do documento coerente com o tipo de conta
-    function chaveValida(d) {
-      return (d.tipo == 'cliente-cpf' && d.documentoChave == 'cpf-' + d.documento && d.documento.matches('^[0-9]{11}$'))
-          || (d.tipo in ['cliente-cnpj', 'prestador'] && d.documentoChave == 'cnpj-' + d.documento && d.documento.matches('^[0-9A-Z]{12}[0-9]{2}$'));
-    }
-    // Tamanho máximo de um perfil (evita abuso)
-    function tamanhoOk(d) { return d.size() <= 60; }
 
-    // ---------- usuarios/{uid} ----------
-    match /usuarios/{uid} {
+    // =================================================================
+    // 3. CADASTRO ESPERANDO CONFIRMAÇÃO DO E-MAIL
+    // =================================================================
+    match /cadastrosPendentes/{uid} {
       allow read: if eDono(uid) || ehAdm();
-
-      // Criar: só a própria conta, tipo permitido, e-mail igual ao do login,
-      // sem campos de adm, e reservando o CPF/CNPJ no MESMO envio.
-      allow create: if eDono(uid)
-        && novo().tipo in ['cliente-cpf', 'cliente-cnpj', 'prestador']
-        && novo().email == request.auth.token.email
-        && chaveValida(novo())
-        && !novo().keys().hasAny(['tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado'])
-        && novo().get('interruptores', {}).get('destaque', false) == false
-        && tamanhoOk(novo())
-        && getAfter(/databases/$(database)/documents/documentos/$(novo().documentoChave)).data.uid == uid;
-
-      // Editar: a própria pessoa (sem mexer nos protegidos; e-mail só igual ao do login)
-      //         ou o adm (pode mexer em tudo, menos tipo e documento).
-      allow update: if (eDono(uid)
-          && !mudou().hasAny(protegidos())
-          && (!mudou().hasAny(['email']) || novo().email == request.auth.token.email)
-          && destaqueIgual()
-          && tamanhoOk(novo()))
-        || (ehAdm() && !mudou().hasAny(['tipo', 'documento', 'documentoChave']));
-
-      // Excluir: a própria pessoa (botão "Excluir perfil") ou o adm
+      allow create, update: if eDono(uid)
+        && novo().keys().hasOnly(['dados', 'criadoEm'])
+        && novo().criadoEm == request.time
+        && novo().dados is map
+        && novo().dados.get('tipo', '') in TIPOS_CADASTRO()
+        && novo().dados.size() <= 40
+        && !novo().dados.keys().hasAny(camposAdm())
+        && !novo().dados.keys().hasAny(['documentoChave', 'criadoEm', 'atualizadoEm'])
+        && novo().dados.get('interruptores', {}).get('destaque', false) == false
+        && perfilValido(novo().dados);
       allow delete: if eDono(uid) || ehAdm();
     }
 
-    // ---------- documentos/{chave} (CPF/CNPJ único) ----------
+    // =================================================================
+    // 4. PERFIS — usuarios/{uid}
+    // =================================================================
+    match /usuarios/{uid} {
+      allow read: if eDono(uid) || ehAdm();
+
+      // Criar: só a própria conta, com E-MAIL CONFIRMADO, tipo permitido, e-mail igual ao do login,
+      // CPF/CNPJ real (se a conferência estiver ligada), sem campos de adm, e reservando o
+      // documento NO MESMO ENVIO (reserva nova, com o mesmo tipo de conta).
+      allow create: if eDono(uid)
+        && emailConfirmado()
+        && novo().tipo in TIPOS_CADASTRO()
+        && novo().email == request.auth.token.email
+        && chaveValida(novo())
+        && documentoReal(novo())
+        && !novo().keys().hasAny(camposAdm())
+        && novo().get('interruptores', {}).get('destaque', false) == false
+        && novo().criadoEm == request.time
+        && perfilValido(novo())
+        && !exists(reserva(novo().documentoChave))
+        && getAfter(reserva(novo().documentoChave)).data.uid == uid
+        && getAfter(reserva(novo().documentoChave)).data.tipo == novo().tipo;
+
+      // Editar: a própria pessoa (sem mexer nos protegidos; e-mail só igual ao do login)
+      //         ou o adm (pode mexer em tudo, menos tipo, documento e data de criação).
+      // Nos dois casos o perfil continua com campos conhecidos e tamanhos certos.
+      allow update: if perfilValido(novo()) && (
+          (eDono(uid)
+            && !mudou().hasAny(protegidos())
+            && (!mudou().hasAny(['email']) || novo().email == request.auth.token.email)
+            && (!mudou().hasAny(['atualizadoEm']) || novo().atualizadoEm == request.time)
+            && destaqueIgual())
+          || (ehAdm() && !mudou().hasAny(['tipo', 'documento', 'documentoChave', 'criadoEm'])));
+
+      // Excluir: só JUNTO com a reserva do CPF/CNPJ (botão "Excluir perfil"), ou o adm.
+      // Impede apagar só o perfil e recriar com outro tipo usando a reserva antiga.
+      allow delete: if ehAdm()
+        || (eDono(uid) && !existsAfter(reserva(resource.data.documentoChave)));
+    }
+
+    // =================================================================
+    // 5. RESERVA DO CPF/CNPJ — documentos/{chave}
+    // =================================================================
     match /documentos/{chave} {
       allow read: if ehAdm();
-      // Criar a reserva só junto com o próprio perfil. Se a chave já existir,
-      // vira "alterar" → negado → o site mostra "CPF/CNPJ já cadastrado".
-      allow create: if logado()
+      // Criar a reserva só junto com o próprio perfil novo, com o mesmo tipo de conta.
+      // Se a chave já existir, vira "alterar" → negado → o site mostra "CPF/CNPJ já cadastrado".
+      allow create: if emailConfirmado()
+        && novo().keys().hasOnly(['uid', 'tipo', 'criadoEm'])
         && novo().uid == request.auth.uid
-        && novo().keys().hasOnly(['uid', 'criadoEm'])
-        && getAfter(usuario(request.auth.uid)).data.documentoChave == chave;
+        && novo().criadoEm == request.time
+        && getAfter(usuario(request.auth.uid)).data.documentoChave == chave
+        && getAfter(usuario(request.auth.uid)).data.tipo == novo().tipo;
       allow update: if false;
       // Dono só apaga a reserva JUNTO com o próprio perfil (botão "Excluir perfil")
       allow delete: if ehAdm()
         || (logado() && resource.data.uid == request.auth.uid && !existsAfter(usuario(request.auth.uid)));
     }
 
-    // ---------- configuracoes/site (configurações gerais) ----------
+    // =================================================================
+    // 6. CONFIGURAÇÕES DO SITE — configuracoes/site
+    // =================================================================
     // Leitura pública: o cadastro precisa saber se confere CPF/CNPJ. Nada sigiloso aqui.
     match /configuracoes/{id} {
       allow read: if true;
-      allow write: if ehAdm();
+      allow write: if ehAdm() && id == 'site'
+        && novo().keys().hasOnly(['conferirDocumentos', 'atualizadoEm'])
+        && booleano(novo(), 'conferirDocumentos');
     }
   }
 }
