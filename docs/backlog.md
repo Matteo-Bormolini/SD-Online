@@ -47,7 +47,7 @@ Hoje (11/11/2026): **contas reais** (cadastro, login, perfil, nova senha) pelo F
 - [x] US58 Cadastro que parou no meio é apagado/reaproveitado sozinho (11/11).
 - [x] US59 Padrão de e-mail confirmado + aviso em todas as páginas (11/11).
 - [x] Arquivos da v0.7.0-alpha.2 levados para as pastas certas; README principal restaurado (11/11).
-- [ ] **Marco:** política de senha do Firebase em "Exigir" (6 a 128), publicar regras novas, testes do roteiro de fechamento, Release **v0.7.5**.
+- [x] **Marco:** política de senha do Firebase em "Exigir" (6 a 128), publicar regras novas, testes do roteiro de fechamento, Release **v0.7.5**.
 - ~~Sessão em cookie protegido (HttpOnly)~~ → **pausado** (precisa de servidor pago). Ver "Pós-MVP · precisa pagar".
 
 ### ⬜ Depois (na ordem)
