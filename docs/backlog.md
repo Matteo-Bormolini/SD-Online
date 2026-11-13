@@ -33,7 +33,7 @@ Hoje (11/11/2026): **contas reais** (cadastro, login, perfil, nova senha) pelo F
 - [x] Domínio .com.br antes do Ciclo 2: **não**. No 1º ano fica o endereço grátis; o .com.br (~R$ 40/ano) só se o projeto der resultado (09/11).
 - ✅ **Ciclo 1 concluído em 11/11/2026 → v0.6.0.**
 
-### 🟡 Agora — Ciclo 2 · Contas reais (v0.7.5)
+### ✅ Ciclo 2 · Contas reais (v0.7.5)
 > Versão de fechamento: **v0.7.5** (decisão do Marco, 11/11). O Ciclo 3 continua sendo a v0.8.0.
 - [x] US03 Cadastro real (Cliente CPF, Cliente CNPJ, Prestador) — CPF/CNPJ único (11/11).
 - [x] US04 Login real (senha conferida pelo Firebase) + bloqueio temporário do próprio Firebase após muitas tentativas (11/11).
@@ -47,8 +47,8 @@ Hoje (11/11/2026): **contas reais** (cadastro, login, perfil, nova senha) pelo F
 - [x] US58 Cadastro que parou no meio é apagado/reaproveitado sozinho (11/11).
 - [x] US59 Padrão de e-mail confirmado + aviso em todas as páginas (11/11).
 - [x] Arquivos da v0.7.0-alpha.2 levados para as pastas certas; README principal restaurado (11/11).
-- [x] **Marco:** política de senha do Firebase em "Exigir" (6 a 128), publicar regras novas, testes do roteiro de fechamento, Release **v0.7.5**.
-- ~~Sessão em cookie protegido (HttpOnly)~~ → **pausado** (precisa de servidor pago). Ver "Pós-MVP · precisa pagar".
+- [x] Política de senha do Firebase em "Exigir" (6 a 128) e regras novas publicadas (12/11 e 13/11).
+- [x] Segurança do banco: cadastro em 2 passos, dígitos do CPF/CNPJ, limites por campo, CSP (v0.7.6, 13/11).
 
 ### ⬜ Depois (na ordem)
 - **Ciclo 3 · Encontrar e pedir (v0.8.0):** US11 real, US13, US14, US15, US24 (pedidos reais em A orçar). **Decidir a Home do prestador no fim do Ciclo 3 (US46).** ⚠️ **Decidir antes:** fotos do pedido (3 obrigatórias) precisam de lugar grátis para guardar (o Cloud Storage é pago).
