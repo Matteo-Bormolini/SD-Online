@@ -7,7 +7,12 @@ A "vitrine" do prestador e a sua ferramenta de trabalho (quadro de serviços).
 - **Clientes:** só a versão pública (sem endereço completo e sem o quadro).
 
 ## Aba Perfil
-- Logo **obrigatória**, sobre a empresa, especialidades, certificações, região e horário de atendimento.
+- Logo **obrigatória** (salva de verdade, reduzida), sobre a empresa, certificações.
+- **Atividades secundárias:** escolhidas da lista (sem repetir, até 8). O cliente vê o aviso de possível taxa adicional.
+- **Início das atividades:** lista de 1975 até o ano atual. **Horário de atendimento:** dias + horas (componente `datahora`).
+- **Região:** distância + cidades da lista oficial do IBGE (até 20).
+- **Avisos no topo:** "Finalize seu cadastro" (esquerda) e "Urgente: logo" (direita). Somem quando não há pendência.
+- O cartão público (**vitrine**) é atualizado sozinho ao abrir/salvar o perfil.
 - Fotos de trabalhos (opcional, até 12) e avaliações (sempre anônimas, salvo autorização).
 - **Linha das abas (à direita):** botões **Mostrar meus contatos** e **Localização**.
   - *Mostrar meus contatos* (começa ligado): o cliente vê telefone e e-mail, e os botões **WhatsApp** e **Ligar** funcionam. Desligado: botões cinza "liberado após o orçamento" e um aviso de que fica mais difícil ser contratado.
@@ -28,7 +33,7 @@ A "vitrine" do prestador e a sua ferramenta de trabalho (quadro de serviços).
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `perfil-prestador.css` / `perfil-prestador.js` | Página, visual e dados de demonstração. |
+| `index.html` / `perfil-prestador.css` / `perfil-prestador.js` | Página, visual e regras (dados reais da conta). |
 | Quadro | `componentes/kanban-servicos/` |
 
 ## Situação

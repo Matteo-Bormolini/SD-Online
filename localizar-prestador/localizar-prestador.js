@@ -13,8 +13,11 @@
      - WhatsApp só aparece se o prestador ativar "Mostrar meu WhatsApp
        na busca"; se não, botão cinza "liberado após o orçamento".
      - Sem botões de rota (Maps/Waze): o mapa basta.
-   ATENÇÃO: em produção a lista vem do SERVIDOR, já filtrada e com a
-   distância calculada lá (o endereço exato do cliente não sai do servidor).
+   DADOS REAIS (v0.7.9, sem fictícios): a lista vem da VITRINE dos prestadores
+   (firebase.js → listarPrestadores). O ponto do cliente vem do PERFIL (endereço)
+   ou, se ele tocar em "Usar minha localização atual", do GPS do aparelho
+   (pede permissão; o GPS NÃO é salvo em lugar nenhum). A distância é em linha reta.
+   O ponto público do prestador é aproximado (~110 m), protegendo quem trabalha em casa.
    ===================================================================== */
 (function () {
   "use strict";
@@ -30,41 +33,14 @@
     larguraComputador: "(min-width: 62rem)"      // a partir daqui, lista e mapa ficam lado a lado
   };
 
-  /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
-     Substituir pela resposta da API, por exemplo:
-       GET /api/prestadores?categoria=eletrica
-     O servidor devolve SÓ prestadores com localização ativa, a distância já
-     calculada e o WhatsApp apenas de quem liberou. Nomes e números fictícios. */
-  const DEMO = {
-    // Cliente logado: ponto do endereço do cadastro (o servidor calcula a partir do perfil).
-    // Para testar sem localização: abra a página com ?localizacao=desativada
-    cliente: { localizacaoAtiva: true, lat: -23.5614, lng: -46.6559 },
-    prestadores: [
-      { id: "p1",  nome: "Alfa Elétrica",           categorias: ["eletrica"],                   servicos: ["Quadros elétricos", "Tomadas e interruptores", "Iluminação", "Aterramento", "Laudo NR-10"], bairro: "Centro",         lat: -23.5489, lng: -46.6388, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000001", tags: ["destaque"] },
-      { id: "p7",  nome: "Volt Instalações",        categorias: ["eletrica"],                   servicos: ["Iluminação", "Tomadas e interruptores"],                    bairro: "Consolação",     lat: -23.5530, lng: -46.6600, localizacaoAtiva: true,  whatsappPublico: false, whatsapp: "11920000007", tags: [] },
-      { id: "p8",  nome: "Circuito Certo",          categorias: ["eletrica", "reparos"],        servicos: ["Quadros elétricos", "Padrão de entrada", "Pequenos reparos"], bairro: "Pinheiros",      lat: -23.5670, lng: -46.6930, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000008", tags: [] },
-      { id: "p9",  nome: "Luz & Cia",               categorias: ["eletrica"],                   servicos: ["Iluminação de áreas comuns", "Sensores de presença"],        bairro: "Vila Mariana",   lat: -23.5890, lng: -46.6340, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000009", tags: [] },
-      { id: "p10", nome: "Energia Sul",             categorias: ["eletrica"],                   servicos: ["Geradores", "Quadros elétricos"],                            bairro: "Moema",          lat: -23.6010, lng: -46.6650, localizacaoAtiva: false, whatsappPublico: true,  whatsapp: "11920000010", tags: [] },
-      { id: "p2",  nome: "Beta Hidráulica",         categorias: ["hidraulica"],                 servicos: ["Vazamentos", "Caça-vazamento", "Bombas de recalque", "Caixa d'água"], bairro: "Vila Nova Conceição", lat: -23.5880, lng: -46.6700, localizacaoAtiva: true, whatsappPublico: true, whatsapp: "11920000002", tags: [] },
-      { id: "p11", nome: "Fluxo Encanamentos",      categorias: ["hidraulica"],                 servicos: ["Desentupimento", "Troca de registros"],                      bairro: "Santa Cecília",  lat: -23.5370, lng: -46.6510, localizacaoAtiva: true,  whatsappPublico: false, whatsapp: "11920000011", tags: ["destaque"] },
-      { id: "p12", nome: "Gota Zero",               categorias: ["hidraulica", "infiltracao"],  servicos: ["Caça-vazamento", "Impermeabilização de reservatórios"],     bairro: "Perdizes",       lat: -23.5360, lng: -46.6770, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000012", tags: [] },
-      { id: "p3",  nome: "Gama Impermeabilizações", categorias: ["infiltracao"],                servicos: ["Lajes", "Telhados e calhas", "Paredes", "Garagens"],          bairro: "Jardim América", lat: -23.5770, lng: -46.6800, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000003", tags: [] },
-      { id: "p13", nome: "Telhado Firme",           categorias: ["infiltracao", "reparos"],     servicos: ["Telhados", "Calhas e rufos"],                                bairro: "Aclimação",      lat: -23.5720, lng: -46.6300, localizacaoAtiva: true,  whatsappPublico: false, whatsapp: "11920000013", tags: [] },
-      { id: "p6",  nome: "Zeta Pinturas",           categorias: ["pintura"],                    servicos: ["Pintura interna", "Fachadas", "Textura", "Grafiato", "Verniz"], bairro: "Mooca",          lat: -23.5590, lng: -46.5990, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000006", tags: [] },
-      { id: "p14", nome: "Cor Viva Acabamentos",    categorias: ["pintura"],                    servicos: ["Pintura interna", "Massa corrida"],                           bairro: "Bela Vista",     lat: -23.5580, lng: -46.6450, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000014", tags: ["destaque"] },
-      { id: "p15", nome: "Pincel de Ouro",          categorias: ["pintura"],                    servicos: ["Fachadas", "Pintura de garagens"],                            bairro: "Lapa",           lat: -23.5220, lng: -46.7040, localizacaoAtiva: true,  whatsappPublico: false, whatsapp: "11920000015", tags: [] },
-      { id: "p4",  nome: "Delta Climatização",      categorias: ["climatizacao"],               servicos: ["Instalação", "Limpeza e higienização", "Reparo", "PMOC"],     bairro: "Bela Vista",     lat: -23.5600, lng: -46.6500, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000004", tags: ["destaque"] },
-      { id: "p16", nome: "Polar Refrigeração",      categorias: ["climatizacao"],               servicos: ["Limpeza e higienização", "Carga de gás"],                    bairro: "Itaim Bibi",     lat: -23.5850, lng: -46.6780, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000016", tags: [] },
-      { id: "p5",  nome: "Épsilon Portões",         categorias: ["portoes"],                    servicos: ["Motores de portão", "Fechaduras", "Interfones"],             bairro: "Santa Cecília",  lat: -23.5400, lng: -46.6530, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000005", tags: [] },
-      { id: "p17", nome: "Acesso Seguro",           categorias: ["portoes", "monitoramento"],   servicos: ["Interfones", "Controle de acesso", "Câmeras"],               bairro: "Liberdade",      lat: -23.5580, lng: -46.6350, localizacaoAtiva: true,  whatsappPublico: false, whatsapp: "11920000017", tags: [] },
-      { id: "p18", nome: "Olho Vivo CFTV",          categorias: ["monitoramento"],              servicos: ["Câmeras", "Gravadores (DVR/NVR)", "TVs de monitoramento"],   bairro: "Paraíso",        lat: -23.5760, lng: -46.6410, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000018", tags: ["destaque"] },
-      { id: "p19", nome: "Faz Tudo Reparos",        categorias: ["reparos"],                    servicos: ["Alvenaria", "Marcenaria", "Serralheria", "Pequenos reparos"], bairro: "Cambuci",        lat: -23.5660, lng: -46.6200, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000019", tags: [] },
-      { id: "p20", nome: "Casa Equipada",           categorias: ["equipamentos"],               servicos: ["TVs de monitoramento", "Bombas d'água", "Motores de portão"], bairro: "Brás",           lat: -23.5440, lng: -46.6160, localizacaoAtiva: true,  whatsappPublico: true,  whatsapp: "11920000020", tags: [] }
-    ]
-  };
+  /* ---------- 2. CONEXÃO (firebase/firebase.js) ---------- */
+  const firebase = () => (window.SDFirebase ? Promise.resolve(window.SDFirebase) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDFirebase), 8000);
+    document.addEventListener("sd:firebase-pronto", () => { clearTimeout(t); ok(window.SDFirebase); }, { once: true });
+  }));
 
   /* ---------- 3. DISTÂNCIA (linha reta, em km) ----------
-     Fórmula de Haversine. Em produção, o cálculo é feito no servidor. */
+     Fórmula de Haversine (calculada no aparelho do cliente). */
   function distanciaKm(a, b) {
     const rad = (g) => (g * Math.PI) / 180;
     const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
@@ -73,30 +49,38 @@
   }
   const km = (n) => `${Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km`;
 
-  /* ---------- 4. "SERVIDOR" DE DEMONSTRAÇÃO ----------
-     Faz o que a API fará: filtra, esconde dados não liberados, calcula e ordena. */
-  function lerCliente() {
-    // Demonstração: vale o ?localizacao=desativada OU o botão "Localização" desligado no perfil
-    const peloBotao = window.SD_INTERRUPTORES ? !window.SD_INTERRUPTORES.ler("localizacao") : false;
-    const desativada = C.modoDemonstracao && (new URLSearchParams(location.search).get("localizacao") === "desativada" || peloBotao);
-    return desativada ? { localizacaoAtiva: false } : DEMO.cliente;
+  /* ---------- 4. DADOS REAIS ----------
+     Cliente: ponto do perfil, se a Localização estiver ligada no perfil. */
+  async function lerCliente() {
+    const F = await firebase();
+    const eu = F && F.meusDados ? await F.meusDados().catch(() => null) : null;
+    const ligada = !(eu && eu.interruptores && eu.interruptores.localizacao === false);
+    if (!eu || !ligada) return { localizacaoAtiva: false, motivo: "desligada" };
+    if (!eu.local) return { localizacaoAtiva: false, motivo: "sem-ponto" };
+    return { localizacaoAtiva: true, lat: eu.local.lat, lng: eu.local.lng, origem: "perfil" };
   }
 
-  function buscarPrestadores(categoria, cliente) {
+  async function buscarPrestadores(categoria, cliente) {
+    const F = await firebase();
+    let vitrine = [];
+    try { vitrine = F && F.listarPrestadores ? await F.listarPrestadores(categoria) : []; }
+    catch (e) { console.warn("[S.D] Lista de prestadores:", e.code || e); throw e; }
     const comLocal = cliente.localizacaoAtiva;
-    const lista = DEMO.prestadores
-      .filter((p) => p.localizacaoAtiva && p.categorias.includes(categoria))   // localização desligada = não aparece
+    const lista = vitrine
+      .filter((p) => p.localizacao && typeof p.lat === "number" && typeof p.lng === "number" && p.nome)   // localização desligada = não aparece
       .map((p) => ({
-        id: p.id, nome: p.nome, logo: p.logo || null, servicos: p.servicos.slice(),
-        bairro: p.bairro, lat: p.lat, lng: p.lng, tags: p.tags.slice(),
-        whatsapp: p.whatsappPublico ? p.whatsapp : null,                        // número só de quem liberou
+        id: p.id, nome: p.nome, logo: p.foto || null,
+        servicos: [p.areaAtuacao, ...(p.especialidades || [])].filter(Boolean),
+        secundarias: (p.especialidades || []).length > 0,
+        bairro: [p.bairro, p.cidade].filter(Boolean).join(", "), lat: p.lat, lng: p.lng, tags: [],
+        whatsapp: p.whatsapp || null,                                           // só vem de quem liberou
         distancia: comLocal ? distanciaKm(cliente, p) : null
       }));
     // Ordem: distância (com localização) ou alfabética (sem). Destaque NÃO muda a ordem.
     lista.sort(comLocal
       ? (a, b) => a.distancia - b.distancia
       : (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
-    return Promise.resolve(lista);
+    return lista;
   }
 
   /* ---------- 5. ESTADO DA PÁGINA ---------- */
@@ -112,9 +96,12 @@
     colunaMapa: document.querySelector(".coluna-mapa"),
     cartao: document.getElementById("cartao-prestador"),
     aviso: document.getElementById("aviso-localizacao"),
-    linkAtivar: document.getElementById("link-ativar-localizacao")
+    avisoTexto: document.getElementById("aviso-localizacao-texto"),
+    linkAtivar: document.getElementById("link-ativar-localizacao"),
+    gps: document.getElementById("btn-gps"),
+    gpsMsg: document.getElementById("msg-gps")
   };
-  const estado = { cliente: lerCliente(), categoria: null, lista: [], selecionado: null, mapa: null, mapaPromessa: null };
+  const estado = { cliente: { localizacaoAtiva: false }, categoria: null, lista: [], selecionado: null, mapa: null, mapaPromessa: null };
   const suave = () => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 
   // Guarda a escolha no endereço da página (ao voltar do perfil, tudo continua igual)
@@ -144,12 +131,13 @@
     estado.selecionado = null;
     el.setores.querySelectorAll(".setor").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.categoria === id)));
 
-    estado.lista = await buscarPrestadores(id, estado.cliente);
+    try { estado.lista = await buscarPrestadores(id, estado.cliente); }
+    catch (_) { estado.lista = []; el.vazia.textContent = "Não foi possível carregar a lista agora. Confira a internet e tente de novo."; }
     const n = estado.lista.length;
     el.titulo.textContent = `${categoria.nome} · ${n} ${n === 1 ? "prestador" : "prestadores"}`;
     el.dica.textContent = estado.cliente.localizacaoAtiva
-      ? "Do mais perto ao mais longe. Toque em um prestador para ver no mapa."
-      : "Em ordem alfabética (localização desativada). Toque em um prestador para ver no mapa.";
+      ? `Do mais perto ao mais longe (${estado.cliente.origem === "gps" ? "da sua localização atual" : "do endereço do seu perfil"}). Toque em um prestador para ver no mapa.`
+      : "Em ordem alfabética (sem a sua localização). Toque em um prestador para ver no mapa.";
     renderizarLista();
     renderizarCartao(null);
 
@@ -169,7 +157,7 @@
   /* ---------- 7. LISTA DE PRESTADORES ---------- */
   const iniciais = (nome) => nome.split(/\s+/).filter((p) => /[A-Za-zÀ-ú]/.test(p)).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
   const logo = (p, classe) => p.logo
-    ? `<img class="${classe}" src="${esc(SD.caminho(p.logo))}" alt="" width="56" height="56" loading="lazy">`
+    ? `<img class="${classe}" src="${esc(p.logo)}" alt="" width="56" height="56" loading="lazy">`
     : `<span class="${classe}" aria-hidden="true">${esc(iniciais(p.nome))}</span>`;
   const atributoDestaque = (p) => (SD.ehDestaque(p) ? ` data-tag="${esc(C.destaque.tag)}"` : "");
   const etiquetaDestaque = (p) => (SD.ehDestaque(p) ? `<span class="tag-destaque">${esc(C.destaque.rotulo)}</span>` : "");
@@ -233,6 +221,7 @@
         ${visiveis.map((s) => `<li>${esc(s)}</li>`).join("")}
         ${resto > 0 ? `<li class="cartao-mais" title="${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}">+${resto}<span class="visualmente-oculto"> serviços: ${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}</span></li>` : ""}
       </ul>
+      ${p.secundarias ? `<p class="nota cartao-aviso">${esc(C.avisoSecundarias)}</p>` : ""}
       <div class="cartao-acoes">
         ${whatsapp}
         <a class="btn btn-orcamento" href="${esc(perfil)}">Fazer orçamento<span class="visualmente-oculto"> com ${esc(p.nome)}</span></a>
@@ -275,14 +264,42 @@
     }
   }
 
-  /* ---------- 10. INÍCIO ---------- */
-  function iniciar() {
-    // Aviso de localização desativada (link leva ao perfil do próprio tipo de conta)
-    if (!estado.cliente.localizacaoAtiva) {
-      el.aviso.hidden = false;
-      el.linkAtivar.href = SD.urlPerfil();
-    }
+  /* ---------- 10. LOCALIZAÇÃO DO CLIENTE (perfil ou GPS) ---------- */
+  function mostrarAvisoLocal() {
+    const c = estado.cliente;
+    el.aviso.hidden = c.localizacaoAtiva;
+    if (c.localizacaoAtiva) return;
+    el.avisoTexto.textContent = c.motivo === "sem-ponto"
+      ? "Ainda não encontramos o ponto do seu endereço no mapa. Confira o CEP e o número no perfil ou use a localização atual."
+      : "Sua localização está desativada no perfil. A lista aparece em ordem alfabética, sem distância.";
+    el.linkAtivar.href = SD.urlPerfil();
+  }
+  // GPS do aparelho: pede permissão; vale só nesta página (não é salvo)
+  function usarGps() {
+    if (!("geolocation" in navigator)) { el.gpsMsg.textContent = "Este aparelho não informa a localização."; return; }
+    el.gps.disabled = true;
+    el.gpsMsg.textContent = "Procurando sua localização…";
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      estado.cliente = { localizacaoAtiva: true, lat: pos.coords.latitude, lng: pos.coords.longitude, origem: "gps" };
+      el.gps.disabled = false;
+      el.gpsMsg.textContent = "Usando sua localização atual (não fica salva).";
+      mostrarAvisoLocal();
+      if (estado.mapa) estado.mapa.marcarUsuario(estado.cliente);
+      if (estado.categoria) await escolherCategoria(estado.categoria, { prestador: estado.selecionado });
+    }, (erro) => {
+      el.gps.disabled = false;
+      el.gpsMsg.textContent = erro.code === 1
+        ? "Permissão negada. Para usar, libere a localização deste site no navegador."
+        : "Não foi possível obter a localização agora. Tente de novo.";
+    }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 });
+  }
+
+  /* ---------- 11. INÍCIO ---------- */
+  async function iniciar() {
     montarSetores();
+    el.gps.addEventListener("click", usarGps);
+    estado.cliente = await lerCliente();
+    mostrarAvisoLocal();
     // Chegou com um tipo escolhido (Home ou voltando do perfil do prestador)
     const params = new URLSearchParams(location.search);
     const categoria = params.get("categoria");

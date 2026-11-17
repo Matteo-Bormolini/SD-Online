@@ -32,7 +32,7 @@
 
   /* ---------- 2. ESTADO (memória da página; não usa armazenamento) ---------- */
   const estado = {
-    senha: { etapa: "email", email: "", liberaReenvioEm: 0, linkDemo: "" },
+    senha: { etapa: "email", email: "", liberaReenvioEm: 0, },
     nova:  { etapa: "verificando", token: "" },
     login: { etapa: "escolha", resultado: "" }       // resultado: "", "documento" ou "email"
   };
@@ -103,8 +103,6 @@
       $("[data-cancelar]", p).hidden = e.etapa === "email" && !$("#ps-email").value.trim();
       if (e.etapa === "enviado") {
         U.mostrarMensagem($("#msg-ps-enviado"), "sucesso", REC.MENSAGENS.ENVIADO);
-        $("#ps-demo").hidden = !e.linkDemo;
-        if (e.linkDemo) $("#ps-link-demo").href = e.linkDemo;
         contarEspera();
       }
     }
@@ -162,14 +160,13 @@
     e.email = email;
     e.etapa = "enviado";
     e.liberaReenvioEm = Date.now() + CONFIG.esperaReenvioSeg * 1000;
-    e.linkDemo = r.linkDemonstracao || "";
     atualizar("senha");
     if (origem === "reenviar") U.mostrarMensagem(msg, "sucesso", "Pedido enviado de novo. Só o link mais recente funciona.");
     else $("#btn-ps-reenviar").focus();
   }
 
   function recomecarSenha() {
-    estado.senha = { etapa: "email", email: "", liberaReenvioEm: estado.senha.liberaReenvioEm, linkDemo: "" };  // a espera continua valendo
+    estado.senha = { etapa: "email", email: "", liberaReenvioEm: estado.senha.liberaReenvioEm };  // a espera continua valendo
     $("#form-senha-email").reset();
     erroCampo($("#ps-email"), "");
     [$("#msg-ps-email"), $("#msg-ps-reenviar")].forEach(U.limparMensagem);
@@ -328,13 +325,6 @@
     $("#form-senha-email").addEventListener("submit", (ev) => { ev.preventDefault(); pedirLink("pedir"); });
     $("#ps-email").addEventListener("input", () => { erroCampo($("#ps-email"), ""); atualizar("senha"); });
     $("#btn-ps-reenviar").addEventListener("click", () => pedirLink("reenviar"));
-    // Demonstração: o link abre aqui mesmo (como se viesse do e-mail)
-    $("#ps-link-demo").addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const token = (estado.senha.linkDemo.split("#redefinir=")[1] || "");
-      popups.senha.close();
-      abrirLinkDeSenha(token);
-    });
 
     // Fluxo 2
     $("#pn-dica").textContent = SENHA.DICA;
@@ -343,10 +333,6 @@
     $("#form-nova-senha").addEventListener("submit", salvarNovaSenha);
     ["#pn-senha", "#pn-senha2"].forEach((s) => $(s).addEventListener("input", (e) => erroCampo(e.target, "")));
     $("#btn-pn-novo-link").addEventListener("click", () => { recomecarNova(); popups.nova.close(); abrir("senha"); });
-    if (REC.ehDemonstracao()) {
-      $("#pn-demo").hidden = false;
-      $("#pn-senha-atual-demo").textContent = REC.senhaAtualDemonstracao;
-    }
 
     // Fluxo 3
     $$(".opcao-acesso", popups.login).forEach((b) => b.addEventListener("click", () => escolherOpcao(b.dataset.opcao)));

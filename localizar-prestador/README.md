@@ -13,6 +13,7 @@ O cliente escolhe o tipo de serviço e vê os prestadores daquela área, do mais
 4. Destaque: contorno vermelho e etiqueta. **Não** sobe na lista.
 
 ## Regras
+- Dados reais (v0.7.9): prestadores da **vitrine** (cartão público). Ponto do cliente = endereço do perfil ou **Usar minha localização atual** (GPS, pede permissão, não é salvo).
 - Prestador com o botão **Localização** desligado: não aparece.
 - Cliente com o botão **Localização** desligado: lista em ordem alfabética, com aviso.
 - WhatsApp só aparece se o prestador deixar **Mostrar meus contatos** ligado. Senão, botão cinza "liberado após o orçamento".
@@ -20,11 +21,11 @@ O cliente escolhe o tipo de serviço e vê os prestadores daquela área, do mais
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `localizar-prestador.css` / `localizar-prestador.js` | Página, visual e regras (dados de demonstração). |
+| `index.html` / `localizar-prestador.css` / `localizar-prestador.js` | Página, visual e regras (dados reais). |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-- 🟡 Tela pronta (US11, US20).
-- ⬜ Dados reais do servidor — **Ciclo 3**.
+- ✅ Tela pronta (US11, US20) com dados reais e GPS (v0.7.9).
+- ⬜ Botão "Pedir orçamento" grava o pedido — **Ciclo 3**.
 - ⬜ Filtros por nome e avaliação — depois do MVP (US12).

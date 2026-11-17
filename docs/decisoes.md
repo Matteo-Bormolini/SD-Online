@@ -4,6 +4,20 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 17/11/2026 — v0.7.9 (testes do Marco com contas reais)
+- **Sem dados fictícios** em nenhuma página (perfis, Home, busca, mapa, login, recuperação de senha). Modo demonstração retirado do código.
+- **Regras do banco organizadas por área**, com título padrão (`Perfil_CPF: Editar`, `Cadastro_CNPJ: Criar`…). Cada tipo de conta edita só os próprios campos.
+- **Aceito:** nomes com números; "Sobre" com espaços.
+- **Bloqueado:** especialidade repetida (vira lista sem repetição), horário em texto livre (vira dias + horas), ano livre (lista de 1975 até o ano atual).
+- **Especialidades = "Atividades secundárias"**, escolhidas da lista única de serviços (`configuracoes/config.js`). O cliente vê o aviso: podem ter taxa complementar/adicional, combinada direto com o prestador.
+- **Região de atendimento:** distância + cidades escolhidas da lista oficial do IBGE (grátis, sem chave).
+- **datahora:** um só componente para todo campo de data/hora (digitar, rodinhas, calendário).
+- **Horário de visitas do CNPJ é opcional.**
+- **Avisos do topo:** "Finalize seu cadastro" (esquerda) + "Urgente: logo" (direita, prestador); somem quando não há pendência.
+- **Foto de perfil:** reduzida para 256 px no navegador e salva no próprio perfil (o Cloud Storage é pago). Fotos de trabalhos/local continuam só na tela.
+- **Mapa:** endereço → ponto pelo Nominatim (OpenStreetMap, grátis; 1 pedido por segundo, só quando o endereço muda). Cliente: ponto do perfil ou GPS (com permissão, não salvo). Ponto público do prestador aproximado (~110 m). Prestador com localização desligada não aparece.
+- **Vitrine:** cópia pública do prestador (coleção `vitrine`) que só clientes e o adm leem; outro prestador não lê.
+
 ### 13/11/2026 — segurança do banco (v0.7.6)
 - **Cadastro em 2 passos:** preenche tudo → recebe o link → ao clicar, o perfil e a reserva do CPF/CNPJ são criados. Antes de confirmar, os dados ficam em `cadastrosPendentes` (só o dono vê) e **nenhum CPF/CNPJ fica reservado**. Substitui "E-mail não confirmado" de 11/11.
 - **CPF/CNPJ conferido no servidor:** com o botão "Conferir CPF e CNPJ" ligado, as regras do banco conferem os dígitos verificadores (também o CNPJ com letras). Desligado = modo teste.

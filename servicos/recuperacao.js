@@ -1,9 +1,9 @@
 /* =====================================================================
    S.D — SERVIÇO DE RECUPERAÇÃO DE SENHA (servicos/recuperacao.js)
    A tela (login-cadastro/recuperacao.js) só conversa com ESTE arquivo.
-   Este arquivo conversa com o FIREBASE (firebase/firebase.js) — ou, no modo
-   demonstração, com um "servidor de demonstração" que imita as respostas.
-   Ordem de escolha: Firebase configurado → demonstração → API própria (futuro).
+   Este arquivo conversa com o FIREBASE (firebase/firebase.js).
+   Ordem de escolha: Firebase configurado → API própria (futuro).
+   (O "servidor de demonstração" foi retirado na v0.7.9.)
 
    Funções (todas devolvem uma Promessa com { ok, codigo, ... }):
      solicitarLink(email)        → sempre a MESMA resposta, exista ou não a conta
@@ -14,7 +14,7 @@
      token aleatório (32 bytes), guardado só como hash, uso único, 30 minutos,
      novo pedido invalida os anteriores, limite de pedidos, senha com hash (Firebase),
      não aceitar a senha atual, encerrar sessões, e-mail de aviso depois da troca.
-   Depende de: configuracoes/config.js (SD.config.api e modoDemonstracao).
+   Depende de: configuracoes/config.js (SD.config.api).
    ===================================================================== */
 (function () {
   "use strict";
@@ -22,9 +22,9 @@
   if (!SD) { console.error("[S.D] recuperacao.js: carregue configuracoes/config.js antes."); return; }
 
   /* ---------- 1. CÓDIGOS DE RESPOSTA → TEXTO PARA A PESSOA ---------- */
-  // Validade do link: Firebase = 1 hora (padrão do Google); demonstração = 30 minutos
+  // Validade do link: Firebase = 1 hora (padrão do Google)
   const usarFirebase = () => !!(window.SDFirebase && window.SDFirebase.ativo);
-  const VALIDADE = SD.config.modoDemonstracao ? "30 minutos" : "1 hora";
+  const VALIDADE = "1 hora";
   const MENSAGENS = {
     ENVIADO:       `Se existir uma conta com este e-mail, enviamos um link para criar uma nova senha. Ele vale por ${VALIDADE} e só pode ser usado uma vez.`,
     LIMITE:        "Muitas solicitações seguidas. Aguarde alguns minutos e tente de novo.",
@@ -79,102 +79,27 @@
     },
     async redefinirSenha(codigo, novaSenha) {
       if (window.SDSenha && !window.SDSenha.avaliar(novaSenha).ok) return resposta("SENHA_FRACA");
-      try { await window.SDFirebase.redefinirSenha(codigo, novaSenha); SD.sessaoDemo.sair(); return resposta("OK"); }
+      try { await window.SDFirebase.redefinirSenha(codigo, novaSenha); SD.sessao.sair(); return resposta("OK"); }
       catch (e) { return resposta(codigoDoErro(e)); }
     }
   };
 
-  /* ---------- 3. MODO DEMONSTRAÇÃO (sem servidor) ----------
-     Imita o servidor para testar as telas. Guarda só nesta aba (sessionStorage):
-     o HASH do link, a validade e se já foi usado. Nada de senha, nada de e-mail.
-     Para testar "igual à anterior", a senha atual de TODAS as contas de
-     demonstração é: "Porta verde da cozinha". */
-  const DEMO = {
-    chave: "sd-demo-recuperacao",
-    validadeMin: 30,
-    limitePedidos: 3, janelaLimiteMin: 15,
-    senhaAtual: "Porta verde da cozinha"
-  };
-
-  const ler = () => { try { return JSON.parse(sessionStorage.getItem(DEMO.chave) || "{}"); } catch (_) { return {}; } };
-  const gravar = (d) => { try { sessionStorage.setItem(DEMO.chave, JSON.stringify(d)); } catch (_) { /* sem armazenamento */ } };
-
-  // Token aleatório e seguro (32 bytes → texto base64url)
-  function gerarToken() {
-    const b = new Uint8Array(32);
-    crypto.getRandomValues(b);
-    return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  }
-  // SHA-256 em texto (o servidor real também guarda só o hash do token)
-  async function hash(texto) {
-    if (!window.crypto || !crypto.subtle) return "sem-hash:" + texto;   // navegador antigo/inseguro: só demonstração
-    const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
-    return [...new Uint8Array(d)].map((x) => x.toString(16).padStart(2, "0")).join("");
-  }
-  // Pequena espera para imitar a rede
-  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
-
-  const demonstracao = {
-    async solicitarLink(email) {
-      await esperar(500);
-      const d = ler(), agora = Date.now();
-      const chaveEmail = await hash(email);
-      // Limite de pedidos por e-mail (o servidor real limita também por IP)
-      const pedidos = (d.pedidos && d.pedidos[chaveEmail] || []).filter((t) => agora - t < DEMO.janelaLimiteMin * 60000);
-      if (pedidos.length >= DEMO.limitePedidos) return resposta("LIMITE");
-      pedidos.push(agora);
-      // Novo pedido INVALIDA o link anterior (só existe 1 link válido por vez)
-      const token = gerarToken();
-      gravar({
-        pedidos: { ...(d.pedidos || {}), [chaveEmail]: pedidos },
-        link: { hash: await hash(token), expira: agora + DEMO.validadeMin * 60000, usado: false }
-      });
-      // Na versão real o link vai SÓ por e-mail. Aqui ele volta para a tela poder testar.
-      const url = new URL(location.href);
-      url.search = ""; url.hash = "redefinir=" + token;
-      return resposta("ENVIADO", { linkDemonstracao: url.href });
-    },
-
-    async validarLink(token) {
-      await esperar(300);
-      const l = ler().link;
-      if (!token || !l || l.usado || Date.now() > l.expira || l.hash !== await hash(token)) return resposta("LINK_INVALIDO");
-      return resposta("OK");
-    },
-
-    async redefinirSenha(token, novaSenha) {
-      await esperar(500);
-      const d = ler(), l = d.link;
-      if (!token || !l || l.usado || Date.now() > l.expira || l.hash !== await hash(token)) return resposta("LINK_INVALIDO");
-      if (window.SDSenha && !window.SDSenha.avaliar(novaSenha).ok) return resposta("SENHA_FRACA");
-      // Só na demonstração: o Firebase não confere "senha igual à anterior"
-      if (novaSenha === DEMO.senhaAtual) return resposta("SENHA_IGUAL");
-      l.usado = true;                                   // uso único
-      gravar(d);
-      SD.sessaoDemo.sair();                             // encerra a sessão (o servidor encerra TODAS)
-      return resposta("OK");
-    }
-  };
-
-  /* ---------- 4. FUNÇÕES PÚBLICAS (escolhem o modo) ---------- */
-  const usarDemo = () => !usarFirebase() && SD.config.modoDemonstracao && !(SD.config.api && SD.config.api.base);
+  /* ---------- 3. FUNÇÕES PÚBLICAS (escolhem o modo) ---------- */
   // Firebase ainda não terminou de carregar? Espera até 8 s pelo aviso "sd:firebase-pronto".
-  const esperarFirebase = () => (window.SDFirebase || SD.config.modoDemonstracao ? Promise.resolve() : new Promise((ok) => {
+  const esperarFirebase = () => (window.SDFirebase ? Promise.resolve() : new Promise((ok) => {
     const t = setTimeout(ok, 8000);
     document.addEventListener("sd:firebase-pronto", () => { clearTimeout(t); ok(); }, { once: true });
   }));
   const escolher = (nome) => async (...args) => {
     await esperarFirebase();
     if (usarFirebase()) return firebase[nome](...args);
-    if (usarDemo()) return demonstracao[nome](...args);
     const corpo = nome === "solicitarLink" ? { email: args[0] } : nome === "validarLink" ? { token: args[0] } : { token: args[0], novaSenha: args[1] };
     return chamarApi(nome === "solicitarLink" ? "solicitarLinkSenha" : nome === "validarLink" ? "validarLinkSenha" : "redefinirSenha", corpo);
   };
 
   window.SDRecuperacao = Object.freeze({
     MENSAGENS,
-    ehDemonstracao: usarDemo,
-    senhaAtualDemonstracao: DEMO.senhaAtual,
+    ehDemonstracao: () => false,
     solicitarLink: escolher("solicitarLink"),
     validarLink: escolher("validarLink"),
     redefinirSenha: escolher("redefinirSenha")

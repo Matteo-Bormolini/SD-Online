@@ -16,7 +16,7 @@ O GitHub Pages não deixa configurar o servidor, então vai na própria página.
 | `style-src` | 'self' https://cdn.jsdelivr.net |
 | `img-src` | 'self' data: blob: https://tiles.openfreemap.org https://www.google.com |
 | `font-src` | 'self' |
-| `connect-src` | 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net |
+| `connect-src` | 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net |
 | `worker-src` | 'self' blob: |
 | `child-src` | blob: |
 | `frame-src` | https://plataforma-sdonline.firebaseapp.com |
@@ -26,6 +26,7 @@ O GitHub Pages não deixa configurar o servidor, então vai na própria página.
 | `upgrade-insecure-requests` | — |
 
 - `'self'` = arquivos do próprio site.
+- `https://servicodados.ibge.gov.br` (lista oficial de cidades do IBGE) e `https://nominatim.openstreetmap.org` (endereço → ponto no mapa) em `connect-src` (17/11/2026, v0.7.9).
 - `https://www.google.com` em `img-src`: o Firebase (Firestore) usa uma imagem do Google para testar a conexão quando a internet falha (13/11/2026).
 - **Proibido:** código dentro do HTML (`<script>...</script>`, `<style>...</style>`, `onclick=`). Use sempre arquivo `.js` / `.css` separado.
 

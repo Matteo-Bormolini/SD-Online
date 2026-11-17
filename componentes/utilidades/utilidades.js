@@ -192,7 +192,26 @@
     return dialogo;
   }
 
+  /* ---------- CARREGANDO (botão com rodinha) ----------
+     const parar = U.carregando(botao, "Entrando…");  …  parar();
+     Desliga o botão, mostra a rodinha + texto e devolve a função que volta ao normal. */
+  function carregando(botao, texto) {
+    if (!botao) return () => {};
+    const original = botao.innerHTML;
+    botao.disabled = true;
+    botao.setAttribute("aria-busy", "true");
+    botao.classList.add("carregando");
+    botao.innerHTML = `<span class="rodinha" aria-hidden="true"></span><span>${String(texto || "Carregando…").replace(/</g, "&lt;")}</span>`;
+    return () => {
+      botao.disabled = false;
+      botao.removeAttribute("aria-busy");
+      botao.classList.remove("carregando");
+      botao.innerHTML = original;
+    };
+  }
+
   window.SDUtil = Object.freeze({
+    carregando,
     soDigitos, formatarTelefone, formatarCep, formatarData, hojeISO, formatarMoeda, decimal, listaDeTexto,
     telefoneValido, emailValido, cpfValido, cnpjValido, normalizarCnpj, formatarCnpj, formatarCpf,
     mostrarMensagem, limparMensagem,

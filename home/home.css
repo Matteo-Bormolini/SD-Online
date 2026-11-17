@@ -235,3 +235,4 @@ body:not([data-logado="sim"]) [data-visivel="logado"] { display: none !important
 }
 /* TVs: limita a largura de leitura e aumenta o respiro */
 @media (min-width: 1920px) { .home { padding-top: 2.5rem; } .secao { margin-top: 4.5rem; } }
+img.prestador-logo { object-fit: cover; }

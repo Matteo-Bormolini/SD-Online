@@ -6,7 +6,7 @@ O "painel de controle" do site. Tudo que vale para o site inteiro fica aqui, **u
 | Arquivo | Para que serve |
 |---|---|
 | `base.css` | Cores (claro e escuro), letras, botões, links, mensagens, pop-ups e **botões liga/desliga**. |
-| `config.js` | Links das páginas, itens do menu e do rodapé, ícones, tema escuro salvo e sessão de demonstração. |
+| `config.js` | Links das páginas, itens do menu e do rodapé, ícones, tema escuro salvo, sessão da tela e a **lista única de serviços** (área principal + atividades secundárias + aviso de taxa). |
 | `interruptores.js` | **Lista de todos os botões liga/desliga**: nome, o que faz, se começa ligado ou desligado, quem tem e onde fica. |
 
 ## Como mudar
@@ -21,4 +21,4 @@ O "painel de controle" do site. Tudo que vale para o site inteiro fica aqui, **u
 - O estado também aparece escrito ("Ligado" / "Desligado").
 
 ## Cuidado
-- `modoDemonstracao: true` só serve para testes. **No lançamento tem de ser `false`.**
+- O modo demonstração (dados fictícios) foi retirado na v0.7.9: o login é sempre o real (Firebase).

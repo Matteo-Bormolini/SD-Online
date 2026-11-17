@@ -14,7 +14,8 @@ Peças prontas usadas por várias páginas. Mude aqui e todas as páginas mudam 
 | `carrossel/` | Fotos passando para os lados, com legenda. | Perfis e quadro |
 | `kanban-servicos/` | Quadro do prestador: A orçar → Orçando → Aceito → A realizar → Prestados + Encerrados. | Perfil do prestador |
 | `servicos-realizados/` | Histórico de serviços do cliente, com fotos. | Perfis CPF e CNPJ |
-| `hora-rolante/` | Rodinhas para escolher hora e minuto. | Perfil CNPJ |
+| `datahora/` | Campo de data/hora: digitar, rodinhas (relógio) ou calendário; horários da semana. | Perfis CNPJ e Prestador |
+| `lista-escolha/` | Escolher vários itens de uma lista (sem repetir), com "×" para remover. | Perfil do prestador |
 | `mapa/` | Mapa grátis (MapLibre + OpenFreeMap). | Localizar prestador |
 
 ## Como usar uma peça

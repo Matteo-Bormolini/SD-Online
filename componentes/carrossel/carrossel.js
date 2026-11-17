@@ -197,19 +197,5 @@
     };
   }
 
-  /* ---------- 4. IMAGEM PROVISÓRIA (SVG) — SOMENTE para dados de demonstração ----------
-     Na versão final as fotos virão do servidor (armazenamento de fotos). */
-  function imagemDemo(texto, cor = "#800000") {
-    const t = String(texto).replace(/[<>&"]/g, "");
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
-      <rect width="800" height="500" fill="#EADFD6"/>
-      <rect x="0" y="330" width="800" height="170" fill="${cor}" opacity=".18"/>
-      <path d="M90 330 260 170 400 300 520 210 710 330Z" fill="${cor}" opacity=".55"/>
-      <circle cx="640" cy="120" r="46" fill="${cor}" opacity=".35"/>
-      <text x="400" y="430" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="600" text-anchor="middle" fill="#1F1A17">${t}</text>
-    </svg>`;
-    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  }
-
-  window.SDCarrossel = { criar, imagemDemo };
+  window.SDCarrossel = { criar };
 })();

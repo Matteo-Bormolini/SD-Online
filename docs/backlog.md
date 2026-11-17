@@ -11,7 +11,7 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje (13/11/2026): **Ciclos 1 e 2 concluídos.** Contas reais (cadastro em 2 passos, login, perfil, nova senha) pelo Firebase grátis. Pedidos e orçamentos ainda são demonstração.
+Hoje (17/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 começando.** Contas reais pelo Firebase grátis. **Sem dados fictícios** (v0.7.9): perfis, busca, mapa e Home mostram só dados reais. Pedidos e orçamentos ainda não existem (Ciclo 3/4).
 
 > **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
@@ -49,9 +49,20 @@ Hoje (13/11/2026): **Ciclos 1 e 2 concluídos.** Contas reais (cadastro em 2 pas
 - [x] Arquivos da v0.7.0-alpha.2 levados para as pastas certas; README principal restaurado (11/11).
 - [x] Política de senha do Firebase em "Exigir" (6 a 128) e regras novas publicadas (12/11 e 13/11).
 - [x] Segurança do banco: cadastro em 2 passos, dígitos do CPF/CNPJ, limites por campo, CSP (v0.7.6, 13/11).
+- [x] Regras do banco com menos cálculos (limite de 1.000 do Firebase) e organizadas por área (v0.7.7–v0.7.9, 17/11).
+- [x] Sem dados fictícios; perfis completos de verdade (foto salva, avisos, listas, horário); mapa com localização real (v0.7.9, 17/11).
+
+### 🟡 Ciclo 3 · Encontrar e pedir (v0.8.0) — Agora
+- [x] Prestadores reais na busca e no mapa (vitrine pública do prestador) e na Home do cliente (v0.7.9).
+- [x] Ponto do cliente: endereço do perfil ou "Usar minha localização atual" (GPS, não salvo) (v0.7.9).
+- [x] Perfil público do prestador lido da vitrine (v0.7.9).
+- [ ] Marco: publicar as regras v0.7.9 e testar com as 9 contas (3 prestadores, 3 CPF, 3 CNPJ).
+- [ ] US13/US14 Pedir orçamento (registro no banco) → A orçar do prestador → "Meus pedidos" do cliente.
+- [ ] ⚠️ Decidir: fotos do pedido (3 obrigatórias) sem Cloud Storage (pago).
+- [ ] Decidir a Home do prestador (US46).
+- [ ] Testes do Ciclo (navegadores, celulares, regras).
 
 ### ⬜ Depois (na ordem)
-- **Ciclo 3 · Encontrar e pedir (v0.8.0):** US11 real, US13, US14, US15, US24 (pedidos reais em A orçar). **Decidir a Home do prestador no fim do Ciclo 3 (US46).** ⚠️ **Decidir antes:** fotos do pedido (3 obrigatórias) precisam de lugar grátis para guardar (o Cloud Storage é pago).
 - **Ciclo 4 · Orçar e decidir (v0.9.0):** US16–US20, US22, US23, US26.
 - **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
 - **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.

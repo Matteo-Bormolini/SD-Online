@@ -8,8 +8,7 @@
      - Aba "Serviços realizados" (componentes/servicos-realizados); o nome da
        empresa abre o perfil público do prestador.
      - Botão "Mostrar meus dados aos prestadores" (liga/desliga a qualquer momento).
-   IMPORTANTE: demonstração — salvar, excluir, enviar fotos e buscar o
-   histórico dependem do servidor.
+   DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
    ===================================================================== */
 (function () {
   "use strict";
@@ -24,38 +23,18 @@
     fotoPadraoEmpresa: SD.caminho("fotos/padrao/prestador.png")
   };
 
-  /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
-     Substituir pelos dados vindos do servidor depois do login. */
+  /* ---------- 2. DADOS DO PERFIL ----------
+     Começa VAZIO; carregarDadosReais() preenche com a conta logada. */
   const perfil = {
-    nome: "Nome Sobrenome Exemplo",
-    tipoConta: "Cliente - Pessoa física (CPF)",
-    documento: "000.000.000-00",
-    email: "cliente@exemplo.com.br",
-    telefones: [{ numero: "11900000000", principal: true }],
-    endereco: "Rua Exemplo",
-    numero: "100",
-    complemento: "Apto 12",
-    bairro: "Centro",
-    cep: "01000000",
-    cidade: "São Paulo",
-    uf: "SP",
+    nome: "", tipoConta: "Cliente - Pessoa física (CPF)", documento: "", email: "",
+    telefones: [{ numero: "", principal: true }],
+    endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
     foto: null,                             // null = usa a foto padrão
     // Autorização do cadastro: prestador vê primeiro nome e bairro (pode mudar a qualquer momento)
     compartilharDados: false
   };
-
-  // Histórico de serviços (exemplo). data = AAAA-MM-DD; valor em reais;
-  // estrelas = nota que o cliente deu (null = ainda não avaliou); foto = da empresa;
-  // fotos = fotos do serviço realizado (aparecem no carrossel ao expandir o item).
-  const demo = (texto) => window.SDCarrossel.imagemDemo(texto);
-  const servicos = [
-    { data: "2026-10-02", servico: "Conserto de infiltração no teto", prestador: "Empresa Exemplo A", prestadorId: "p-exemplo-a", valor: 850.00, estrelas: 5, foto: null,
-      fotos: [{ src: demo("Antes — mancha no teto"), legenda: "Antes" }, { src: demo("Durante — impermeabilização"), legenda: "Durante o serviço" }, { src: demo("Depois — teto pintado"), legenda: "Depois" }] },
-    { data: "2026-08-15", servico: "Instalação de chuveiro elétrico", prestador: "Prestador Exemplo B", prestadorId: "p-exemplo-b", valor: 180.00, estrelas: 4, foto: null,
-      fotos: [{ src: demo("Chuveiro instalado"), legenda: "Chuveiro instalado" }] },
-    { data: "2026-06-20", servico: "Manutenção de portão eletrônico", prestador: "Empresa Exemplo C", prestadorId: "p-exemplo-c", valor: 320.50, estrelas: null, foto: null,
-      fotos: [] }
-  ];
+  // Histórico de serviços realizados: chega com os pedidos reais (Ciclo 3/4)
+  const servicos = [];
 
   let telefones = null, foto = null;
 
@@ -80,9 +59,9 @@
 
   /* ---------- 4. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
-    // Conta real (Firebase): troca o exemplo pelos dados da conta; o histórico
-    // de exemplo some (os serviços reais chegam no Ciclo 3).
-    if (await P.carregarDadosReais(perfil, "cliente-cpf")) servicos.length = 0;
+    // Conta real (Firebase): dados da conta logada
+    const real = await P.carregarDadosReais(perfil, "cliente-cpf");
+    if (real && !perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) window.SDFirebase.atualizarLocal(perfil);   // ponto no mapa (uma vez)
     P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({
@@ -112,7 +91,7 @@
         perfil.compartilharDados = ligado;
         const texto = ligado ? "Ligado: prestadores dos seus pedidos verão seu primeiro nome e bairro." : "Desligado: prestadores verão só a região aproximada.";
         if (!perfil._real) {
-          U.mostrarMensagem($("#msg-privacidade"), "atencao", texto + " Demonstração: ainda não foi salvo no servidor.");
+          U.mostrarMensagem($("#msg-privacidade"), "erro", "Sem conexão com a conta. Entre de novo para salvar.");
           P.atualizarAltura();
           return;
         }

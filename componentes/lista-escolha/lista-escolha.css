@@ -1,0 +1,14 @@
+/* S.D — LISTA DE ESCOLHA (componentes/lista-escolha/lista-escolha.css) */
+.lista-escolha { display: flex; flex-direction: column; gap: .5rem; }
+.lista-escolha-linha { display: flex; gap: .5rem; align-items: stretch; }
+.lista-escolha-linha select { flex: 1; min-width: 0; }
+.chips-remover li { display: inline-flex; align-items: center; gap: .25rem; padding-right: .25rem; }
+.chip-x {
+  display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer;
+}
+.chip-x svg { width: .875rem; height: .875rem; }
+.chip-x:hover { background: rgba(0, 0, 0, .12); }
+.chip-x:focus-visible { outline: 2px solid var(--cor-vinho); outline-offset: 1px; }
+[data-tema="escuro"] .chip-x:hover { background: rgba(255, 255, 255, .15); }
+.lista-escolha-contador:empty { display: none; }

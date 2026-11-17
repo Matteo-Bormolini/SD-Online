@@ -16,6 +16,6 @@ A primeira página do site e a página "Sobre nós".
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer
 
-- 🟡 Home de visitante e de cliente.
+- ✅ Home de visitante e de cliente (cliente vê prestadores reais perto dele; sem números fictícios — v0.7.9).
 - ⬜ Home própria do prestador — **decidir no fim do Ciclo 3** (US46).
 - ⬜ Sobre nós — **depois do MVP** (a história da empresa ainda será escrita).

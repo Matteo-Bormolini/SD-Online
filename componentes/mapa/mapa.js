@@ -95,6 +95,7 @@
     const api = {
       marcarUsuario(ponto) {
         if (usuario) { usuario.remove(); usuario = null; }
+        api.usuario = null;
         if (!ponto) return;
         usuario = new maplibregl.Marker({ element: elementoMarcador("mapa-marcador-voce", "Você") })
           .setLngLat([ponto.lng, ponto.lat]).addTo(mapa);

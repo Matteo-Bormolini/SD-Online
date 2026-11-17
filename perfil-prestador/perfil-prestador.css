@@ -13,7 +13,7 @@
 /* ---------- 2. ALERTA: LOGO OBRIGATÓRIA ---------- */
 .alerta-logo {
   display: flex; align-items: center; gap: .875rem; flex-wrap: wrap;
-  margin: 0 0 1rem; padding: .875rem 1rem;
+  margin: 0; padding: .875rem 1rem;
   color: var(--cor-erro); background: var(--cor-erro-fundo);
   border: 2px solid currentColor; border-radius: var(--raio-cartao);
 }
@@ -120,3 +120,5 @@
 [data-visao="cliente"][data-contatos="ocultos"] .contato-privado { display: none; }
 .contato-cliente .nota { flex-basis: 100%; margin: 0; }
 [data-visao="cliente"] .perfil-abas { display: none; }   /* sem abas na visão do cliente: evita faixa vazia */
+.aviso-taxa:empty { display: none; }
+.aviso-taxa { margin-top: .375rem; }

@@ -239,3 +239,22 @@
   .perfil-trilho { scroll-behavior: auto; transition: none; }
   .btn, .seta-sanfona, .perfil-cartao { transition: none; }
 }
+
+/* ---------- AVISOS DO TOPO: "Finalize seu cadastro" + "Urgente" ----------
+   Computador (≥ 48rem): divididos ao meio, lado a lado.
+   Só um aviso visível → ocupa a largura toda. Celular: um embaixo do outro. */
+.avisos-topo { display: grid; grid-template-columns: 1fr; gap: .75rem; margin: 0 0 1rem; }
+@media (min-width: 48rem) {
+  .avisos-topo { grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); align-items: stretch; }
+}
+.aviso-cadastro {
+  display: flex; align-items: flex-start; gap: .75rem; flex-wrap: wrap;
+  padding: .875rem 1rem; color: var(--cor-atencao); background: var(--cor-atencao-fundo);
+  border: 2px solid currentColor; border-radius: var(--raio-cartao);
+}
+.aviso-cadastro-icone { width: 1.75rem; height: 1.75rem; flex: none; }
+.aviso-cadastro-texto { flex: 1 1 14rem; display: flex; flex-direction: column; gap: .25rem; font-size: .875rem; color: var(--cor-texto); }
+.aviso-cadastro-texto strong { font-size: 1rem; color: var(--cor-atencao); }
+.aviso-cadastro-lista { margin: 0; padding-left: 1.125rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0 1rem; }
+.aviso-cadastro-btn { align-self: center; }
+@media (max-width: 47.99rem) { .aviso-cadastro-btn { width: 100%; } }

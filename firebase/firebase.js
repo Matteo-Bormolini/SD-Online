@@ -15,6 +15,9 @@
      3. Confirma o e-mail quando a pessoa clica no link de verificação.
      4. Lê e salva os dados do perfil (coleção "usuarios").
      5. Mantém a "sessão da tela" (configuracoes/config.js) igual ao Firebase.
+     6. Ponto no mapa (endereço → latitude/longitude, OpenStreetMap Nominatim).
+     7. VITRINE: cartão público do prestador (coleção "vitrine"), que os
+        clientes leem na busca. Só dados públicos; nunca CPF/CNPJ, e-mail ou endereço completo.
 
    SEGURANÇA: a apiKey abaixo PODE ficar pública (é assim no Firebase).
    Quem protege os dados são as REGRAS do banco: firebase/firestore.rules.
@@ -29,7 +32,8 @@ import {
   onAuthStateChanged, updatePassword, verifyBeforeUpdateEmail
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp
+  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp,
+  collection, query, where, limit, deleteField
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 /* ---------- 1. CONFIGURAÇÃO (cole aqui o bloco do console do Firebase) ----------
@@ -45,7 +49,7 @@ const firebaseConfig = {
 
 // Nomes das coleções do banco (Firestore)
 // cadastrosPendentes = dados do cadastro esperando o e-mail ser confirmado (passo 1 de 2)
-const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes" };
+const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes", vitrine: "vitrine" };
 // Configurações gerais do site (configuracoes/site no banco; só o adm muda)
 // conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
 //                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
@@ -163,6 +167,8 @@ async function atualizarCampos(campos) {
     limpo[chave] = valor;
   }
   if (!Object.keys(limpo).length) return;
+  // null = apagar o campo do banco (ex.: remover a foto, trocar "horario" antigo pelo novo)
+  Object.keys(limpo).forEach((k) => { if (limpo[k] === null) limpo[k] = deleteField(); });
   limpo.atualizadoEm = serverTimestamp();
   await updateDoc(doc(db, COLECAO.usuarios, u.uid), limpo);
   cacheDados.promessa = null;                          // próxima leitura busca de novo
@@ -351,6 +357,7 @@ async function excluirConta() {
   const dados = await meusDados(true);
   const lote = writeBatch(db);
   if (dados && dados.documentoChave) lote.delete(doc(db, COLECAO.documentos, dados.documentoChave));
+  if (dados && dados.tipo === "prestador") lote.delete(doc(db, COLECAO.vitrine, u.uid));   // cartão público some junto
   lote.delete(doc(db, COLECAO.usuarios, u.uid));
   lote.delete(doc(db, COLECAO.pendentes, u.uid));     // se existir (cadastro esperando confirmação)
   // Confere antes se o login aceita ser apagado agora (pede login recente)
@@ -359,6 +366,111 @@ async function excluirConta() {
   await deleteUser(u);
   sessaoTela.limpar();
   cacheDados = { uid: null, promessa: null };
+}
+
+/* ---------- 7b. PONTO NO MAPA (endereço → latitude/longitude) ----------
+   Grátis e sem chave: Nominatim (OpenStreetMap). Regras de uso: no máximo
+   1 pedido por segundo para o site TODO e nada de busca automática enquanto
+   digita. Por isso só é chamado quando o ENDEREÇO MUDA (ao salvar o perfil)
+   ou uma vez, se o perfil ainda não tiver ponto. O resultado fica salvo no
+   perfil ("local") e não é pedido de novo.
+   https://operations.osmfoundation.org/policies/nominatim/ */
+const GEO = {
+  url: "https://nominatim.openstreetmap.org/search",
+  casas: 4,                // 4 casas ≈ 11 m (perfil, privado)
+  casasVitrine: 3          // 3 casas ≈ 110 m (cartão público do prestador: protege quem trabalha em casa)
+};
+const arredondar = (n, casas) => Math.round(n * 10 ** casas) / 10 ** casas;
+let ultimoGeo = 0;
+async function buscarPonto(params) {
+  const espera = 1100 - (Date.now() - ultimoGeo);       // 1 pedido por segundo
+  if (espera > 0) await new Promise((r) => setTimeout(r, espera));
+  ultimoGeo = Date.now();
+  const url = `${GEO.url}?${new URLSearchParams({ format: "jsonv2", limit: "1", countrycodes: "br", ...params })}`;
+  const r = await fetch(url, { headers: { "Accept-Language": "pt-BR" } });
+  if (!r.ok) return null;
+  const lista = await r.json();
+  return lista && lista[0] ? { lat: Number(lista[0].lat), lng: Number(lista[0].lon) } : null;
+}
+// Tenta rua + número; se não achar, o centro da cidade (precisao: "rua" | "cidade")
+async function geocodificar(p) {
+  if (!p || !p.cidade || !p.uf) return null;
+  try {
+    const rua = [p.numero, p.endereco].filter(Boolean).join(" ");
+    let ponto = rua ? await buscarPonto({ street: rua, city: p.cidade, state: p.uf, country: "Brasil" }) : null;
+    if (ponto) return { ...ponto, precisao: "rua" };
+    ponto = await buscarPonto({ city: p.cidade, state: p.uf, country: "Brasil" });
+    return ponto ? { ...ponto, precisao: "cidade" } : null;
+  } catch (_) { return null; }                          // sem internet / serviço fora do ar
+}
+// Calcula e salva o ponto do perfil logado. Devolve true se salvou.
+async function atualizarLocal(perfil) {
+  const ponto = await geocodificar(perfil);
+  if (!ponto) return false;
+  const local = { lat: arredondar(ponto.lat, GEO.casas), lng: arredondar(ponto.lng, GEO.casas), precisao: ponto.precisao };
+  try {
+    await atualizarCampos({ local });
+    if (perfil) perfil.local = local;
+    document.dispatchEvent(new CustomEvent("sd:local-atualizado", { detail: local }));
+    return true;
+  } catch (_) { return false; }
+}
+
+/* ---------- 7c. VITRINE DO PRESTADOR (coleção "vitrine") ----------
+   Cópia PÚBLICA e resumida do perfil do prestador, lida pelos clientes na
+   busca (localizar-prestador) e no perfil público. Atualizada sozinha sempre
+   que o prestador abre ou salva o perfil. Só o próprio prestador escreve;
+   só clientes (CPF/CNPJ), o adm e o dono leem (regras do banco). */
+function montarVitrine(p, interruptores) {
+  const ligado = (id, padrao) => (interruptores && id in interruptores ? !!interruptores[id] : padrao);
+  const principal = (p.telefones || []).find((t) => t.principal);
+  const v = {
+    nome: String(p.nomeFantasia || p.razaoSocial || "").slice(0, 120),
+    areaAtuacao: p.areaAtuacao || "",
+    especialidades: (p.especialidades || []).slice(0, 8),
+    categorias: window.SD ? window.SD.categoriasDe(p.areaAtuacao, p.especialidades) : [],
+    sobre: p.sobre || "",
+    anoInicio: p.anoInicio || "",
+    emergencia: !!p.emergencia,
+    raioKm: Number(p.raioKm) || 0,
+    cidadesAtendidas: (p.cidadesAtendidas || []).slice(0, 20),
+    bairro: p.bairro || "", cidade: p.cidade || "", uf: p.uf || "",
+    foto: p.foto || "",
+    // WhatsApp só de quem ligou "Mostrar meus contatos"
+    whatsapp: ligado("mostrar-contatos", true) && principal ? String(principal.numero || "") : "",
+    // Localização desligada = some do mapa (sem ponto)
+    localizacao: ligado("localizacao", true) && !!p.local,
+    atualizadoEm: serverTimestamp()
+  };
+  if (p.horarioAtendimento) v.horarioAtendimento = p.horarioAtendimento;
+  if (v.localizacao) { v.lat = arredondar(p.local.lat, GEO.casasVitrine); v.lng = arredondar(p.local.lng, GEO.casasVitrine); }
+  return v;
+}
+async function publicarVitrine(perfil) {
+  await pronto;
+  const u = auth && auth.currentUser;
+  if (!u || !perfil) return false;
+  const dados = await meusDados().catch(() => null);
+  if (!dados || dados.tipo !== "prestador") return false;
+  try {
+    await setDoc(doc(db, COLECAO.vitrine, u.uid), montarVitrine({ ...dados, ...perfil }, dados.interruptores));
+    return true;
+  } catch (e) { console.warn("[S.D] Vitrine não atualizada:", e.code || e); return false; }
+}
+// Prestadores de um tipo de serviço (id da categoria). Só clientes e adm conseguem ler.
+// Sem categoria = todos (Home: "Prestadores perto de você"), até 50.
+async function listarPrestadores(categoria) {
+  await pronto;
+  const q = categoria
+    ? query(collection(db, COLECAO.vitrine), where("categorias", "array-contains", categoria))
+    : query(collection(db, COLECAO.vitrine), limit(50));
+  const r = await getDocs(q);
+  return r.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+async function lerVitrine(uid) {
+  await pronto;
+  const s = await getDoc(doc(db, COLECAO.vitrine, uid));
+  return s.exists() ? { id: s.id, ...s.data() } : null;
 }
 
 /* ---------- 8. ESQUECI A SENHA (pop-up do site) ---------- */
@@ -545,7 +657,12 @@ document.addEventListener("sd:interruptor", async (ev) => {
     catch (e) { console.warn("[S.D] Não foi possível salvar", id, e.code || e); document.dispatchEvent(new CustomEvent("sd:interruptor-erro", { detail: { id, erro: mensagemErro(e) } })); }
     return;
   }
-  try { await updateDoc(doc(db, COLECAO.usuarios, auth.currentUser.uid), { [`interruptores.${id}`]: !!ligado, atualizadoEm: serverTimestamp() }); cacheDados.promessa = null; }
+  try {
+    await updateDoc(doc(db, COLECAO.usuarios, auth.currentUser.uid), { [`interruptores.${id}`]: !!ligado, atualizadoEm: serverTimestamp() });
+    cacheDados.promessa = null;
+    // Prestador: Localização / Mostrar contatos mudam o cartão público na hora
+    if (["localizacao", "mostrar-contatos"].includes(id)) publicarVitrine({});
+  }
   catch (e) { console.warn("[S.D] Não foi possível salvar o botão", id, e.code || e); }
 });
 
@@ -557,6 +674,8 @@ window.SDFirebase = Object.freeze({
   entrar, cadastrar, concluirCadastro, estadoCadastro, sair, reenviarVerificacao, emailConfirmado,
   configSite, salvarConfigSite,    // configurações do site (ex.: conferir CPF/CNPJ)
   meusDados, atualizarCampos, trocarSenha, trocarEmail, excluirConta,
+  atualizarLocal,                  // endereço → ponto no mapa (salvo no perfil)
+  publicarVitrine, listarPrestadores, lerVitrine,   // cartão público do prestador
   solicitarLinkSenha, validarLinkSenha, redefinirSenha,
   emailAtual: () => (auth && auth.currentUser ? auth.currentUser.email : "")
 });

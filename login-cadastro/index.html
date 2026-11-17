@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Entrar ou criar conta — S.D Serviços Digitais</title>
 <meta name="description" content="S.D Serviços Digitais: entre na sua conta ou crie um login de Cliente CPF, Cliente CNPJ ou Prestador.">
@@ -25,7 +25,7 @@
 <script src="../componentes/utilidades/utilidades.js" defer></script>
 <script src="../componentes/senha/senha.js" defer></script>
 <script src="../componentes/endereco/endereco.js" defer></script>
-<!-- Serviços (conversam com o servidor; hoje, com a demonstração) -->
+<!-- Serviços (conversam com o servidor: Firebase) -->
 <script src="../servicos/identificadores.js" defer></script>
 <script src="../servicos/recuperacao.js" defer></script>
 <script src="../servicos/consulta-cnpj.js" defer></script>
@@ -105,17 +105,6 @@
           <label for="login-manter">Continuar conectado</label>
         </div>
 
-        <!-- DEMONSTRAÇÃO: escolhe o tipo de conta do login de teste (sai quando houver servidor) -->
-        <div class="campo login-demo" id="bloco-demo">
-          <label for="login-demo-tipo">Entrar como <span class="selo-demo">Demonstração</span></label>
-          <select id="login-demo-tipo" name="tipoDemo">
-            <option value="cliente-cpf">Cliente CPF</option>
-            <option value="cliente-cnpj">Cliente CNPJ</option>
-            <option value="prestador">Prestador</option>
-            <option value="adm">Administrador</option>
-          </select>
-        </div>
-
         <div class="mensagem" id="msg-login" role="alert"></div>
         <button type="submit" class="btn btn-grande">Fazer login</button>
       </form>
@@ -180,12 +169,6 @@
     <p class="nota">Não chegou? Confira a caixa de spam. <span id="ps-espera" aria-live="polite"></span></p>
     <button type="button" class="btn" id="btn-ps-reenviar">Enviar o link de novo</button>
     <div class="mensagem" id="msg-ps-reenviar" role="alert"></div>
-    <!-- Só na demonstração: o "e-mail" aparece aqui -->
-    <div class="popup-demo" id="ps-demo" hidden>
-      <span class="selo-demo">Demonstração</span>
-      <p>Na versão real, este link chega <strong>somente por e-mail</strong>. Aqui ele aparece para você testar.</p>
-      <a class="link" id="ps-link-demo" href="#">Abrir o link de recuperação</a>
-    </div>
   </div>
 
   <div class="popup-rodape">
@@ -231,7 +214,6 @@
         <span class="campo-erro" id="e-pn-senha2"></span>
       </div>
       <div class="mensagem" id="msg-pn" role="alert"></div>
-      <p class="nota popup-demo-dica" id="pn-demo" hidden><span class="selo-demo">Demonstração</span> Para testar a regra "igual à anterior", digite: <strong id="pn-senha-atual-demo"></strong></p>
       <button type="submit" class="btn btn-grande">Salvar nova senha</button>
     </form>
   </div>

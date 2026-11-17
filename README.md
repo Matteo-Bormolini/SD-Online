@@ -5,7 +5,7 @@
 A S.D liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
 Você encontra, pede orçamento, compara e combina tudo **direto com o prestador**.
 
-> **Situação:** em construção (MVP). As **contas já são reais** (cadastro, login, perfil e nova senha pelo Firebase). Pedidos e orçamentos ainda são demonstração.
+> **Situação:** em construção (MVP). As **contas já são reais** (cadastro, login, perfil e nova senha pelo Firebase). Sem dados fictícios desde a v0.7.9. Pedidos e orçamentos chegam no Ciclo 3/4.
 
 ---
 
@@ -62,9 +62,8 @@ O trabalho é dividido em **Ciclos**. Cada Ciclo tem **um objetivo**. Terminou o
 | Ciclo | Objetivo | Versão | Situação |
 |---|---|---|---|
 | 1 | Fechar pendências e decidir (servidor, domínio, regras do pedido) | v0.6.0 | ✅ |
-| 2 | Contas reais (servidor, banco, login de verdade) | v0.7.5 | ✅ |
-| 2 | Contas reais (servidor, banco, login de verdade) | v0.7.0 | ⬜ |
-| 3 | Encontrar e pedir (busca real, pedido, A orçar) | v0.8.0 | ⬜ |
+| 2 | Contas reais (servidor, banco, login de verdade) | v0.7.5 (correções até v0.7.9) | ✅ |
+| 3 | Encontrar e pedir (busca real, pedido, A orçar) | v0.8.0 | 🟡 Agora |
 | 4 | Orçar e decidir (comparar, aceitar, liberar contato, avaliar) | v0.9.0 | ⬜ |
 | 5 | Segurança e LGPD | v0.10.0 | ⬜ |
 | 6 | Lançamento fechado (textos legais com advogado, poucos usuários reais) | v1.0.0 | ⬜ |

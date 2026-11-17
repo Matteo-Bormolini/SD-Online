@@ -7,7 +7,7 @@
      4. componentes e o script da própria página
      5. ../firebase/firebase.js (ÚLTIMO, com type="module", sem defer)
    Aqui ficam: caminhos das páginas, menu, rodapé, lojas, ícones,
-   categorias, destaque pago, mapa, tema salvo, sessão de demonstração
+   categorias, lista de serviços, destaque pago, mapa, tema salvo, sessão da tela
    e funções usadas pela NavBar, pelo Rodapé e pelas páginas.
 
    Cada página informa no <body>:
@@ -26,10 +26,8 @@
     nome: "S.D Serviços Digitais",
     logo: "fotos/marca/logo.svg",            // usado como ícone da aba
 
-    // DEMONSTRAÇÃO (sem servidor): true = login de teste (qualquer senha entra,
-    // escolhe o tipo de conta). false = login REAL pelo Firebase (firebase/firebase.js).
-    // Desde 11/11/2026 o site usa o Firebase (Ciclo 2 · Contas reais).
-    modoDemonstracao: false,
+    // Login: sempre o REAL pelo Firebase (firebase/firebase.js).
+    // O modo demonstração (dados fictícios) foi retirado na v0.7.9.
 
     // Caminhos a partir da pasta SDOnline (cada página = <pasta>/index.html)
     paginas: {
@@ -99,8 +97,7 @@
       tempoLimiteMs: 6000
     },
 
-    // SERVIDOR (API) — ainda NÃO existe. Quando existir, preencher "base"
-    // (ex.: "https://api.sdonline.com.br") e trocar modoDemonstracao para false.
+    // SERVIDOR (API) próprio — ainda NÃO existe (hoje é o Firebase). Quando existir, preencher "base".
     // Rotas usadas por servicos/recuperacao.js e servicos/autenticacao (futuro).
     api: {
       base: "",
@@ -143,7 +140,46 @@
       { id: "monitoramento", nome: "Câmeras e monitoramento",         desc: "CFTV, TVs e gravadores",              icone: "camera" },
       { id: "reparos",       nome: "Reparos gerais",                  desc: "Alvenaria, marcenaria e serralheria", icone: "chave" },
       { id: "equipamentos",  nome: "Comprar equipamentos",            desc: "Compare preços do mercado",           icone: "carrinho" }
-    ]
+    ],
+
+    // LISTA ÚNICA DE SERVIÇOS ← MUDE AQUI (prestador escolhe; a busca usa "cat")
+    //   principal: true → aparece em "Área de atuação" (serviço principal)
+    //   todos aparecem em "Atividades secundárias" (menos o que já é o principal)
+    //   cat → tipos de serviço (ids de "categorias" acima) onde o prestador aparece na busca
+    servicos: [
+      { nome: "Manutenção predial (geral)",               cat: ["reparos"], principal: true },
+      { nome: "Elétrica",                                 cat: ["eletrica"], principal: true },
+      { nome: "Hidráulica",                               cat: ["hidraulica"], principal: true },
+      { nome: "Pintura e revestimentos",                  cat: ["pintura"], principal: true },
+      { nome: "Telhados, calhas e impermeabilização",     cat: ["infiltracao"], principal: true },
+      { nome: "Ar-condicionado e refrigeração",           cat: ["climatizacao"], principal: true },
+      { nome: "Portões, interfones e CFTV",               cat: ["portoes", "monitoramento"], principal: true },
+      { nome: "Elevadores",                               cat: ["reparos"], principal: true },
+      { nome: "Sistemas de incêndio",                     cat: ["reparos"], principal: true },
+      { nome: "Caixa d'água, bombas e reservatórios",     cat: ["hidraulica"], principal: true },
+      { nome: "Jardinagem e paisagismo",                  cat: ["reparos"], principal: true },
+      { nome: "Fornecimento de equipamentos e materiais", cat: ["equipamentos"], principal: true },
+      { nome: "Alvenaria e pequenas reformas",            cat: ["reparos"] },
+      { nome: "Marcenaria",                               cat: ["reparos"] },
+      { nome: "Serralheria",                              cat: ["reparos", "portoes"] },
+      { nome: "Vidraçaria",                               cat: ["reparos"] },
+      { nome: "Gesso e drywall",                          cat: ["reparos", "pintura"] },
+      { nome: "Pisos e azulejos",                         cat: ["reparos"] },
+      { nome: "Desentupimento",                           cat: ["hidraulica"] },
+      { nome: "Caça-vazamento",                           cat: ["hidraulica", "infiltracao"] },
+      { nome: "Iluminação e quadros elétricos",           cat: ["eletrica"] },
+      { nome: "Câmeras e alarmes",                        cat: ["monitoramento"] },
+      { nome: "Fechaduras e chaveiro",                    cat: ["portoes"] },
+      { nome: "Limpeza pós-obra",                         cat: ["reparos"] },
+      { nome: "Dedetização e controle de pragas",         cat: ["reparos"] },
+      { nome: "Montagem de móveis",                       cat: ["reparos"] },
+      { nome: "Borracharia",                              cat: ["reparos"] },
+      { nome: "Outra",                                    cat: ["reparos"], principal: true }
+    ],
+    // Aviso mostrado ao cliente sobre as atividades secundárias ← MUDE AQUI
+    avisoSecundarias: "Atividades secundárias podem ter uma taxa de serviço complementar/adicional, combinada diretamente com o prestador.",
+    // Ano mais antigo em "Início das atividades" (o mais novo é sempre o ano atual)
+    anoInicioMinimo: 1975
   };
 
   /* ---------- 1b. TEMA SALVO ----------
@@ -196,23 +232,16 @@
 
   /* ---------- 3. SESSÃO DA TELA ----------
      Guarda só { tipo, nome } (e o uid no modo Firebase). NUNCA guarda senha.
-     - Demonstração: chave "sd-sessao-demonstracao", só nesta aba.
      - Firebase: chave "sd-sessao", gravada por firebase/firebase.js depois do
        login (nesta aba, ou no navegador se marcar "Continuar conectado").
      Serve só para a NavBar e o menu. Quem protege os dados é o banco. */
-  const CHAVE_SESSAO = CONFIG.modoDemonstracao ? "sd-sessao-demonstracao" : "sd-sessao";
+  const CHAVE_SESSAO = "sd-sessao";
   const acesso = window.SD_ACESSO;
   const lerDe = (area) => { try { return JSON.parse(area.getItem(CHAVE_SESSAO) || "null"); } catch (_) { return null; } };
-  const sessaoDemo = {
+  const sessao = {
     ler() {
-      const s = lerDe(sessionStorage) || (CONFIG.modoDemonstracao ? null : lerDe(localStorage));
+      const s = lerDe(sessionStorage) || lerDe(localStorage);
       return s && acesso && acesso.perfilValido(s.tipo) && s.tipo !== "visitante" ? s : null;
-    },
-    // Só a demonstração entra por aqui (no modo Firebase quem grava é o firebase.js)
-    entrar(tipo, nome) {
-      if (!CONFIG.modoDemonstracao) return false;
-      try { sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ tipo, nome: String(nome || "").slice(0, 60) })); return true; }
-      catch (_) { return false; }
     },
     sair() {
       [sessionStorage, localStorage].forEach((a) => { try { a.removeItem(CHAVE_SESSAO); } catch (_) { /* sem armazenamento */ } });
@@ -220,11 +249,11 @@
   };
 
   // "?sair=1" encerra a sessão ANTES de montar a NavBar (assim ela já aparece deslogada)
-  if (new URLSearchParams(location.search).get("sair") === "1") sessaoDemo.sair();
+  if (new URLSearchParams(location.search).get("sair") === "1") sessao.sair();
 
-  // Aplica a sessão de demonstração no <body> (como o servidor faria)
+  // Aplica a sessão da tela no <body> (quem grava é o firebase.js depois do login)
   (function aplicarSessao() {
-    const s = sessaoDemo.ler();
+    const s = sessao.ler();
     if (!s || !document.body) return;
     document.body.dataset.logado = "sim";
     document.body.dataset.tipo = s.tipo;
@@ -240,7 +269,7 @@
   (function protegerPagina() {
     const b = document.body;
     if (!b || !acesso || !b.dataset.recurso) return;
-    const s = sessaoDemo.ler();
+    const s = sessao.ler();
     const tipo = s ? s.tipo : "visitante";
     if (acesso.pode(tipo, b.dataset.recurso)) return;
     const publico = b.dataset.recursoPublico;
@@ -303,6 +332,14 @@
   // Destaque pago: o item tem a tag "destaque"? (ex.: { tags: ["destaque"] })
   const ehDestaque = (item) => !!item && Array.isArray(item.tags) && item.tags.includes(CONFIG.destaque.tag);
 
+  // Serviços → tipos de serviço (ids das categorias) onde o prestador aparece na busca
+  function categoriasDe(principal, secundarias) {
+    const nomes = [principal, ...(secundarias || [])].filter(Boolean);
+    const ids = new Set();
+    nomes.forEach((n) => { const s = CONFIG.servicos.find((x) => x.nome === n); if (s) s.cat.forEach((c) => ids.add(c)); });
+    return [...ids];
+  }
+
   // Ícone da aba do navegador (se a página não tiver um)
   if (!document.querySelector('link[rel~="icon"]') && document.head) {
     const icone = document.createElement("link");
@@ -314,7 +351,7 @@
 
   /* ---------- 6. EXPORTA PARA navbar.js, rodape.js e páginas ---------- */
   window.SD = Object.freeze({
-    config: CONFIG, icones: ICONES, sessaoDemo, tema, iconeCategoria, ehDestaque,
+    config: CONFIG, icones: ICONES, sessao, tema, iconeCategoria, ehDestaque, categoriasDe,
     iconesCategoria: Object.freeze({ ...ICONES_CATEGORIA }),
     esc, caminho, urlPagina, urlPerfil, hrefItem, linkMenu, itemVisivel, pode,
     logado, paginaAtual, tipoUsuario, ehApp

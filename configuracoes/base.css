@@ -266,3 +266,14 @@ img { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- CARREGANDO: rodinha girando (botões e avisos) ----------
+   Uso: U.carregando(botao, "Entrando…") em componentes/utilidades. */
+.rodinha {
+  display: inline-block; width: 1.1em; height: 1.1em; flex: none;
+  border: 2.5px solid currentColor; border-right-color: transparent; border-radius: 50%;
+  animation: sd-girar .8s linear infinite; vertical-align: -.2em;
+}
+.carregando { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; cursor: progress; }
+@keyframes sd-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .rodinha { animation-duration: 2.4s; } }

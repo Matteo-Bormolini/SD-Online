@@ -11,8 +11,8 @@
      - Entrar: só com E-MAIL + senha (MVP). CPF/CNPJ voltam depois.
      - Criar conta: cria o login, salva o perfil e reserva o CPF/CNPJ
        (1 conta por documento). Envia o e-mail de confirmação.
-   DEMONSTRAÇÃO (modoDemonstracao: true em config.js): nenhuma senha é
-   guardada; escolhe o tipo de conta e navega logado só nesta aba.
+   CARREGANDO: enquanto o Firebase confere a conta, o botão mostra a
+   rodinha e o texto "Entrando…" / "Criando conta…" (base.css: .carregando).
    ===================================================================== */
 (function () {
   "use strict";
@@ -299,13 +299,6 @@
     }
     U.limparMensagem(msg);
 
-    // DEMONSTRAÇÃO: não envia nada. Senhas NUNCA são guardadas no navegador.
-    if (SD.config.modoDemonstracao) {
-      const nome = id === "cpf" ? pegar("nome").value.trim().split(/\s+/)[0] : (pegar("nome").value.trim() || SD_ACESSO_NOME(tipo.perfil));
-      senha.value = ""; senha2.value = "";
-      entrar(tipo.perfil, nome);
-      return;
-    }
     criarContaReal(id, form, msg);
   }
 
@@ -344,7 +337,7 @@
     const F = await firebase();
     if (!F || !F.ativo) { U.mostrarMensagem(msg, "atencao", "O cadastro ainda não está disponível: o Firebase não foi configurado."); return; }
     const botao = form.querySelector('[type="submit"]');
-    botao.disabled = true; botao.setAttribute("aria-busy", "true");
+    const parar = U.carregando(botao, "Criando conta…");
     U.mostrarMensagem(msg, "info", "Criando sua conta…");
     try {
       const dados = dadosDoCadastro(id);
@@ -355,7 +348,7 @@
           U.mostrarMensagem(msg, "info", "Consultando o CNPJ na Receita Federal…");
           const consulta = await window.SDConsultaCnpj.consultar(dados.documento, dados.razaoSocial);
           if (consulta.resultado === "inativo") {
-            botao.disabled = false; botao.removeAttribute("aria-busy");
+            parar();
             const campo = document.getElementById("prest-cnpj");
             const texto = `Este CNPJ está com situação "${consulta.situacao}" na Receita Federal. Só CNPJ ativo pode se cadastrar como prestador.`;
             mostrarErro(campo, texto); campo.focus();
@@ -378,7 +371,7 @@
       if (parametros.get("destino")) url.searchParams.set("destino", parametros.get("destino"));
       location.href = url.href;
     } catch (e) {
-      botao.disabled = false; botao.removeAttribute("aria-busy");
+      parar();
       const campo = e.code === "auth/email-already-in-use" ? document.getElementById(`${id}-email`)
         : e.code === "DOCUMENTO_EM_USO" ? document.getElementById(`${id}-${id === "cpf" ? "cpf" : "cnpj"}`)
         : (e.code === "auth/weak-password" || e.code === "auth/password-does-not-meet-requirements") ? document.getElementById(`${id}-senha`) : null;
@@ -396,7 +389,7 @@
     [id, senha].forEach(limparErro);
     U.limparMensagem(msg);
     // MVP: só e-mail (servicos/identificadores.js; CPF/CNPJ voltam depois)
-    const identificador = ID.identificar(id.value, SD.config.modoDemonstracao ? undefined : ["email"]);
+    const identificador = ID.identificar(id.value, ["email"]);
     if (!id.value.trim()) mostrarErro(id, "Informe seu e-mail.");
     else if (!identificador.valido) mostrarErro(id, "Digite um e-mail válido.");
     if (!senha.value) mostrarErro(senha, "Informe a senha.");
@@ -405,13 +398,7 @@
       (identificador.valido ? senha : id).focus();
       return;
     }
-    if (!SD.config.modoDemonstracao) { entrarReal(identificador.valor, senha, msg); return; }
-    // Aqui entrará a consulta ao servidor ({ tipo do identificador, valor normalizado, senha }),
-    // que devolve o tipo real do usuário. O nome exibido vem do servidor; na demonstração,
-    // nunca mostramos o documento: só o e-mail ou o tipo de conta.
-    senha.value = "";
-    const tipoDemo = $("#login-demo-tipo").value;
-    entrar(tipoDemo, identificador.tipo === "email" ? identificador.valor : SD_ACESSO_NOME(tipoDemo));
+    entrarReal(identificador.valor, senha, msg);
   }
 
   // Login REAL (Firebase)
@@ -419,13 +406,15 @@
     const F = await firebase();
     if (!F || !F.ativo) { U.mostrarMensagem(msg, "atencao", "O login ainda não está disponível: o Firebase não foi configurado."); return; }
     const botao = $('#form-login [type="submit"]');
-    botao.disabled = true; botao.setAttribute("aria-busy", "true");
+    const parar = U.carregando(botao, "Entrando…");
+    U.mostrarMensagem(msg, "info", "Conferindo seus dados…");
     try {
       const r = await F.entrar(email, senha.value, $("#login-manter").checked);
       senha.value = "";
-      irParaDestino(r.tipo);
+      U.mostrarMensagem(msg, "sucesso", "Tudo certo! Abrindo sua conta…");
+      irParaDestino(r.tipo);                         // o botão continua girando até a próxima página abrir
     } catch (e) {
-      botao.disabled = false; botao.removeAttribute("aria-busy");
+      parar();
       if (e.code === "EMAIL_NAO_CONFIRMADO") {          // cadastro esperando o e-mail
         senha.value = "";
         U.mostrarMensagem(msg, "atencao", F.mensagemErro(e));
@@ -445,15 +434,6 @@
     location.href = permitido ? SD.caminho(item.href) : SD.urlPagina("inicio");
   }
 
-  // Guarda a sessão de DEMONSTRAÇÃO e leva para o destino
-  function entrar(perfil, nome) {
-    if (!SD.config.modoDemonstracao || !SD.sessaoDemo.entrar(perfil, nome)) {
-      U.mostrarMensagem($("#aviso"), "atencao", "Login de demonstração desligado.");
-      return;
-    }
-    irParaDestino(perfil);
-  }
-
   /* ---------- 7. ATUALIZA O QUE APARECE ---------- */
   function atualizarTela() {
     $("#btn-abrir-login").setAttribute("aria-expanded", String(estado.loginAberto));
@@ -464,7 +444,7 @@
     for (const id of Object.keys(TIPOS)) $(`#cadastro-${id}`).hidden = estado.tipoAberto !== id;
   }
 
-  // Já está logado (sessão de demonstração)? Mostra atalhos em vez dos formulários.
+  // Já está logado? Mostra atalhos em vez dos formulários.
   function mostrarJaConectado() {
     if (!SD.logado()) return false;
     const nome = document.body.dataset.nome;
@@ -547,8 +527,6 @@
 
   /* ---------- 8. INÍCIO ---------- */
   function iniciar() {
-    // A demonstração (escolher o tipo de conta) só aparece no modo demonstração
-    $("#bloco-demo").hidden = !SD.config.modoDemonstracao;
     if (mostrarJaConectado()) return;
 
     montarCadastros();

@@ -15,7 +15,7 @@ Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das conta
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `perfil-adm.css` / `perfil-adm.js` | Página, visual e dados de demonstração. |
+| `index.html` / `perfil-adm.css` / `perfil-adm.js` | Página, visual e regras (dados reais da conta). |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer

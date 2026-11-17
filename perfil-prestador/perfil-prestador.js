@@ -2,16 +2,19 @@
    S.D — PERFIL DO PRESTADOR DE SERVIÇOS (perfil-prestador/perfil-prestador.js)
    O comportamento comum (abas, telefones, edição, exclusão) vem de
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do Prestador:
-     - Dados da empresa + área de atuação, especialidades, responsável
-       técnico, registros/certificações, região e horário de atendimento.
+     - Dados da empresa + área de atuação (principal), ATIVIDADES SECUNDÁRIAS
+       (lista, com aviso de taxa adicional ao cliente), responsável técnico,
+       registros/certificações, região (distância + cidades em lista) e
+       horário de atendimento (dias + horas, componentes/datahora).
      - Vitrine pública (estilo LinkedIn): nome, especialidades e números.
      - LOGO OBRIGATÓRIA: sem logo, usa a foto padrão e mostra alerta urgente.
      - "Trabalhos e empresa": carrossel OPCIONAL de fotos com legenda.
      - Avaliações recentes (públicas e anônimas; nome só com autorização de quem avaliou).
      - "Ver como cliente": mostra o perfil como o cliente vê (sem dados privados).
      - Aba "Meus serviços": quadro Kanban (componentes/kanban-servicos).
-   IMPORTANTE: demonstração — salvar, excluir, enviar fotos e buscar os
-   serviços dependem do servidor.
+   DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
+     - Dono: lê/salva o próprio perfil e atualiza a VITRINE (cartão público).
+     - Cliente (?visao=cliente&id=…): lê só a vitrine do prestador (dados públicos).
    ===================================================================== */
 (function () {
   "use strict";
@@ -32,133 +35,57 @@
     fotoPadraoCliente: { cpf: SD.caminho("fotos/padrao/cliente-cpf.png"), cnpj: SD.caminho("fotos/padrao/cliente-cnpj.png") }
   };
 
-  // Área de atuação principal (foco atual: manutenção + fornecimento de itens)
-  const AREAS_ATUACAO = [
-    "Manutenção predial (geral)", "Elétrica", "Hidráulica", "Pintura e revestimentos",
-    "Telhados, calhas e impermeabilização", "Ar-condicionado e refrigeração",
-    "Portões, interfones e CFTV", "Elevadores", "Sistemas de incêndio",
-    "Caixa d'água, bombas e reservatórios", "Jardinagem e paisagismo",
-    "Fornecimento de equipamentos e materiais", "Outra"
+  // Área de atuação (principal) e atividades secundárias: LISTA ÚNICA em configuracoes/config.js (servicos)
+  const AREAS_ATUACAO = SD.config.servicos.filter((x) => x.principal).map((x) => x.nome);
+  const TODOS_SERVICOS = SD.config.servicos.filter((x) => x.nome !== "Outra").map((x) => x.nome);
+  // Início das atividades: de 1975 (config) até o ano ATUAL — muda sozinho todo ano
+  const ANOS = (() => { const l = []; for (let a = new Date().getFullYear(); a >= SD.config.anoInicioMinimo; a--) l.push(String(a)); return l; })();
+  const MAX_CIDADES = 20;
+  // Aviso "Finalize seu cadastro": campos que contam ← MUDE AQUI
+  const CAMPOS_CADASTRO = [
+    { rotulo: "Nome fantasia",          vazio: (p) => !p.nomeFantasia },
+    { rotulo: "Área de atuação",        vazio: (p) => !p.areaAtuacao },
+    { rotulo: "Sobre a empresa",        vazio: (p) => !p.sobre },
+    { rotulo: "Cargo do responsável",   vazio: (p) => !p.responsavelCargo },
+    { rotulo: "Início das atividades",  vazio: (p) => !p.anoInicio },
+    { rotulo: "Horário de atendimento", vazio: (p) => !p.horarioAtendimento && !p.horario },
+    { rotulo: "WhatsApp/Telefone",      vazio: (p) => !(p.telefones || []).some((t) => t.principal && t.numero) },
+    { rotulo: "Endereço (número)",      vazio: (p) => !p.cep || !p.numero }
   ];
   // Distância máxima de atendimento (km) — usada na busca por proximidade
   const RAIOS_KM = [5, 10, 15, 20, 30, 50, 100];
 
-  /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
-     Substituir pelos dados vindos do servidor depois do login. */
-  const demo = (texto) => window.SDCarrossel.imagemDemo(texto);
-
+  /* ---------- 2. DADOS DO PERFIL ----------
+     Começa VAZIO; carregarDadosReais() (dono) ou carregarVitrine() (cliente) preenche. */
   const perfil = {
-    razaoSocial: "Empresa Exemplo Manutenções Ltda.",
-    nomeFantasia: "Exemplo Manutenções",
+    razaoSocial: "", nomeFantasia: "",
     tipoConta: "Prestador de serviços - Pessoa jurídica (CNPJ)",
-    documento: "00.000.000/0001-00",
-    areaAtuacao: "Manutenção predial (geral)",
-    especialidades: ["Elétrica predial", "Hidráulica", "Impermeabilização", "Bombas de recalque", "Pintura"],
-    responsavelNome: "Nome Sobrenome Exemplo",
-    responsavelCargo: "Técnico responsável",
-    certificacoes: ["NR-10", "NR-35"],
-    anoInicio: "2015",
-    membroDesde: "2026",
-    email: "contato@exemplo.com.br",
-    telefones: [{ numero: "11920000000", principal: true }],
-    raioKm: 15,
-    bairrosAtendidos: "",
-    emergencia: true,
-    horario: "Segunda a sábado, 07:00 às 18:00",
-    endereco: "Rua Exemplo",
-    numero: "250",
-    complemento: "Galpão 2",
-    bairro: "Centro",
-    cep: "01000000",
-    cidade: "São Paulo",
-    uf: "SP",
-    sobre: "Empresa especializada em manutenção predial para condomínios e empresas. Equipe própria, uniformizada e com treinamentos de segurança. Garantia de 90 dias em todos os serviços.",
-    avaliacao: { media: 4.7, total: 38 },
-    servicosAnteriores: 52,                        // concluídos antes do quadro atual (histórico do servidor)
+    documento: "", areaAtuacao: "", especialidades: [],
+    responsavelNome: "", responsavelCargo: "", certificacoes: [], anoInicio: "", membroDesde: "",
+    email: "", telefones: [{ numero: "", principal: true }],
+    raioKm: 15, cidadesAtendidas: [], bairrosAtendidos: "", emergencia: false,
+    horarioAtendimento: null, horario: "",
+    endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
+    sobre: "", avaliacao: { media: 0, total: 0 }, servicosAnteriores: 0,
     foto: null,                                    // null = SEM LOGO → foto padrão + alerta
-    fotosTrabalho: [
-      { src: demo("Impermeabilização — depois"), legenda: "Impermeabilização de laje — depois" },
-      { src: demo("Quadro elétrico novo"), legenda: "Troca de quadro elétrico" },
-      { src: demo("Equipe e veículo"), legenda: "Nossa equipe" }
-    ]
+    fotosTrabalho: []                              // ainda só na tela (não salvas)
   };
-
-  // Avaliações recentes (públicas). SEMPRE anônimas: o prestador não sabe quem avaliou.
-  // O nome só aparece se o cliente ligou "Mostrar meu nome" ao avaliar (nomeAutorizado).
-  // IMPORTANTE: o servidor só envia "nomeAutorizado" quando houver essa autorização —
-  // o nome de quem não autorizou nunca chega ao navegador.
-  const avaliacoes = [
-    { data: "2026-10-12", nota: 5, nomeAutorizado: "",        texto: "Serviço rápido, equipe educada e deixou tudo limpo." },
-    { data: "2026-09-28", nota: 4, nomeAutorizado: "",        texto: "Resolveu o vazamento. Chegou um pouco depois do combinado." },
-    { data: "2026-09-05", nota: 5, nomeAutorizado: "Ana P.",  texto: "Orçamento claro e cumpriu o prazo." }
-  ];
-
-  // Serviços do quadro (Kanban). telefone = só aparece depois do aceite.
-  // Pedidos novos (A orçar) entram quando um cliente pede orçamento na página do prestador (US13/US14).
-  // Datas dos pedidos A orçar contam a partir de hoje, para a demonstração não "vencer" com o tempo.
-  const diasAtras = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
-  const servicosKanban = [
-    { id: "s12", etapa: "aorcar", servico: "Reparo no interfone", cliente: "Condomínio Exemplo C", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Centro", local: "Portaria", visita: "Dias úteis", dataPedido: diasAtras(15), valor: null, telefone: "11930000003",
-      descricao: "Interfone da portaria sem som. (Demonstração: pedido sem resposta há 15 dias — expira e vai para Encerrados.)", fotos: [] },
-    { id: "s8", etapa: "aorcar", servico: "Troca de torneira e registro", cliente: "Cliente Exemplo F", tipoCliente: "cpf", fotoCliente: null,
-      bairro: "Jardim Exemplo", local: "Cozinha", visita: "Sábado de manhã",
-      dataPedido: diasAtras(1), valor: null, telefone: "11930000006",
-      descricao: "Torneira pingando e registro duro. Prefere sábado.", fotos: [] },
-    { id: "s9", etapa: "aorcar", servico: "Iluminação da garagem", cliente: "Condomínio Exemplo G", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Vila Exemplo", local: "Garagem e estacionamento", visita: "Falar com o zelador, dias úteis",
-      dataPedido: diasAtras(0), valor: null, telefone: "11930000007",
-      descricao: "6 lâmpadas queimadas e 1 reator com defeito no subsolo.",
-      fotos: [{ src: demo("Garagem escura"), legenda: "Foto enviada pelo cliente" }] },
-    { id: "s10", etapa: "encerrado", motivo: "Recusado pelo cliente", dataEncerramento: "2026-10-30",
-      servico: "Troca de piso do salão de festas", cliente: "Condomínio Exemplo A", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Vila Exemplo", dataPedido: "2026-10-12", valor: 6800, descricao: "", fotos: [] },
-    { id: "s11", etapa: "encerrado", motivo: "Encerrado por você", dataEncerramento: "2026-11-02",
-      servico: "Conserto de portão basculante", cliente: "Cliente Exemplo H", tipoCliente: "cpf", fotoCliente: null,
-      bairro: "Centro", dataPedido: "2026-10-28", valor: 450, descricao: "", fotos: [] },
-    { id: "s1", etapa: "orcando", servico: "Reparo de infiltração no teto", cliente: "Condomínio Exemplo A", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Vila Exemplo", local: "Hall, corredores e escadas", visita: "Precisa de visita — falar com o zelador",
-      dataPedido: "2026-10-20", valor: 1800, telefone: "11930000001",
-      descricao: "Mancha de umidade no teto do hall do 3º andar, aumenta quando chove.",
-      fotos: [{ src: demo("Mancha no teto"), legenda: "Foto enviada pelo cliente" }] },
-    { id: "s2", etapa: "orcando", servico: "Instalação de chuveiro elétrico", cliente: "Cliente Exemplo B", tipoCliente: "cpf", fotoCliente: null,
-      bairro: "Jardim Exemplo", local: "Banheiro", visita: "Não precisa de visita prévia",
-      dataPedido: "2026-10-19", valor: 220, telefone: "11930000002",
-      descricao: "Trocar chuveiro antigo por um novo (o cliente já comprou).", fotos: [] },
-    { id: "s3", etapa: "aceito", servico: "Limpeza de caixa d'água (2 reservatórios)", cliente: "Condomínio Exemplo C", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Centro", local: "Caixa d'água, reservatórios e bombas", visita: "Dia útil, das 08:00 às 17:00",
-      dataPedido: "2026-10-14", dataAgendada: "2026-10-28", valor: 950, telefone: "11930000003",
-      descricao: "Limpeza semestral com laudo. Acesso pela cobertura.",
-      fotos: [{ src: demo("Reservatório superior"), legenda: "Reservatório superior" }] },
-    { id: "s4", etapa: "realizar", servico: "Troca do quadro de disjuntores", cliente: "Empresa Exemplo D", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Bairro Exemplo", local: "Quadros elétricos, medidores e gerador", visita: "Agendado com a recepção",
-      dataPedido: "2026-10-02", dataAgendada: "2026-10-24", valor: 3200, telefone: "11930000004",
-      descricao: "Quadro antigo aquecendo. Trocar por quadro novo com DR.",
-      fotos: [{ src: demo("Quadro antigo"), legenda: "Antes" }, { src: demo("Material separado"), legenda: "Material separado" }] },
-    { id: "s5", etapa: "realizar", servico: "Pintura da fachada (bloco B)", cliente: "Condomínio Exemplo A", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Vila Exemplo", local: "Fachada e área externa", visita: "Início combinado com o síndico",
-      dataPedido: "2026-09-20", dataAgendada: "2026-11-03", valor: 14500, telefone: "11930000001",
-      descricao: "Pintura completa com tinta acrílica, incluindo andaime.", fotos: [] },
-    { id: "s6", etapa: "prestado", servico: "Manutenção das bombas de recalque", cliente: "Condomínio Exemplo C", tipoCliente: "cnpj", fotoCliente: null,
-      bairro: "Centro", local: "Caixa d'água, reservatórios e bombas", visita: "Realizada",
-      dataPedido: "2026-09-25", dataAgendada: "2026-10-08", dataConclusao: "2026-10-10", valor: 1450, telefone: "11930000003",
-      avaliacaoRecebida: 5, descricao: "Manutenção preventiva e troca de selos.",
-      fotos: [{ src: demo("Bombas — antes"), legenda: "Antes" }, { src: demo("Bombas — depois"), legenda: "Depois" }] },
-    { id: "s7", etapa: "prestado", servico: "Conserto de vazamento na cozinha", cliente: "Cliente Exemplo E", tipoCliente: "cpf", fotoCliente: null,
-      bairro: "Jardim Exemplo", local: "Cozinha", visita: "Realizada",
-      dataPedido: "2026-09-22", dataAgendada: "2026-09-27", dataConclusao: "2026-09-27", valor: 180, telefone: "11930000005",
-      avaliacaoRecebida: null, descricao: "Vazamento no sifão da pia.", fotos: [{ src: demo("Sifão trocado"), legenda: "Sifão trocado" }] }
-  ];
+  // Avaliações reais chegam no pós-MVP; pedidos (Kanban) no Ciclo 3/4.
+  const avaliacoes = [];
+  const servicosKanban = [];
+  let horarioEditor = null, secundarias = null, cidades = null;
 
   let quadro = null, telefones = null, abas = null;
 
   /* ---------- 3. EXIBIÇÃO DOS DADOS ---------- */
   function textoRegiao() {
     let t = `Até ${perfil.raioKm} km a partir de ${perfil.bairro || "endereço da empresa"}`;
-    if (perfil.bairrosAtendidos) t += ` · ${perfil.bairrosAtendidos}`;
+    if (perfil.cidadesAtendidas && perfil.cidadesAtendidas.length) t += ` · ${perfil.cidadesAtendidas.join(", ")}`;
+    else if (perfil.bairrosAtendidos) t += ` · ${perfil.bairrosAtendidos}`;   // formato antigo (texto livre)
     return t;
   }
-  const textoHorario = () => (perfil.horario || "—") + (perfil.emergencia ? " · Atende emergências" : "");
+  // Horário novo (dias + horas) ou o texto antigo, se ainda não foi editado
+  const textoHorario = () => window.SDDataHora.textoSemana(perfil.horarioAtendimento || perfil.horario) + (perfil.emergencia ? " · Atende emergências" : "");
 
   // Etiquetas (especialidades / certificações)
   function renderizarChips(ul, itens, vazio) {
@@ -183,11 +110,12 @@
       regiao: textoRegiao(),
       horario: textoHorario(),
       sobre: perfil.sobre || "A empresa ainda não escreveu uma apresentação.",
+      avisoSecundarias: perfil.especialidades.length ? SD.config.avisoSecundarias : "",
       ...P.enderecoParaTela(perfil)
     });
 
-    renderizarChips($("#vitrine-especialidades"), perfil.especialidades, "Nenhuma especialidade informada");
-    renderizarChips($("#lista-especialidades"), perfil.especialidades, "Nenhuma especialidade informada");
+    renderizarChips($("#vitrine-especialidades"), perfil.especialidades, "Nenhuma atividade secundária informada");
+    renderizarChips($("#lista-especialidades"), perfil.especialidades, "Nenhuma atividade secundária informada");
     renderizarChips($("#lista-certificacoes"), perfil.certificacoes, "Nenhum registro informado");
     P.preencherLinkAvaliacoes($("#link-avaliacoes"), perfil.avaliacao, CONFIG.urlAvaliacoes);
     $("#link-todas-avaliacoes").href = CONFIG.urlAvaliacoes;
@@ -198,16 +126,22 @@
 
     P.preencherPlaceholders({
       "f-razao": perfil.razaoSocial, "f-fantasia": perfil.nomeFantasia,
-      "f-sobre": perfil.sobre, "f-especialidades": perfil.especialidades.join(", "), "f-certificacoes": perfil.certificacoes.join(", "),
-      "f-resp-nome": perfil.responsavelNome, "f-resp-cargo": perfil.responsavelCargo, "f-inicio": perfil.anoInicio,
+      "f-sobre": perfil.sobre, "f-certificacoes": perfil.certificacoes.join(", "),
+      "f-resp-nome": perfil.responsavelNome, "f-resp-cargo": perfil.responsavelCargo,
       "f-email": perfil.email, "f-telefone": U.formatarTelefone(principal && principal.numero),
-      "f-horario": perfil.horario, "f-bairros": perfil.bairrosAtendidos,
       ...P.placeholdersEndereco(perfil),
       "f-senha": "Deixe vazio para manter a atual", "f-senha2": "Repita a nova senha"
     });
     P.preencherSelect($("#f-area"), perfil.areaAtuacao || "não informada", AREAS_ATUACAO);
+    P.preencherSelect($("#f-inicio"), perfil.anoInicio || "não informado", ANOS);
     P.preencherSelect($("#f-raio"), `${perfil.raioKm} km`, RAIOS_KM.map((r) => ({ texto: `${r} km`, valor: String(r) })));
     $("#f-emergencia").checked = !!perfil.emergencia;
+    // Listas e horário já vêm com o valor atual (mudou → salva)
+    if (secundarias) { secundarias.definir(perfil.especialidades); }
+    if (cidades) cidades.definir(perfil.cidadesAtendidas);
+    if (horarioEditor) horarioEditor.definir(perfil.horarioAtendimento);
+    $("#contador-sobre").textContent = $("#f-sobre").value.length;
+    P.avisoCadastro(perfil, CAMPOS_CADASTRO);
 
     if (telefones) telefones.renderizar();
     renderizarFoto();
@@ -219,7 +153,7 @@
     // Ano de início vazio (conta nova) → "Não informado" (antes mostrava "2026 anos")
     const anos = Number(perfil.anoInicio) > 0 ? new Date().getFullYear() - Number(perfil.anoInicio) : null;
     $("#num-concluidos").textContent = concluidos.toLocaleString("pt-BR");
-    $("#num-avaliacao").textContent = `${U.decimal(perfil.avaliacao.media)} / 5`;
+    $("#num-avaliacao").textContent = perfil.avaliacao.total ? `${U.decimal(perfil.avaliacao.media)} / 5` : "Sem avaliações";
     $("#num-experiencia").textContent = anos === null ? "Não informado" : anos > 0 ? `${anos} ${anos === 1 ? "ano" : "anos"}` : "Menos de 1 ano";
     $("#num-desde").textContent = perfil.membroDesde || "—";
   }
@@ -233,6 +167,7 @@
     $("#selo-sem-logo").hidden = !semLogo;
     $("#alerta-logo").hidden = !semLogo;
     $("#btn-foto").textContent = semLogo ? "Adicionar logo" : "Trocar logo";
+    P.atualizarAvisosTopo();
     P.atualizarAltura();
   }
 
@@ -270,13 +205,14 @@
         U.mostrarMensagem(msg, "erro", `Imagem muito pequena (${medida.largura} × ${medida.altura} px). Use no mínimo ${CONFIG.tamanhoMinLogoPx} × ${CONFIG.tamanhoMinLogoPx} px.`);
         return;
       }
-      if (perfil.foto && !(await P.confirmar({ tipo: "editar", titulo: "Trocar a logo?", texto: `A logo atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) { URL.revokeObjectURL(url); return; }
-      if (perfil.foto) URL.revokeObjectURL(perfil.foto);
-      perfil.foto = url;
-      renderizarFoto();
-      const quadrada = Math.abs(medida.largura - medida.altura) / Math.max(medida.largura, medida.altura) < 0.1;
-      U.mostrarMensagem(msg, "atencao", "Logo atualizada na pré-visualização (ainda não enviada ao servidor)." +
-        (quadrada ? "" : " Dica: a imagem não é quadrada; as bordas podem ser cortadas no círculo."));
+      URL.revokeObjectURL(url);
+      if (perfil.foto && !(await P.confirmar({ tipo: "editar", titulo: "Trocar a logo?", texto: `A logo atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) return;
+      // Reduz (256 px) e salva no perfil; depois atualiza o cartão público
+      if (await P.salvarFoto(perfil, arq, msg, renderizarFoto)) {
+        publicar();
+        const quadrada = Math.abs(medida.largura - medida.altura) / Math.max(medida.largura, medida.altura) < 0.1;
+        if (!quadrada) U.mostrarMensagem(msg, "sucesso", "Logo salva. Dica: a imagem não era quadrada; o centro foi usado.");
+      }
     });
   }
 
@@ -466,54 +402,143 @@
     definirVisao(pedida === "cliente" || !dono ? "cliente" : "dono", false);
   }
 
+  /* ---------- 7b. CIDADES DO ESTADO (lista oficial do IBGE, grátis e sem chave) ----------
+     https://servicodados.ibge.gov.br/api/docs/localidades — guardada nesta aba para não pedir de novo. */
+  const IBGE = "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios?orderBy=nome";
+  let cidadesDaUf = [];
+  async function carregarCidades(uf) {
+    if (!/^[A-Z]{2}$/.test(uf || "")) return [];
+    const chave = "sd-cidades-" + uf;
+    try { const c = JSON.parse(sessionStorage.getItem(chave) || "null"); if (c) return c; } catch (_) { /* sem armazenamento */ }
+    try {
+      const r = await fetch(IBGE.replace("{uf}", uf));
+      if (!r.ok) return [];
+      const lista = (await r.json()).map((m) => m.nome);
+      try { sessionStorage.setItem(chave, JSON.stringify(lista)); } catch (_) { /* sem armazenamento */ }
+      return lista;
+    } catch (_) { return []; }
+  }
+
+  /* ---------- 7c. VITRINE (cartão público) ----------
+     Dono: depois de abrir/salvar, atualiza a cópia pública que os clientes leem. */
+  async function publicar() {
+    const F = window.SDFirebase;
+    if (!perfil._real || !F || !F.publicarVitrine) return;
+    await F.publicarVitrine(perfil);
+  }
+  // Cliente abrindo ?visao=cliente&id=… → mostra só os dados públicos da vitrine
+  async function carregarVitrine(id) {
+    const F = await new Promise((ok) => (window.SDFirebase ? ok(window.SDFirebase)
+      : document.addEventListener("sd:firebase-pronto", () => ok(window.SDFirebase), { once: true })));
+    let v = null;
+    try { v = F && F.lerVitrine ? await F.lerVitrine(id) : null; } catch (_) { v = null; }
+    if (!v) {
+      U.mostrarMensagem($("#msg-geral"), "atencao", "Este prestador não foi encontrado ou não está disponível agora.");
+      return false;
+    }
+    Object.assign(perfil, {
+      nomeFantasia: v.nome, razaoSocial: v.nome, areaAtuacao: v.areaAtuacao || "", especialidades: v.especialidades || [],
+      sobre: v.sobre || "", anoInicio: v.anoInicio || "", emergencia: !!v.emergencia, raioKm: v.raioKm || 0,
+      cidadesAtendidas: v.cidadesAtendidas || [], horarioAtendimento: v.horarioAtendimento || null,
+      bairro: v.bairro || "", cidade: v.cidade || "", uf: v.uf || "", foto: v.foto || null,
+      telefones: [{ numero: v.whatsapp || "", principal: true }], documento: "—", email: ""
+    });
+    // Sem WhatsApp na vitrine = o prestador não liberou o contato
+    if (window.SD_INTERRUPTORES) window.SD_INTERRUPTORES.gravar("mostrar-contatos", !!v.whatsapp);
+    return true;
+  }
+
   /* ---------- 8. FORMULÁRIO: campos e regras exclusivas do Prestador ---------- */
   function iniciarFormulario() {
+    $("#aviso-secundarias-texto").textContent = `"${SD.config.avisoSecundarias}"`;
+    // Atividades secundárias: lista única (sem a área principal)
+    secundarias = window.SDListaEscolha.criar($("#campo-secundarias"), {
+      id: "f-secundarias", rotulo: "Adicionar atividade secundária", rotuloLista: "Atividades secundárias escolhidas",
+      max: CONFIG.maxEspecialidades, descricao: "d-secundarias e-secundarias", vazio: "Nenhuma atividade secundária",
+      opcoes: () => TODOS_SERVICOS.filter((n) => n !== ($("#f-area").value || perfil.areaAtuacao)),
+      valor: perfil.especialidades, aoMudar: P.atualizarAltura
+    });
+    $("#f-area").addEventListener("change", () => secundarias.atualizarOpcoes());
+    // Cidades atendidas: lista do IBGE do estado da empresa (+ a própria cidade primeiro)
+    cidades = window.SDListaEscolha.criar($("#campo-cidades"), {
+      id: "f-cidades", rotulo: "Adicionar cidade atendida", rotuloLista: "Cidades atendidas", max: MAX_CIDADES,
+      descricao: "d-cidades", vazio: "Nenhuma cidade escolhida (vale só a distância)", textoEscolha: "Carregando cidades…",
+      opcoes: () => cidadesDaUf, valor: perfil.cidadesAtendidas, aoMudar: P.atualizarAltura
+    });
+    carregarCidades(perfil.uf).then((lista) => {
+      cidadesDaUf = lista;
+      cidades.atualizarOpcoes();
+      if (!lista.length) cidades.select.options[0].textContent = perfil.uf ? "Lista indisponível agora (tente mais tarde)" : "Salve o endereço primeiro";
+    });
+    // Horário de atendimento (dias + horas)
+    horarioEditor = window.SDDataHora.semana($("#campo-horario-atendimento"), {
+      idBase: "f-atend", valor: perfil.horarioAtendimento, dicaObs: "Ex.: plantão aos domingos só para emergências",
+      aoMudar: P.atualizarAltura
+    });
+
     $("#f-sobre").addEventListener("input", (e) => { $("#contador-sobre").textContent = e.target.value.length; P.atualizarAltura(); });
     P.iniciarFormulario({
       perfil,
       coletar: (valor) => ({
         razaoSocial: valor("f-razao"), nomeFantasia: valor("f-fantasia"),
         areaAtuacao: $("#f-area").value, sobre: valor("f-sobre"),
-        especialidades: valor("f-especialidades"), certificacoes: valor("f-certificacoes"),
-        responsavelNome: valor("f-resp-nome"), responsavelCargo: valor("f-resp-cargo"), anoInicio: valor("f-inicio"),
-        horario: valor("f-horario"), raioKm: $("#f-raio").value, bairrosAtendidos: valor("f-bairros"),
+        especialidades: secundarias.valor, certificacoes: valor("f-certificacoes"),
+        responsavelNome: valor("f-resp-nome"), responsavelCargo: valor("f-resp-cargo"), anoInicio: $("#f-inicio").value,
+        horarioAtendimento: horarioEditor.valor, raioKm: $("#f-raio").value, cidadesAtendidas: cidades.valor,
         emergencia: $("#f-emergencia").checked
       }),
-      camposTexto: ["razaoSocial", "nomeFantasia", "areaAtuacao", "sobre", "responsavelNome", "responsavelCargo",
-        "anoInicio", "horario", "bairrosAtendidos"],
+      camposTexto: ["razaoSocial", "nomeFantasia", "areaAtuacao", "sobre", "responsavelNome", "responsavelCargo", "anoInicio"],
       validar: (d, marcar) => {
         const anoAtual = new Date().getFullYear();
         if (d.razaoSocial && d.razaoSocial.length < 3) marcar("f-razao", "Informe a razão social completa.");
         if (d.nomeFantasia && d.nomeFantasia.length < 2) marcar("f-fantasia", "Nome fantasia muito curto.");
         if (d.sobre && d.sobre.length < 30) marcar("f-sobre", "Escreva pelo menos 30 caracteres para apresentar a empresa.");
-        if (d.especialidades && U.listaDeTexto(d.especialidades).length > CONFIG.maxEspecialidades) marcar("f-especialidades", `Informe no máximo ${CONFIG.maxEspecialidades} especialidades.`);
-        // Cada item com no máximo 40 caracteres (mesmo limite de firebase/firestore.rules)
-        if (d.especialidades && U.listaDeTexto(d.especialidades).some((x) => x.length > CONFIG.maxCaracteresItem)) marcar("f-especialidades", `Cada especialidade pode ter no máximo ${CONFIG.maxCaracteresItem} caracteres.`);
+        // Atividades secundárias: a lista já impede repetido e item fora da lista; o principal não pode repetir
+        const principal = d.areaAtuacao || perfil.areaAtuacao;
+        if (principal && d.especialidades.includes(principal)) marcar("f-secundarias", `"${principal}" já é a área de atuação (principal).`);
+        if (d.certificacoes && new Set(U.listaDeTexto(d.certificacoes).map((x) => x.toLowerCase())).size < U.listaDeTexto(d.certificacoes).length) marcar("f-certificacoes", "Há registros repetidos.");
         if (d.certificacoes && U.listaDeTexto(d.certificacoes).length > CONFIG.maxCertificacoes) marcar("f-certificacoes", `Informe no máximo ${CONFIG.maxCertificacoes} certificações.`);
         if (d.certificacoes && U.listaDeTexto(d.certificacoes).some((x) => x.length > CONFIG.maxCaracteresItem)) marcar("f-certificacoes", `Cada certificação pode ter no máximo ${CONFIG.maxCaracteresItem} caracteres.`);
         if (d.responsavelNome && d.responsavelNome.split(/\s+/).length < 2) marcar("f-resp-nome", "Informe nome e sobrenome.");
         if (d.responsavelCargo && d.responsavelCargo.length < 2) marcar("f-resp-cargo", "Cargo muito curto.");
-        if (d.anoInicio && (!/^\d{4}$/.test(d.anoInicio) || +d.anoInicio < 1900 || +d.anoInicio > anoAtual)) marcar("f-inicio", `Informe um ano entre 1900 e ${anoAtual}.`);
+        if (d.anoInicio && !ANOS.includes(d.anoInicio)) marcar("f-inicio", `Escolha um ano entre ${SD.config.anoInicioMinimo} e ${anoAtual}.`);
+        horarioEditor.validar(marcar);
       },
       // Listas, número e caixa de seleção (não são texto simples)
       aplicarExtra: (d, alterados) => {
-        ["especialidades", "certificacoes"].forEach((c) => {
-          if (!d[c]) return;
-          const nova = U.listaDeTexto(d[c]);
-          if (nova.join("|") !== perfil[c].join("|")) { perfil[c] = nova; alterados.push(c); }
+        // Listas que já vêm preenchidas com o valor atual: mudou → salva (vazia = apagou tudo)
+        [["especialidades", d.especialidades], ["cidadesAtendidas", d.cidadesAtendidas]].forEach(([c, nova]) => {
+          if (nova.join("|") !== (perfil[c] || []).join("|")) { perfil[c] = nova; alterados.push(c); }
         });
+        // Antigas digitadas à mão (texto livre) somem quando as listas novas são salvas
+        if (alterados.includes("cidadesAtendidas") && perfil.bairrosAtendidos) { perfil.bairrosAtendidos = null; alterados.push("bairrosAtendidos"); }
+        if (d.certificacoes) {
+          const nova = U.listaDeTexto(d.certificacoes);
+          if (nova.join("|") !== perfil.certificacoes.join("|")) { perfil.certificacoes = nova; alterados.push("certificacoes"); }
+        }
+        if (JSON.stringify(d.horarioAtendimento) !== JSON.stringify(perfil.horarioAtendimento || null)) {
+          perfil.horarioAtendimento = d.horarioAtendimento; alterados.push("horarioAtendimento");
+          if (perfil.horario) { perfil.horario = null; alterados.push("horario"); }     // texto antigo sai
+        }
         if (d.raioKm && Number(d.raioKm) !== perfil.raioKm) { perfil.raioKm = Number(d.raioKm); alterados.push("raioKm"); }
         if (d.emergencia !== !!perfil.emergencia) { perfil.emergencia = d.emergencia; alterados.push("emergencia"); }
       },
-      aoConcluir: () => { $("#contador-sobre").textContent = "0"; renderizarDados(); }
+      depoisDeSalvar: () => {
+        publicar();
+        // Estado mudou → recarrega a lista de cidades do novo estado
+        if (cidadesDaUf.length === 0 || perfil.uf) carregarCidades(perfil.uf).then((l) => { cidadesDaUf = l; cidades.atualizarOpcoes(); });
+      },
+      aoConcluir: () => renderizarDados()
     });
   }
 
   /* ---------- 9. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
     // Conta real (Firebase): troca o exemplo pelos dados do prestador logado.
-    // Avaliações e quadro de exemplo somem (os reais chegam nos Ciclos 3 e 4).
-    if (await P.carregarDadosReais(perfil, "prestador")) { avaliacoes.length = 0; servicosKanban.length = 0; }
+    // Dono: dados reais da conta · Cliente (?id=): só a vitrine pública
+    const idOutro = new URLSearchParams(location.search).get("id");
+    const real = idOutro ? false : await P.carregarDadosReais(perfil, "prestador");
+    if (idOutro) await carregarVitrine(idOutro);
     quadro = window.SDKanban.criar({
       alvo: $("#kanban"), resumo: $("#kanban-resumo"), total: $("#servicos-total"), anuncio: $("#kanban-anuncio"),
       encerrados: $("#kanban-encerrados"),
@@ -536,6 +561,11 @@
     });
     iniciarInterruptores();
     iniciarVisao();
+    if (real) {
+      // Perfil sem ponto no mapa (contas antigas): calcula uma vez pelo endereço
+      if (!perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) await window.SDFirebase.atualizarLocal(perfil);
+      publicar();                                        // mantém o cartão público em dia
+    }
   });
 
   // Ganchos só para testes automatizados (não usados pela página)

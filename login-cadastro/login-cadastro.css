@@ -56,11 +56,6 @@
 [data-tema="escuro"] .link-botao { color: var(--cor-texto); }
 [data-tema="escuro"] .link-botao:focus-visible { outline-color: var(--cor-texto); }
 
-/* Bloco da demonstração (tipo de conta do login de teste) */
-.login-demo { padding: .75rem; border: 1px dashed var(--cor-atencao); border-radius: 8px; background: var(--cor-atencao-fundo); }
-.login-demo label { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-.login-demo .selo-demo { margin-top: 0; }
-
 /* ---------- 3. CRIAR LOGIN: tipos de conta + cadastros ---------- */
 .login-tipos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
 .tipo-conta { min-height: 3.25rem; }
@@ -136,13 +131,6 @@
 .opcao-acesso:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; }
 [data-tema="escuro"] .opcao-acesso:focus-visible { outline-color: #FFFFFF; }
 
-/* Caixa da demonstração (o "e-mail" com o link aparece aqui) */
-.popup-demo {
-  display: flex; flex-direction: column; align-items: flex-start; gap: .5rem;
-  padding: .75rem; border: 1px dashed var(--cor-atencao); border-radius: 8px; background: var(--cor-atencao-fundo);
-}
-.popup-demo .selo-demo, .popup-demo-dica .selo-demo { margin-top: 0; }
-.popup-demo p { font-size: .875rem; }
 
 @keyframes login-abrir { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 

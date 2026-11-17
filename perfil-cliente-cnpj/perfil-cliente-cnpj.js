@@ -9,8 +9,8 @@
      - Foto de perfil (logo) opcional → foto padrão do sistema.
      - "Fotos do local": carrossel OPCIONAL; cada foto indica a área.
      - Aba "Serviços realizados" (componentes/servicos-realizados) com "Local".
-   IMPORTANTE: demonstração — salvar, excluir, enviar fotos e buscar o
-   histórico dependem do servidor.
+   DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
+   Horário para visitas: OPCIONAL (componentes/datahora → semana).
    ===================================================================== */
 (function () {
   "use strict";
@@ -41,13 +41,17 @@
   ];
   const CARGO_OUTRO = "__outro__";
 
-  // Dias da semana (0 = domingo, como no JavaScript)
-  const DIAS = [
-    { n: 1, curto: "Seg", nome: "Segunda" }, { n: 2, curto: "Ter", nome: "Terça" }, { n: 3, curto: "Qua", nome: "Quarta" },
-    { n: 4, curto: "Qui", nome: "Quinta" }, { n: 5, curto: "Sex", nome: "Sexta" }, { n: 6, curto: "Sáb", nome: "Sábado" },
-    { n: 0, curto: "Dom", nome: "Domingo" }
+  // Aviso "Finalize seu cadastro": campos que contam ← MUDE AQUI
+  const CAMPOS_CADASTRO = [
+    { rotulo: "Nome fantasia",              vazio: (p) => !p.nomeFantasia },
+    { rotulo: "Tipo de estabelecimento",    vazio: (p) => !p.tipoEstabelecimento },
+    { rotulo: "Cargo do responsável",       vazio: (p) => !p.responsavelCargo },
+    { rotulo: "Contato no local",           vazio: (p) => !p.contatoNome || !p.contatoTelefone },
+    { rotulo: "Horário para visitas",       vazio: (p) => !p.horarioVisitas || !(p.horarioVisitas.faixas || []).length },
+    { rotulo: "WhatsApp/Telefone",          vazio: (p) => !(p.telefones || []).some((t) => t.principal && t.numero) },
+    { rotulo: "Endereço (número)",          vazio: (p) => !p.cep || !p.numero }
   ];
-  const MAX_FAIXAS = 3;
+  let horarioEditor = null;
 
   // Áreas mais comuns para manutenção em condomínios e empresas
   // (base: sistemas citados na ABNT NBR 5674 — manutenção de edificações).
@@ -69,58 +73,21 @@
     { nome: "Outra área",                             exemplos: "" }
   ];
 
-  /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
-     Substituir pelos dados vindos do servidor depois do login. */
-  const demo = (texto) => window.SDCarrossel.imagemDemo(texto);
-
+  /* ---------- 2. DADOS DO PERFIL ----------
+     Começa VAZIO; carregarDadosReais() preenche com a conta logada. */
   const perfil = {
-    razaoSocial: "Condomínio Edifício Exemplo",
-    nomeFantasia: "Residencial Exemplo",
-    tipoConta: "Cliente - Pessoa jurídica (CNPJ)",
-    documento: "00.000.000/0001-00",
-    tipoEstabelecimento: "Condomínio residencial",
-    responsavelNome: "Nome Sobrenome Exemplo",
-    responsavelCargo: "Síndico(a)",
-    email: "administracao@exemplo.com.br",
-    telefones: [{ numero: "1130000000", principal: true }],
-    contatoNome: "Nome do Zelador",
-    contatoFuncao: "Zelador(a)",
-    contatoTelefone: "11911111111",
-    // Horário para visitas: faixas com dias (0=dom … 6=sáb) e horas HH:MM + observação livre
-    horarioVisitas: {
-      faixas: [{ dias: [1, 2, 3, 4, 5], inicio: "08:00", fim: "17:00" }, { dias: [6], inicio: "08:00", fim: "12:00" }],
-      obs: ""
-    },
-    endereco: "Avenida Exemplo",
-    numero: "500",
-    complemento: "",
-    bairro: "Centro",
-    cep: "01000000",
-    cidade: "São Paulo",
-    uf: "SP",
+    razaoSocial: "", nomeFantasia: "", tipoConta: "Cliente - Pessoa jurídica (CNPJ)", documento: "",
+    tipoEstabelecimento: "", responsavelNome: "", responsavelCargo: "", email: "",
+    telefones: [{ numero: "", principal: true }],
+    contatoNome: "", contatoFuncao: "", contatoTelefone: "",
+    horarioVisitas: null,                     // { faixas: [{ dias, inicio, fim }], obs } — opcional
+    endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
     // Notas que os prestadores dão ao cliente NÃO aparecem aqui (só os prestadores as veem).
-    foto: null,                              // null = usa a foto padrão
-    // Fotos do local (opcional). area = uma das AREAS ("" = não informada)
-    fotosLocal: [
-      { src: demo("Fachada do prédio"), area: "Fachada e área externa" },
-      { src: demo("Garagem — vista geral"), area: "Garagem e estacionamento" },
-      { src: demo("Área de lazer — piscina"), area: "Área de lazer" }
-    ]
+    foto: null,                               // null = usa a foto padrão
+    fotosLocal: []                            // opcional; ainda só na tela (não salvas)
   };
-
-  // Histórico de serviços (exemplo). local = área onde o serviço foi feito (CNPJ);
-  // fotos = fotos do serviço realizado (aparecem no carrossel ao expandir o item).
-  const servicos = [
-    { data: "2026-10-10", servico: "Manutenção preventiva das bombas de recalque", local: "Caixa d'água, reservatórios e bombas",
-      prestador: "Empresa Exemplo A", prestadorId: "p-exemplo-a", valor: 1450.00, estrelas: 5, foto: null,
-      fotos: [{ src: demo("Bombas — antes"), legenda: "Antes" }, { src: demo("Troca de selos"), legenda: "Durante o serviço" }, { src: demo("Bombas — depois"), legenda: "Depois" }] },
-    { data: "2026-09-03", servico: "Troca do motor do portão da garagem", local: "Garagem e estacionamento",
-      prestador: "Empresa Exemplo B", prestadorId: "p-exemplo-b", valor: 2380.00, estrelas: 4, foto: null,
-      fotos: [{ src: demo("Motor antigo"), legenda: "Motor antigo" }, { src: demo("Motor novo instalado"), legenda: "Motor novo instalado" }] },
-    { data: "2026-07-18", servico: "Recarga e inspeção dos extintores", local: "Sistema de incêndio",
-      prestador: "Prestador Exemplo C", prestadorId: "p-exemplo-c", valor: 640.00, estrelas: null, foto: null,
-      fotos: [] }
-  ];
+  // Histórico de serviços realizados: chega com os pedidos reais (Ciclo 3/4)
+  const servicos = [];
 
   let telefones = null, foto = null;
 
@@ -142,7 +109,7 @@
       responsavel: perfil.responsavelCargo ? `${perfil.responsavelNome} — ${perfil.responsavelCargo}` : perfil.responsavelNome,
       email: perfil.email,
       contatoLocal: textoContatoLocal(),
-      horarioVisitas: textoHorario(perfil.horarioVisitas),
+      horarioVisitas: window.SDDataHora.textoSemana(perfil.horarioVisitas),
       ...P.enderecoParaTela(perfil)
     });
     P.preencherPlaceholders({
@@ -156,9 +123,10 @@
     });
     P.preencherSelect($("#f-tipo"), perfil.tipoEstabelecimento || "não informado", TIPOS_ESTABELECIMENTO);
     preencherCargos();
-    carregarHorario(perfil.horarioVisitas);
+    if (horarioEditor) horarioEditor.definir(perfil.horarioVisitas);
     if (telefones) telefones.renderizar();
     if (foto) foto.renderizar();
+    P.avisoCadastro(perfil, CAMPOS_CADASTRO);
   }
 
   /* ---------- 3b. CARGO DO RESPONSÁVEL (lista + "Outro") ---------- */
@@ -178,104 +146,13 @@
   // Cargo escolhido: da lista ou o texto de "Outro"
   const cargoEscolhido = () => ($("#f-resp-cargo").value === CARGO_OUTRO ? $("#f-resp-cargo-outro").value.trim() : $("#f-resp-cargo").value);
 
-  /* ---------- 3c. HORÁRIO PARA VISITAS ----------
-     Dias: botões Seg…Dom. Horas: rodinhas de início e fim (componentes/hora-rolante).
-     Só aceita dias que existem e horas reais (00:00 a 23:59). Observação livre embaixo. */
-  const horaValida = (h) => /^([01]\d|2[0-3]):[0-5]\d$/.test(h);
-
-  // [1,2,3,4,5] → "Seg a Sex" · [1,3,5] → "Seg, Qua, Sex"
-  function textoDias(dias) {
-    const ordem = DIAS.map((d) => d.n).filter((n) => dias.includes(n));
-    const pos = ordem.map((n) => DIAS.findIndex((d) => d.n === n));
-    const blocos = [];
-    pos.forEach((p) => {
-      const ultimo = blocos[blocos.length - 1];
-      if (ultimo && p === ultimo[1] + 1) ultimo[1] = p; else blocos.push([p, p]);
-    });
-    return blocos.map(([a, z]) => (a === z ? DIAS[a].curto : `${DIAS[a].curto}${z - a > 1 ? " a " : ", "}${DIAS[z].curto}`)).join(", ");
-  }
-  function textoHorario(h) {
-    if (!h || !h.faixas || !h.faixas.length) return "—";
-    const t = h.faixas.map((f) => `${textoDias(f.dias)}, ${f.inicio} às ${f.fim}`).join(" · ");
-    return h.obs ? `${t} — ${h.obs}` : t;
-  }
-
-  // Uma faixa: dias (caixas) + das HH:MM às HH:MM + remover
-  function criarFaixa(f, i) {
-    const n = i + 1;
-    const li = document.createElement("li");
-    li.className = "horario-faixa";
-    const dias = DIAS.map((d, j) => `
-      <label class="dia-caixa"><input type="checkbox" value="${d.n}"${j === 0 ? ` id="f-hor-${n}-dias" aria-describedby="e-hor-${n}-dias"` : ""}${f.dias.includes(d.n) ? " checked" : ""}>
-        <span aria-hidden="true">${d.curto}</span><span class="visualmente-oculto">${d.nome}</span></label>`).join("");
-    li.innerHTML = `
-      <fieldset class="horario-dias"><legend>Horário ${n}: dias</legend><div class="dias-lista">${dias}</div>
-        <span class="campo-erro" id="e-hor-${n}-dias"></span></fieldset>
-      <div class="horario-horas">
-        <div class="campo" data-hora="inicio"><span class="campo-erro" id="e-hor-${n}-inicio"></span></div>
-        <div class="campo" data-hora="fim"><span class="campo-erro" id="e-hor-${n}-fim"></span></div>
-        <button type="button" class="btn btn-pequeno btn-icone btn-remover-faixa" aria-label="Remover horário ${n}" title="Remover horário ${n}">${P.ICONES.x}</button>
-      </div>`;
-    // Horas em "rodinhas" (componentes/hora-rolante): só aceitam horas que existem
-    const rodas = (qual, rotulo, valor) => {
-      const caixa = li.querySelector(`[data-hora="${qual}"]`);
-      const erro = caixa.querySelector(".campo-erro");
-      const h = window.SDHoraRolante.criar(caixa, { id: `f-hor-${n}-${qual}`, rotulo, valor, descricao: erro.id });
-      caixa.append(erro);                                   // mensagem de erro abaixo das rodas
-      return h;
-    };
-    li._inicio = rodas("inicio", "Das", f.inicio);
-    li._fim = rodas("fim", "Às", f.fim);
-    li.querySelector(".btn-remover-faixa").addEventListener("click", async () => {
-      if (!(await P.confirmar({ titulo: "Excluir esta faixa de horário?", texto: "Os dias e horas desta faixa serão removidos.", sim: "Sim, excluir" }))) return;
-      const atual = lerHorario();
-      atual.faixas.splice(i, 1);
-      carregarHorario(atual);
-      $("#btn-add-faixa").focus();
-    });
-    return li;
-  }
-
-  // Monta os campos a partir de um horário salvo
-  function carregarHorario(h) {
-    const lista = $("#horario-faixas");
-    const faixas = h && h.faixas && h.faixas.length ? h.faixas : [{ dias: [], inicio: "08:00", fim: "17:00" }];
-    lista.innerHTML = "";
-    faixas.forEach((f, i) => lista.append(criarFaixa(f, i)));
-    lista.querySelectorAll(".btn-remover-faixa").forEach((b) => { b.hidden = faixas.length === 1; });
-    $("#btn-add-faixa").disabled = faixas.length >= MAX_FAIXAS;
-    $("#f-horario-obs").value = (h && h.obs) || "";
-    P.atualizarAltura();
-  }
-
-  // Lê o que está na tela
-  function lerHorario() {
-    const faixas = [...$("#horario-faixas").children].map((li) => ({
-      dias: [...li.querySelectorAll('input[type="checkbox"]:checked')].map((c) => Number(c.value)),
-      inicio: li._inicio.valor,
-      fim: li._fim.valor
-    }));
-    return { faixas, obs: $("#f-horario-obs").value.trim() };
-  }
-
-  function validarHorario(h, marcar) {
-    h.faixas.forEach((f, i) => {
-      const n = i + 1;
-      if (!f.dias.length) marcar(`f-hor-${n}-dias`, "Marque pelo menos um dia.");
-      if (!horaValida(f.inicio)) marcar(`f-hor-${n}-inicio`, "Hora inválida (use de 00:00 a 23:59).");
-      if (!horaValida(f.fim)) marcar(`f-hor-${n}-fim`, "Hora inválida (use de 00:00 a 23:59).");
-      else if (horaValida(f.inicio) && f.fim <= f.inicio) marcar(`f-hor-${n}-fim`, "O fim precisa ser depois do início.");
-    });
-    if (h.obs && h.obs.length < 3) marcar("f-horario-obs", "Observação muito curta.");
-  }
-
+  /* ---------- 3c. HORÁRIO PARA VISITAS (opcional) ----------
+     componentes/datahora → semana: dias S T Q Q S S D + "das 08:00 às 17:00".
+     Nada marcado = não informado (não bloqueia salvar o resto do perfil). */
   function iniciarHorario() {
-    $("#btn-add-faixa").addEventListener("click", () => {
-      const atual = lerHorario();
-      if (atual.faixas.length >= MAX_FAIXAS) return;
-      atual.faixas.push({ dias: [], inicio: "08:00", fim: "12:00" });
-      carregarHorario(atual);
-      $(`#f-hor-${atual.faixas.length}-dias`).focus();
+    horarioEditor = window.SDDataHora.semana($("#horario-visitas-editor"), {
+      idBase: "f-visita", valor: perfil.horarioVisitas, aoMudar: P.atualizarAltura,
+      dicaObs: "Ex.: avisar a portaria com 1 dia de antecedência"
     });
   }
 
@@ -390,7 +267,7 @@
         responsavelNome: valor("f-resp-nome"), responsavelCargo: cargoEscolhido(),
         cargoOutro: $("#f-resp-cargo").value === CARGO_OUTRO,
         contatoNome: valor("f-local-nome"), contatoFuncao: valor("f-local-funcao"),
-        contatoTelefone: U.soDigitos(valor("f-local-telefone")), horarioVisitas: lerHorario()
+        contatoTelefone: U.soDigitos(valor("f-local-telefone")), horarioVisitas: horarioEditor.valor
       }),
       camposTexto: ["razaoSocial", "nomeFantasia", "tipoEstabelecimento", "responsavelNome", "responsavelCargo",
         "contatoNome", "contatoFuncao", "contatoTelefone"],
@@ -401,11 +278,11 @@
         if (d.cargoOutro && (!d.responsavelCargo || d.responsavelCargo.length < 2)) marcar("f-resp-cargo-outro", "Escreva o cargo.");
         if (d.contatoNome && d.contatoNome.length < 2) marcar("f-local-nome", "Nome muito curto.");
         if (d.contatoTelefone && !U.telefoneValido(d.contatoTelefone)) marcar("f-local-telefone", "Informe DDD + número (10 ou 11 dígitos).");
-        validarHorario(d.horarioVisitas, marcar);
+        horarioEditor.validar(marcar);
       },
       // Horário: aplica se mudou (os campos já vêm preenchidos com o valor atual)
       aplicarExtra: (d, alterados) => {
-        if (JSON.stringify(d.horarioVisitas) !== JSON.stringify(perfil.horarioVisitas)) {
+        if (JSON.stringify(d.horarioVisitas) !== JSON.stringify(perfil.horarioVisitas || null)) {
           perfil.horarioVisitas = d.horarioVisitas;
           alterados.push("horarioVisitas");
         }
@@ -416,9 +293,8 @@
 
   /* ---------- 6. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
-    // Conta real (Firebase): troca o exemplo pelos dados da conta; o histórico
-    // de exemplo some (os serviços reais chegam no Ciclo 3).
-    if (await P.carregarDadosReais(perfil, "cliente-cnpj")) servicos.length = 0;
+    // Conta real (Firebase): dados da conta logada
+    const real = await P.carregarDadosReais(perfil, "cliente-cnpj");
     P.iniciarInterruptoresPerfil();                        // botão Localização (linha das abas)
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     foto = P.iniciarFotoOpcional({
@@ -433,6 +309,7 @@
     });
     P.iniciarSanfona();
     iniciarHorario();
+    if (real && !perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) window.SDFirebase.atualizarLocal(perfil);   // ponto no mapa (uma vez)
     $("#f-resp-cargo").addEventListener("change", (e) => {
       const outro = e.target.value === CARGO_OUTRO;
       $("#campo-cargo-outro").hidden = !outro;

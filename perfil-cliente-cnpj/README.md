@@ -16,7 +16,7 @@ Espaço de empresas, condomínios e MEI: dados da empresa, quem atende o prestad
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `perfil-cliente-cnpj.css` / `perfil-cliente-cnpj.js` | Página, visual e dados de demonstração. |
+| `index.html` / `perfil-cliente-cnpj.css` / `perfil-cliente-cnpj.js` | Página, visual e regras (dados reais da conta). |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer

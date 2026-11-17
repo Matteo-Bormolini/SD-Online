@@ -119,3 +119,8 @@
   .setor svg { grid-row: auto; width: 1.5rem; height: 1.5rem; }
   .setor span { display: none; }                      /* só o nome no celular */
 }
+
+/* GPS (usar a localização atual) + aviso de taxa das atividades secundárias */
+.localizar-gps { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin-top: .5rem; }
+.localizar-gps .btn svg { width: 1.125rem; height: 1.125rem; }
+.cartao-aviso { margin: .5rem 0 0; font-size: .8125rem; }

@@ -9,10 +9,12 @@
    Cada perfil (pasta perfil-<tipo>, arquivo perfil-<tipo>.js) só guarda o que é exclusivo dele.
    Depende de: componentes/utilidades/utilidades.js, componentes/senha/senha.js
    e componentes/endereco/endereco.js (CEP primeiro, preenche o resto).
-   DADOS REAIS (Firebase, desde 11/11/2026): carregarDadosReais() troca os
-   dados de exemplo pelos da conta logada; "Editar perfil" e "Excluir perfil"
-   salvam no banco. Fotos ainda NÃO são enviadas (precisam do Cloud Storage,
-   que exige o plano pago do Firebase): ficam só na tela.
+   DADOS REAIS (Firebase): carregarDadosReais() coloca na tela os dados da
+   conta logada (sem dados fictícios desde a v0.7.9). "Editar perfil",
+   telefones, botões, FOTO DE PERFIL e "Excluir perfil" salvam no banco.
+   Foto de perfil: reduzida no navegador (256 px, WebP/JPEG, ~20 KB) e
+   guardada no próprio perfil — o Cloud Storage exige plano pago.
+   Fotos de trabalhos/local: ainda só na tela (próximo ciclo).
    ===================================================================== */
 (function () {
   "use strict";
@@ -63,7 +65,6 @@
   }
 
   async function carregarDadosReais(perfil, tipo) {
-    if (window.SD && window.SD.config.modoDemonstracao) return false;
     if (new URLSearchParams(location.search).get("id")) return false;    // perfil de outra pessoa
     const F = await firebase();
     if (!F || !F.ativo) return false;
@@ -82,8 +83,6 @@
     // Botões liga/desliga salvos na conta → valem nesta tela
     if (interruptores && window.SD_INTERRUPTORES) Object.entries(interruptores).forEach(([id, v]) => window.SD_INTERRUPTORES.gravar(id, v));
     Object.defineProperty(perfil, "_real", { value: true, enumerable: false });
-    // Conta real: esconde o selo "Dados de demonstração" do topo da página
-    document.querySelectorAll('.selo-demo[role="note"]').forEach((selo) => { selo.hidden = true; });
     return true;
   }
 
@@ -180,7 +179,7 @@
     let arrasto = null;
     trilho.addEventListener("pointerdown", (e) => {
       if (semArrasto() || e.pointerType !== "mouse" || e.button !== 0 ||
-          e.target.closest("input, button, a, label, textarea, select, summary, .carrossel, .kanban")) return;
+          e.target.closest("input, button, a, label, textarea, select, summary, .carrossel, .kanban, .dh")) return;
       arrasto = { x: e.clientX, inicio: trilho.scrollLeft, moveu: false };
     });
     window.addEventListener("pointermove", (e) => {
@@ -350,7 +349,9 @@
 
   function erroCampo(id, msg) {
     const input = document.getElementById(id);
-    const span = document.getElementById("e-" + id.replace("f-", ""));
+    // Mensagem: <span id="e-…"> do campo ou, nos campos de data/hora, o aviso da faixa
+    const faixa = input && input.closest(".dh-faixa, .dh-obs");
+    const span = document.getElementById("e-" + id.replace("f-", "")) || (faixa && faixa.querySelector(".campo-erro"));
     if (span) span.textContent = msg || "";
     if (msg) input.setAttribute("aria-invalid", "true"); else input.removeAttribute("aria-invalid");
   }
@@ -484,14 +485,20 @@
           if (dados.senha) await F.trocarSenha(dados.senha);
           if (emailNovo) { await F.trocarEmail(emailNovo); avisos.push(`Enviamos um link para ${emailNovo}: o e-mail só muda depois que você clicar nele.`); }
         } catch (e) {
-          Object.keys(copia).forEach((k) => { perfil[k] = copia[k]; });   // desfaz na tela
+          // Desfaz SÓ os dados; o formulário fica como a pessoa deixou (caixas marcadas,
+          // listas, contador) para corrigir e tentar de novo. (Antes ele voltava ao salvo.)
+          Object.keys(copia).forEach((k) => { perfil[k] = copia[k]; });
           botao.disabled = false; botao.removeAttribute("aria-busy");
-          if (aoConcluir) aoConcluir();
           U.mostrarMensagem(msg, "erro", "Não foi salvo: " + F.mensagemErro(e));
           atualizarAltura();
           return;
         }
         botao.disabled = false; botao.removeAttribute("aria-busy");
+        // Endereço novo → atualiza o ponto no mapa (sem travar a tela se falhar)
+        if (alterados.some((c) => CAMPOS_ENDERECO.includes(c)) && F.atualizarLocal) {
+          F.atualizarLocal(perfil).then((ok) => { if (!ok) U.mostrarMensagem(msg, "atencao", "Endereço salvo, mas o ponto no mapa não foi encontrado. Confira o número e o CEP."); });
+        }
+        if (opcoes.depoisDeSalvar) opcoes.depoisDeSalvar(alterados);
       }
 
       form.reset();
@@ -534,22 +541,98 @@
       if (!arq) return;
       const erro = validarArquivo(arq, config);
       if (erro) { U.mostrarMensagem(msg, "erro", erro); return; }
-      if (!(await confirmar({ tipo: "editar", titulo: "Trocar a foto de perfil?", texto: `A foto atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) return;
-      if (perfil.foto) URL.revokeObjectURL(perfil.foto);
-      perfil.foto = URL.createObjectURL(arq);
-      renderizar();
-      U.mostrarMensagem(msg, "atencao", "Pré-visualização atualizada (ainda não enviada ao servidor).");
+      if (perfil.foto && !(await confirmar({ tipo: "editar", titulo: "Trocar a foto de perfil?", texto: `A foto atual será substituída por "${arq.name}".`, sim: "Sim, trocar" }))) return;
+      await salvarFoto(perfil, arq, msg, renderizar);
     });
     remover.addEventListener("click", async () => {
       if (!(await confirmar({ titulo: "Remover a foto de perfil?", texto: "Será usada a foto padrão do site.", sim: "Sim, remover" }))) return;
-      if (perfil.foto) URL.revokeObjectURL(perfil.foto);
-      perfil.foto = null;
-      renderizar();
+      await salvarFoto(perfil, null, msg, renderizar);
       $("#btn-foto").focus();
-      U.mostrarMensagem(msg, "atencao", "Foto removida nesta tela; será usada a foto padrão (ainda não salvo no servidor).");
     });
     renderizar();
     return { renderizar };
+  }
+
+  /* ---------- 6b. FOTO DE PERFIL: reduz e salva no banco ----------
+     Sem Cloud Storage (pago): a imagem é reduzida para 256 × 256 px e vira
+     texto (data:image/webp;base64,…) guardado no perfil. Fica entre 8 e 40 KB. */
+  const FOTO = { lado: 256, maxCaracteres: 60000 };      // ← MUDE AQUI (mesmo limite das regras do banco)
+  function comprimirFoto(arq) {
+    return new Promise((ok, falha) => {
+      const url = URL.createObjectURL(arq), img = new Image();
+      img.onload = () => {
+        // Recorte quadrado do centro (a foto aparece num círculo)
+        const lado = Math.min(img.naturalWidth, img.naturalHeight);
+        const tela = document.createElement("canvas");
+        tela.width = tela.height = FOTO.lado;
+        const ctx = tela.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, FOTO.lado, FOTO.lado);   // PNG transparente → fundo branco
+        ctx.drawImage(img, (img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado, 0, 0, FOTO.lado, FOTO.lado);
+        URL.revokeObjectURL(url);
+        // WebP (menor); Safari antigo não gera WebP → JPEG. Baixa a qualidade até caber.
+        for (const q of [0.82, 0.7, 0.55, 0.4]) {
+          let dado = tela.toDataURL("image/webp", q);
+          if (!dado.startsWith("data:image/webp")) dado = tela.toDataURL("image/jpeg", q);
+          if (dado.length <= FOTO.maxCaracteres) { ok(dado); return; }
+        }
+        falha(new Error("FOTO_GRANDE"));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); falha(new Error("FOTO_INVALIDA")); };
+      img.src = url;
+    });
+  }
+  // arq = arquivo escolhido ou null (remover). Conta real: grava no banco.
+  async function salvarFoto(perfil, arq, msg, renderizar) {
+    const anterior = perfil.foto;
+    try {
+      perfil.foto = arq ? await comprimirFoto(arq) : null;
+    } catch (e) {
+      U.mostrarMensagem(msg, "erro", e.message === "FOTO_INVALIDA" ? `"${arq.name}": não foi possível ler a imagem.` : "Não foi possível reduzir esta imagem. Tente outra.");
+      return false;
+    }
+    renderizar();
+    if (!perfil._real) return true;
+    U.mostrarMensagem(msg, "info", "Salvando a foto…");
+    try {
+      await salvarDadosReais(perfil, ["foto"]);
+      U.mostrarMensagem(msg, "sucesso", arq ? "Foto salva." : "Foto removida. Será usada a foto padrão do site.");
+      document.dispatchEvent(new CustomEvent("sd:foto-salva"));
+      return true;
+    } catch (e) {
+      perfil.foto = anterior; renderizar();
+      U.mostrarMensagem(msg, "erro", "A foto não foi salva: " + (window.SDFirebase ? window.SDFirebase.mensagemErro(e) : "tente de novo."));
+      return false;
+    }
+  }
+
+  /* ---------- 6c. AVISO "FINALIZE SEU CADASTRO" ----------
+     <div id="aviso-cadastro"> mostra os campos ainda vazios (com botão que abre
+     "Editar perfil"). Sem campo vazio, o aviso NÃO aparece.
+     campos: [{ rotulo: "Nome fantasia", vazio: (perfil) => !perfil.nomeFantasia }] */
+  function avisoCadastro(perfil, campos) {
+    const caixa = $("#aviso-cadastro");
+    if (!caixa) return;
+    const faltam = campos.filter((c) => c.vazio(perfil));
+    caixa.hidden = !faltam.length || !perfil._real;
+    const lista = caixa.querySelector(".aviso-cadastro-lista");
+    lista.innerHTML = "";
+    faltam.forEach((c) => { const li = document.createElement("li"); li.textContent = c.rotulo; lista.append(li); });
+    const total = caixa.querySelector(".aviso-cadastro-total");
+    if (total) total.textContent = `${faltam.length} ${faltam.length === 1 ? "item" : "itens"}`;
+    const btn = caixa.querySelector(".aviso-cadastro-btn");
+    if (btn && !btn.dataset.ligado) {
+      btn.dataset.ligado = "1";
+      btn.addEventListener("click", () => {
+        if (controleAbas && controleAbas.ativo !== 0) controleAbas.ativar(0, true);
+        abrirSanfona(true);
+        $("#sanfona-editar").scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+    }
+    atualizarAvisosTopo();
+  }
+  // Avisos lado a lado no computador: a moldura some se todos estiverem escondidos
+  function atualizarAvisosTopo() {
+    document.querySelectorAll(".avisos-topo").forEach((d) => { d.hidden = [...d.children].every((el) => el.hidden); });
   }
 
   /* ---------- 7. POP-UP DE EXCLUSÃO ---------- */
@@ -559,9 +642,9 @@
     $("#modal-cancelar").addEventListener("click", () => modal.close());
     $("#modal-confirmar").addEventListener("click", async () => {
       modal.close();
-      const F = window.SD && !window.SD.config.modoDemonstracao ? await firebase() : null;
+      const F = await firebase();
       if (!F || !F.ativo) {
-        U.mostrarMensagem($("#msg-geral"), "atencao", "Exclusão não executada: esta é uma demonstração sem servidor. Na versão final, o perfil será apagado e você sairá da conta.");
+        U.mostrarMensagem($("#msg-geral"), "erro", "Sem conexão com o servidor. A conta não foi excluída.");
         atualizarAltura();
         return;
       }
@@ -607,7 +690,7 @@
     const msg = $("#msg-interruptores");
     document.addEventListener("sd:interruptor", (e) => {
       const { ligado, item } = e.detail;
-      if (msg) U.mostrarMensagem(msg, "info", `${item.nome}: ${ligado ? item.ligado : item.desligado} (Demonstração: ainda não salvo no servidor.)`);
+      if (msg) U.mostrarMensagem(msg, "info", `${item.nome}: ${ligado ? item.ligado : item.desligado}`);
       atualizarAltura();
     });
   }
@@ -626,7 +709,8 @@
     PADRAO, ICONES, $, ouTraco, atualizarAltura, enderecoParaTela, placeholdersEndereco,
     preencherCampos, preencherPlaceholders, preencherSelect, preencherLinkAvaliacoes,
     iniciarAbas, iniciarTelefones, iniciarSanfona, abrirSanfona,
-    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, iniciarExclusao, iniciarInterruptor,
+    iniciarFormulario, ligarOlhosDeSenha, validarArquivo, iniciarFotoOpcional, salvarFoto, comprimirFoto, avisoCadastro, atualizarAvisosTopo,
+    iniciarExclusao, iniciarInterruptor,
     iniciarInterruptoresPerfil, confirmar
   });
 })();

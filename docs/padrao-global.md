@@ -45,5 +45,5 @@ Regra: toda página nova parte de `modelo-pagina/index.html`. NÃO recriar NavBa
 - Pop-up: dialog.modal (+ .modal-largo para formulários) em base.css; fecha clicando fora com SDUtil.ligarPopup().
 - Endereço: componentes/endereco (CEP primeiro, preenche rua/bairro/cidade/UF). Ordem: CEP | Endereço · UF | Cidade | Bairro · Número | Complemento.
 - Senha: componentes/senha (mínimo 6 caracteres, bloqueia senhas comuns, medidor de força).
-- Hora: componentes/hora-rolante (rodinhas horas : minutos; o número do meio é o escolhido).
+- Data e hora: componentes/datahora (digitar, rodinhas horas : minutos ou calendário). Usar SEMPRE este componente.
 - Interruptor liga/desliga: .interruptor (role="switch"), com o estado escrito ("Ligado"/"Desligado").

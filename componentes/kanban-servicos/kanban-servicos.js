@@ -30,7 +30,7 @@
 
    Mudança de etapa: botões "Voltar para…"/"Mover para…" em cada serviço
    (funciona com teclado, toque e leitor de tela) + arrastar com o mouse.
-   IMPORTANTE: demonstração — a mudança real será gravada pelo servidor.
+   PEDIDOS REAIS: chegam no Ciclo 3/4 (gravação no banco). Hoje o quadro começa vazio.
    ===================================================================== */
 (function () {
   "use strict";
@@ -436,7 +436,7 @@
         sim: "Sim, excluir"
       });
       if (!ok) return;
-      servicos.splice(servicos.indexOf(s), 1);   // demonstração: o servidor apagará de verdade
+      servicos.splice(servicos.indexOf(s), 1);   // pedidos reais: o banco apaga (Ciclo 3/4)
       renderizar();
       anunciar(`"${s.servico}" foi excluído.`);
       const lixo = alvoEncerrados && alvoEncerrados.querySelector(".kanban-encerrados-botao");

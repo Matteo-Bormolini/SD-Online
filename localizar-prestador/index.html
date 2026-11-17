@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Localizar prestador — S.D Serviços Digitais</title>
 <!-- Padrão do site (mesma ordem em todas as páginas) -->
@@ -33,13 +33,19 @@
   <div class="localizar-topo">
     <h1>Encontre um prestador</h1>
     <p>Escolha o tipo de serviço. A lista mostra os prestadores do mais perto ao mais longe de você.</p>
-    <span class="selo-demo">Dados de demonstração</span>
+    <div class="localizar-gps">
+      <button type="button" class="btn btn-pequeno" id="btn-gps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>
+        Usar minha localização atual
+      </button>
+      <span class="nota" id="msg-gps" role="status" aria-live="polite">Sem tocar aqui, usamos o endereço do seu perfil.</span>
+    </div>
   </div>
 
   <!-- 2. Aviso: localização desativada no perfil (aparece só nesse caso) -->
   <p class="mensagem atencao" id="aviso-localizacao" hidden>
-    <span>Sua localização está desativada. A lista aparece em ordem alfabética, sem distância.
-      <a class="link" id="link-ativar-localizacao" href="../perfil-cliente-cpf/index.html">Ativar localização no perfil</a></span>
+    <span><span id="aviso-localizacao-texto">Sua localização está desativada. A lista aparece em ordem alfabética, sem distância.</span>
+      <a class="link" id="link-ativar-localizacao" href="../perfil-cliente-cpf/index.html">Abrir meu perfil</a></span>
   </p>
 
   <!-- 3. Tipos de serviço (caixas, mesma lista da Home) -->

@@ -6,7 +6,8 @@
      - Foto de perfil (sem foto → iniciais do nome) + galeria de até 12 fotos
      - Aba "Administração" (em desenvolvimento)
    O adm vê dados sigilosos dos usuários, mas NUNCA a senha (hash no servidor).
-   IMPORTANTE: demonstração — salvar/enviar de verdade depende do servidor.
+   DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
+   Galeria de fotos: ainda só na tela (próximo ciclo).
    ===================================================================== */
 (function () {
   "use strict";
@@ -20,25 +21,13 @@
     urlAvaliacoes: SD.urlPagina("avaliacoes")
   };
 
-  /* ---------- 2. DADOS DE DEMONSTRAÇÃO ----------
-     Substituir pelos dados vindos do servidor depois do login. */
+  /* ---------- 2. DADOS DO PERFIL ----------
+     Começa VAZIO; carregarDadosReais() preenche com a conta logada. */
   const perfil = {
-    nome: "Nome Sobrenome Exemplo",
-    cargoBase: "Administrador",          // fixo para o tipo adm
-    cargoLider: "Suporte da plataforma", // definido pelo líder
-    documento: "000.000.000-00",
-    email: "admin@exemplo.com.br",
-    telefones: [{ numero: "11900000000", principal: true }],
-    endereco: "Rua Exemplo",
-    numero: "100",
-    complemento: "Sala 1",
-    bairro: "Centro",
-    cep: "01000000",
-    cidade: "São Paulo",
-    uf: "SP",
-    avaliacao: { media: 4.8, total: 12 },
-    foto: null,
-    galeria: []
+    nome: "", cargoBase: "Administrador", cargoLider: "", documento: "", email: "",
+    telefones: [{ numero: "", principal: true }],
+    endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
+    avaliacao: { media: 0, total: 0 }, foto: null, galeria: []
   };
 
   let telefones = null;
@@ -47,7 +36,7 @@
   function renderizarDados() {
     P.preencherCampos({
       nome: perfil.nome,
-      cargo: perfil.cargoBase + " - " + perfil.cargoLider,  // espaço antes e depois do "-"
+      cargo: perfil.cargoLider ? perfil.cargoBase + " - " + perfil.cargoLider : perfil.cargoBase,  // espaço antes e depois do "-"
       documento: perfil.documento,
       email: perfil.email,
       ...P.enderecoParaTela(perfil)
@@ -95,16 +84,13 @@
     $("#btn-foto").addEventListener("click", () => $("#input-foto").click());
     $("#btn-galeria").addEventListener("click", () => $("#input-galeria").click());
 
-    $("#input-foto").addEventListener("change", (e) => {
+    $("#input-foto").addEventListener("change", async (e) => {
       const arq = e.target.files[0];
       e.target.value = "";
       if (!arq) return;
       const erro = P.validarArquivo(arq, CONFIG);
       if (erro) { U.mostrarMensagem(msg, "erro", erro); return; }
-      if (perfil.foto) URL.revokeObjectURL(perfil.foto);
-      perfil.foto = URL.createObjectURL(arq);
-      renderizarFoto();
-      U.mostrarMensagem(msg, "atencao", "Pré-visualização atualizada (ainda não enviada ao servidor).");
+      await P.salvarFoto(perfil, arq, msg, renderizarFoto);   // reduz (256 px) e salva no perfil
     });
 
     $("#input-galeria").addEventListener("change", (e) => {
@@ -147,7 +133,7 @@
 
   /* ---------- 6. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
-    // Conta real (Firebase): troca o exemplo pelos dados do adm logado
+    // Conta real (Firebase): dados do adm logado
     await P.carregarDadosReais(perfil, "adm");
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     renderizarDados();

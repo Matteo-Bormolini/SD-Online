@@ -18,7 +18,7 @@ Espaço de quem mora em casa ou apartamento: dados pessoais e serviços já feit
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `perfil-cliente-cpf.js` | Página e dados de demonstração (visual vem de `componentes/perfil-base`). |
+| `index.html` / `perfil-cliente-cpf.js` | Página e regras (dados reais da conta; visual vem de `componentes/perfil-base`). |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer

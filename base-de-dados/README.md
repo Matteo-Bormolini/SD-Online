@@ -1,23 +1,27 @@
 # Banco de dados
 
 É onde as informações ficam guardadas de verdade: contas, pedidos, orçamentos e avaliações.
-**Desde 11/11/2026:** banco **Firestore** (Firebase, plano grátis). Contas já são reais; pedidos, orçamentos e avaliações ainda são demonstração.
+**Desde 11/11/2026:** banco **Firestore** (Firebase, plano grátis). Contas já são reais (sem dados fictícios desde a v0.7.9); pedidos, orçamentos e avaliações chegam nos Ciclos 3 e 4.
 Código: `firebase/firebase.js` · Regras de segurança: `firebase/firestore.rules`.
 
 ## Coleções que já existem (Ciclo 2)
 | Coleção | Documento | Guarda | Quem lê / edita |
 |---|---|---|---|
 | `usuarios` | id = uid do login | Dados da conta (campos abaixo). **Sem senha.** | A própria pessoa e o adm. Tipo, documento e selo de destaque a pessoa não muda. |
-| `documentos` | `cpf-<11 números>` ou `cnpj-<14 caracteres>` | `{ uid, criadoEm }` — garante **1 conta por CPF/CNPJ** | Ninguém lê (só o adm). Criado junto com a conta; apagado ao excluir. |
+| `documentos` | `cpf-<11 números>` ou `cnpj-<14 caracteres>` | `{ uid, tipo, criadoEm }` — garante **1 conta por CPF/CNPJ** | Ninguém lê (só o adm). Criado junto com a conta; apagado ao excluir. |
+| `cadastrosPendentes` | id = uid | Dados do cadastro esperando o e-mail ser confirmado (passo 1) | Só o dono e o adm. |
+| `vitrine` | id = uid do prestador | Cartão **público** do prestador (sem CPF/CNPJ, e-mail ou endereço completo) | Lê: clientes e adm. Escreve: só o próprio prestador. |
 
 **Campos de `usuarios`** (mesmos nomes dos objetos `perfil` das páginas de perfil):
 `tipo` (cliente-cpf · cliente-cnpj · prestador · adm) · `email` · `documento` (só números/letras) · `documentoChave` ·
 `telefones` [{ numero, principal }] · `cep`, `endereco`, `numero`, `complemento`, `bairro`, `cidade`, `uf` ·
-`interruptores` { localizacao, mostrar-contatos, … } · `criadoEm`, `atualizadoEm`.
+`interruptores` { localizacao, mostrar-contatos, … } · `foto` (imagem pequena em texto) · `local` { lat, lng, precisao } (ponto no mapa) · `criadoEm`, `atualizadoEm`.
 - CPF: `nome`, `compartilharDados` + `compartilharDadosEm`.
 - CNPJ e prestador: `razaoSocial`, `responsavelNome`, `autorizacaoExibir` + os campos do "Editar perfil".
+- CNPJ: `horarioVisitas` { faixas: [{ dias, inicio, fim }], obs } (opcional).
+- Prestador: `especialidades` (= atividades secundárias), `cidadesAtendidas`, `horarioAtendimento` (mesmo formato), `anoInicio` (1975 até hoje).
 - Senha: fica só no **Firebase Authentication** (com hash). Ninguém vê, nem o adm.
-- Fotos: ainda não são salvas (precisa do plano pago do Firebase).
+- Foto de perfil: salva no próprio perfil, reduzida (256 px). Fotos de trabalhos/local ainda não são salvas (Storage é pago).
 
 ## O que vai guardar
 Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avaliações · fotos · avisos · escolhas dos botões liga/desliga.
@@ -62,4 +66,5 @@ Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avalia�
 
 - ✅ Servidor escolhido: Firebase (11/11/2026).
 - ✅ Contas (`usuarios`, `documentos`) — Ciclo 2.
+- ✅ Vitrine do prestador (`vitrine`) — v0.7.9.
 - ⬜ Pedidos, orçamentos, avaliações — Ciclos 3 e 4.

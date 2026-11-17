@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Perfil do prestador — S.D Serviços Digitais</title>
 <meta name="robots" content="noindex">
@@ -18,6 +18,8 @@
 <link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
 <link rel="stylesheet" href="../componentes/carrossel/carrossel.css">
 <link rel="stylesheet" href="../componentes/kanban-servicos/kanban-servicos.css">
+<link rel="stylesheet" href="../componentes/datahora/datahora.css">
+<link rel="stylesheet" href="../componentes/lista-escolha/lista-escolha.css">
 <link rel="stylesheet" href="perfil-prestador.css">
 <script src="../seguranca/acesso.js" defer></script>
 <script src="../configuracoes/config.js" defer></script>
@@ -31,13 +33,15 @@
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="../componentes/carrossel/carrossel.js" defer></script>
 <script src="../componentes/kanban-servicos/kanban-servicos.js" defer></script>
+<script src="../componentes/datahora/datahora.js" defer></script>
+<script src="../componentes/lista-escolha/lista-escolha.js" defer></script>
 <script src="perfil-prestador.js" defer></script>
 <!-- Firebase (login e banco). Sempre o ÚLTIMO script, com type="module" -->
 <script type="module" src="../firebase/firebase.js"></script>
 </head>
 <!-- data-visao: "dono" = o próprio prestador (edita) | "cliente" = como os clientes veem (só leitura).
      Também abre direto pelo endereço: perfil-prestador/index.html?visao=cliente
-     data-logado/data-tipo: o SERVIDOR preenche. Aqui ficam fixos para demonstração. -->
+     data-logado/data-tipo: preenchidos pela sessão da tela (configuracoes/config.js). -->
 <body data-pagina="perfil" data-logado="nao" data-tipo="" data-recurso="perfil-prestador" data-recurso-publico="perfil-prestador-publico" data-raiz="../" data-visao="dono">
 <header id="sd-navbar"></header>
 <main class="pagina-perfil" id="conteudo">
@@ -46,17 +50,29 @@
     <h1 id="titulo-pagina">Perfil do prestador</h1>
     <p class="so-dono">Mantenha o perfil completo para transmitir confiança aos clientes e organize seus serviços na aba <strong>Meus serviços</strong>.</p>
     <p class="so-cliente">Conheça a empresa, veja trabalhos já realizados e as avaliações de outros clientes.</p>
-    <span class="selo-demo" role="note">Dados de demonstração — ainda sem conexão com o servidor</span>
   </header>
 
-  <!-- ALERTA: a logo (foto de perfil) é obrigatória para o prestador -->
-  <div class="alerta-logo so-dono" id="alerta-logo" role="alert" hidden>
+  <!-- AVISOS DO TOPO (só o dono vê). Computador: lado a lado (esquerda = finalizar
+       cadastro · direita = logo urgente). Celular: um embaixo do outro.
+       Cada aviso some sozinho quando não há pendência. -->
+  <div class="avisos-topo so-dono" hidden>
+  <div class="aviso-cadastro" id="aviso-cadastro" role="status" hidden>
+    <svg class="aviso-cadastro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>
+    <div class="aviso-cadastro-texto">
+      <strong>Finalize seu cadastro (<span class="aviso-cadastro-total"></span>)</strong>
+      <span>Perfis completos aparecem melhor para os clientes. Falta preencher:</span>
+      <ul class="aviso-cadastro-lista"></ul>
+    </div>
+    <button type="button" class="btn btn-pequeno aviso-cadastro-btn">Completar agora</button>
+  </div>
+  <div class="alerta-logo" id="alerta-logo" role="alert" hidden>
     <svg class="alerta-logo-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
     <div class="alerta-logo-texto">
       <strong>Urgente: adicione a logo da sua empresa.</strong>
       <span>A foto de perfil (logo) é obrigatória para prestadores. Sem ela, seu perfil usa uma imagem padrão e os clientes tendem a não confiar — você pode perder orçamentos.</span>
     </div>
     <button type="button" class="btn btn-pequeno" id="btn-alerta-logo">Adicionar logo agora</button>
+  </div>
   </div>
 
   <!-- Aviso exibido quando o prestador está vendo o próprio perfil como cliente -->
@@ -96,7 +112,7 @@
           <section class="vitrine" aria-labelledby="vitrine-nome">
             <h2 class="vitrine-nome" id="vitrine-nome" data-campo="nomeExibicao">Empresa</h2>
             <p class="vitrine-area"><span data-campo="areaAtuacao"></span> · <span data-campo="regiaoResumo"></span></p>
-            <ul class="chips" id="vitrine-especialidades" aria-label="Especialidades"></ul>
+            <ul class="chips" id="vitrine-especialidades" aria-label="Atividades secundárias"></ul>
             <dl class="vitrine-numeros">
               <div><dt>Serviços concluídos</dt><dd id="num-concluidos"></dd></div>
               <div><dt>Avaliação média</dt><dd id="num-avaliacao"></dd></div>
@@ -141,7 +157,14 @@
                 </td>
               </tr>
               <tr><th scope="row">Área de atuação</th><td class="valor" data-campo="areaAtuacao"></td></tr>
-              <tr><th scope="row">Especialidades</th><td><ul class="chips" id="lista-especialidades" aria-label="Especialidades"></ul></td></tr>
+              <tr>
+                <th scope="row">Atividades secundárias</th>
+                <td>
+                  <ul class="chips" id="lista-especialidades" aria-label="Atividades secundárias"></ul>
+                  <!-- Aviso ao cliente (texto em configuracoes/config.js → avisoSecundarias) -->
+                  <p class="nota aviso-taxa" data-campo="avisoSecundarias"></p>
+                </td>
+              </tr>
               <tr><th scope="row">Responsável técnico</th><td class="valor" data-campo="responsavel"></td></tr>
               <tr>
                 <th scope="row">Registros e certificações</th>
@@ -251,11 +274,13 @@
                   <span class="campo-erro" id="e-sobre"></span>
                 </div>
 
-                <div class="campo">
-                  <label for="f-especialidades">Especialidades</label>
-                  <input type="text" id="f-especialidades" name="especialidades" maxlength="300" aria-describedby="d-especialidades e-especialidades">
-                  <span class="nota" id="d-especialidades">Separe por vírgula. Máximo de 8, até 40 letras cada.</span>
-                  <span class="campo-erro" id="e-especialidades"></span>
+                <!-- Atividades secundárias: escolhidas da LISTA ÚNICA de serviços (configuracoes/config.js → servicos) -->
+                <div class="campo largura-total">
+                  <span class="rotulo" id="r-secundarias">Atividades secundárias</span>
+                  <span class="nota" id="d-secundarias">Serviços extras que a empresa também faz, além da área de atuação (principal). Até 8.
+                    Os clientes verão o aviso: <em id="aviso-secundarias-texto"></em></span>
+                  <div id="campo-secundarias"></div>
+                  <span class="campo-erro" id="e-secundarias"></span>
                 </div>
                 <div class="campo">
                   <label for="f-certificacoes">Registros e certificações</label>
@@ -282,7 +307,8 @@
 
                 <div class="campo">
                   <label for="f-inicio">Início das atividades (ano)</label>
-                  <input type="text" id="f-inicio" name="anoInicio" data-mascara="ano" inputmode="numeric" maxlength="4" aria-describedby="e-inicio">
+                  <!-- Lista de 1975 até o ano atual (atualiza sozinha todo ano) -->
+                  <select id="f-inicio" name="anoInicio" aria-describedby="e-inicio"></select>
                   <span class="campo-erro" id="e-inicio"></span>
                 </div>
                 <div class="campo">
@@ -295,11 +321,16 @@
                   <input type="tel" id="f-telefone" name="telefone" data-mascara="telefone" inputmode="numeric" autocomplete="tel" aria-describedby="e-telefone">
                   <span class="campo-erro" id="e-telefone"></span>
                 </div>
-                <div class="campo">
-                  <label for="f-horario">Horário de atendimento</label>
-                  <input type="text" id="f-horario" name="horario" maxlength="80" aria-describedby="d-horario">
-                  <span class="nota" id="d-horario">Ex.: Segunda a sábado, 07:00 às 18:00.</span>
-                </div>
+                <!-- Horário de atendimento: dias da semana + horas (componentes/datahora) -->
+                <fieldset class="grupo largura-total">
+                  <legend>Horário de atendimento</legend>
+                  <p class="nota">Toque nos dias e escolha as horas (digite ou clique no relógio). Até 3 horários diferentes (ex.: sábado só de manhã).</p>
+                  <div id="campo-horario-atendimento"></div>
+                  <div class="campo campo-check">
+                    <input type="checkbox" id="f-emergencia" name="emergencia">
+                    <label for="f-emergencia">Atendo emergências fora do horário</label>
+                  </div>
+                </fieldset>
 
                 <fieldset class="grupo largura-total">
                   <legend>Região de atendimento</legend>
@@ -309,13 +340,9 @@
                       <select id="f-raio" name="raioKm"></select>
                     </div>
                     <div class="campo">
-                      <label for="f-bairros">Bairros/cidades atendidos (opcional)</label>
-                      <input type="text" id="f-bairros" name="bairrosAtendidos" maxlength="200" aria-describedby="d-bairros">
-                      <span class="nota" id="d-bairros">Separe por vírgula.</span>
-                    </div>
-                    <div class="campo largura-total campo-check">
-                      <input type="checkbox" id="f-emergencia" name="emergencia">
-                      <label for="f-emergencia">Atendo emergências fora do horário</label>
+                      <span class="rotulo" id="r-cidades">Cidades atendidas (opcional)</span>
+                      <span class="nota" id="d-cidades">Escolha na lista as cidades do seu estado (lista oficial do IBGE). Até 20.</span>
+                      <div id="campo-cidades"></div>
                     </div>
                   </div>
                 </fieldset>

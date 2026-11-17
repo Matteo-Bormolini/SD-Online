@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- Segurança (CSP): só carrega o que está nesta lista. Explicação e como mudar: seguranca/csp.md -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Perfil da empresa (Cliente CNPJ) — S.D Serviços Digitais</title>
 <meta name="robots" content="noindex">
@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="../componentes/formulario/formulario.css">
 <link rel="stylesheet" href="../componentes/endereco/endereco.css">
 <link rel="stylesheet" href="../componentes/senha/senha.css">
-<link rel="stylesheet" href="../componentes/hora-rolante/hora-rolante.css">
+<link rel="stylesheet" href="../componentes/datahora/datahora.css">
 <link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
 <link rel="stylesheet" href="../componentes/carrossel/carrossel.css">
 <link rel="stylesheet" href="../componentes/servicos-realizados/servicos-realizados.css">
@@ -29,7 +29,7 @@
 <script src="../componentes/confirmacao/confirmacao.js" defer></script>
 <script src="../componentes/senha/senha.js" defer></script>
 <script src="../componentes/endereco/endereco.js" defer></script>
-<script src="../componentes/hora-rolante/hora-rolante.js" defer></script>
+<script src="../componentes/datahora/datahora.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="../componentes/carrossel/carrossel.js" defer></script>
 <script src="../componentes/servicos-realizados/servicos-realizados.js" defer></script>
@@ -37,7 +37,7 @@
 <!-- Firebase (login e banco). Sempre o ÚLTIMO script, com type="module" -->
 <script type="module" src="../firebase/firebase.js"></script>
 </head>
-<!-- data-logado/data-tipo: o SERVIDOR preenche. Aqui ficam fixos para demonstração. -->
+<!-- data-logado/data-tipo: preenchidos pela sessão da tela (configuracoes/config.js). -->
 <body data-pagina="perfil" data-logado="nao" data-tipo="" data-recurso="perfil-cliente-cnpj" data-raiz="../">
 <header id="sd-navbar"></header>
 <main class="pagina-perfil" id="conteudo">
@@ -45,8 +45,20 @@
   <header class="perfil-cabecalho">
     <h1>Perfil da empresa</h1>
     <p>Gerencie os dados da empresa ou do condomínio, as fotos do local e acompanhe os serviços já contratados.</p>
-    <span class="selo-demo" role="note">Dados de demonstração — ainda sem conexão com o servidor</span>
   </header>
+
+  <!-- AVISO "Finalize seu cadastro": some quando não há campo vazio -->
+  <div class="avisos-topo" hidden>
+  <div class="aviso-cadastro" id="aviso-cadastro" role="status" hidden>
+    <svg class="aviso-cadastro-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>
+    <div class="aviso-cadastro-texto">
+      <strong>Finalize seu cadastro (<span class="aviso-cadastro-total"></span>)</strong>
+      <span>Com o cadastro completo, os prestadores entendem melhor o local e fazem orçamentos mais certos. Falta preencher:</span>
+      <ul class="aviso-cadastro-lista"></ul>
+    </div>
+    <button type="button" class="btn btn-pequeno aviso-cadastro-btn">Completar agora</button>
+  </div>
+  </div>
 
   <section class="perfil-cartao" aria-label="Perfil do cliente empresa">
 
@@ -227,21 +239,11 @@
                   </div>
                 </fieldset>
 
-                <!-- Horário para visitas: dias da semana + horas reais (não aceita "dia Leão" nem 110:23).
-                     Montado pelo perfil-cliente-cnpj.js. A observação é texto livre e opcional. -->
+                <!-- Horário para visitas (OPCIONAL): dias da semana + horas (componentes/datahora) -->
                 <fieldset class="grupo largura-total horario-visitas" id="horario-visitas">
-                  <legend>Horário para visitas</legend>
-                  <p class="nota">Toque nos dias e role as rodinhas para escolher o início e o fim. Até 3 horários diferentes (ex.: sábado só de manhã).</p>
-                  <ol class="horario-faixas" id="horario-faixas"></ol>
-                  <button type="button" class="btn btn-pequeno" id="btn-add-faixa">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                    Adicionar outro horário
-                  </button>
-                  <div class="campo">
-                    <label for="f-horario-obs">Observação <span class="nota">(opcional)</span></label>
-                    <input type="text" id="f-horario-obs" name="horarioObs" maxlength="80" placeholder="Ex.: avisar a portaria com 1 dia de antecedência" aria-describedby="e-horario-obs">
-                    <span class="campo-erro" id="e-horario-obs"></span>
-                  </div>
+                  <legend>Horário para visitas <span class="nota">(opcional)</span></legend>
+                  <p class="nota">Toque nos dias e escolha as horas (digite ou clique no relógio). Até 3 horários diferentes (ex.: sábado só de manhã).</p>
+                  <div id="horario-visitas-editor"></div>
                 </fieldset>
 
                 <!-- Campos do endereço montados por componentes/endereco (CEP preenche o resto) -->
