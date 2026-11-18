@@ -29,7 +29,7 @@
   /* ---------- 1. TEXTOS ← MUDE AQUI ---------- */
   const TEXTO = {
     semNegociacao: "Valores, materiais e forma de pagamento são combinados direto com o prestador. A S.D não participa da negociação nem do pagamento.",
-    lgpdContato: (nome) => `Para registrar o contato, ${nome} verá no painel dele: seu primeiro nome (ou o nome da empresa), sua região e o serviço. Nada de telefone, CPF ou CNPJ.`,
+    // lgpdContato: (nome) => `Para registrar o contato, ${nome} verá no painel dele: seu primeiro nome (ou o nome da empresa), sua região e o serviço. Nada de telefone, CPF ou CNPJ.`,
     visitaSim: (v) => `Visita técnica: ${moeda(v)} (cobrada pelo prestador).`,
     visitaNao: "Este prestador não cobra visita técnica.",
     visitaNaoInformada: "O prestador não informou se cobra visita técnica. Pergunte antes de agendar.",
@@ -147,7 +147,7 @@
     if (D.contatoRecente(dados.prestador.id, dados.categoria)) { abrir(); registrar(dados); return Promise.resolve(true); }
     return janela({
       titulo: `Antes de chamar ${dados.prestador.nome}`,
-      corpo: `${textoCobranca(dados.prestador)}<p class="pd-nota">${esc(TEXTO.lgpdContato(dados.prestador.nome))}</p>`,
+      corpo: textoCobranca(dados.prestador),
       acoes: [{ texto: "Voltar", valor: false }, { texto: "Entendi, abrir WhatsApp", valor: true, principal: true }],
       aoClicar: (v) => { if (v) abrir(); }                       // abre DENTRO do clique
     }).then((ok) => { if (ok) registrar(dados); return !!ok; });
@@ -173,8 +173,7 @@
         <span class="pd-dica" id="pd-fotos-dica">Até ${R.maxFotosPedido} fotos, de ângulos diferentes. Elas são reduzidas antes de enviar.</span>
         <span class="pd-erro" id="pd-fotos-erro"></span>
         <ul class="pd-miniaturas" id="pd-miniaturas" aria-label="Fotos escolhidas"></ul>
-      </div>
-      <p class="pd-nota">${esc(TEXTO.lgpdContato(dados.prestador.nome))}</p>`;
+      </div>`;
     return janela({
       titulo: `Pedir contato a ${dados.prestador.nome}`,
       corpo,
@@ -346,6 +345,36 @@
     }));
   }
 
+  // Uma pergunta (mesma janela ao entrar no site e ao clicar no aviso do sino).
+  // Devolve "nao" | "sim" | "depois" (ou null se fechou).
+  async function perguntarContato(o) {
+    const pedido = o.origem === "pedido";
+    const prazo = somarDias(o.contatoEm, D.REGRAS.diasParaResponder);
+    const resposta = await janela({
+      titulo: pedido ? `Novo pedido de ${o.clienteNome}: vai orçar?` : `Você fez orçamento para ${o.clienteNome}?`,
+      corpo: `
+        <p class="pd-sub">${esc(o.servico || "Serviço")} · ${o.clienteTipo === "cnpj" ? "Pessoa jurídica" : "Pessoa física"}${o.clienteRegiao ? " · " + esc(o.clienteRegiao) : ""}</p>
+        <p>${pedido ? "Pedido feito pelo site" : "Chamou você pelo WhatsApp"} em ${dataBR(o.contatoEm)}. Responda até <strong>${prazo ? new Date(prazo).toLocaleDateString("pt-BR") : "—"}</strong>.</p>
+        ${o.mensagem ? `<blockquote class="pd-mensagem-cliente">${esc(o.mensagem)}</blockquote>` : ""}
+        <ul class="pd-miniaturas pd-miniaturas-ver" id="pd-fotos-pedido"></ul>
+        <p class="pd-nota">${pedido ? "Se for orçar, preencha o orçamento: seu WhatsApp é enviado ao cliente junto com ele." : "Sim: você preenche um resumo do orçamento, que vai para o seu quadro e para o cliente."}</p>`,
+      acoes: [
+        { texto: "Responder depois", valor: "depois" },
+        { texto: pedido ? "Não vou orçar" : "Não fiz", valor: "nao", perigo: true },
+        { texto: pedido ? "Sim, fazer orçamento" : "Sim, preencher orçamento", valor: "sim", principal: true }
+      ],
+      aoAbrir: (d) => fotosDoPedido(o, d.querySelector("#pd-fotos-pedido"))
+    });
+    if (resposta === "nao") {
+      try { await D.responderNao(o.id); avisoRapido("Respondido. O pedido foi para Encerrados."); }
+      catch (e) { avisoRapido("Não foi salvo: " + D.mensagemErro(e), "erro"); }
+    } else if (resposta === "sim") {
+      const salvo = await abrirOrcamento(o);
+      if (!salvo) adiar(o.id);
+    } else adiar(o.id);                                  // "depois" ou fechou
+    return resposta;
+  }
+
   async function perguntarPendentes() {
     if (perguntando || D.papel() !== "prestador") return;
     perguntando = true;
@@ -354,32 +383,20 @@
         .filter((o) => o.situacao === S.contato && !adiados().includes(o.id))
         .sort((a, b) => D.ms(a.contatoEm) - D.ms(b.contatoEm));
       for (const o of pendentes.slice(0, 5)) {
-        const pedido = o.origem === "pedido";
-        const prazo = somarDias(o.contatoEm, D.REGRAS.diasParaResponder);
-        const resposta = await janela({
-          titulo: pedido ? `Novo pedido de ${o.clienteNome}: vai orçar?` : `Você fez orçamento para ${o.clienteNome}?`,
-          corpo: `
-            <p class="pd-sub">${esc(o.servico || "Serviço")} · ${o.clienteTipo === "cnpj" ? "Pessoa jurídica" : "Pessoa física"}${o.clienteRegiao ? " · " + esc(o.clienteRegiao) : ""}</p>
-            <p>${pedido ? "Pedido feito pelo site" : "Chamou você pelo WhatsApp"} em ${dataBR(o.contatoEm)}. Responda até <strong>${prazo ? new Date(prazo).toLocaleDateString("pt-BR") : "—"}</strong>.</p>
-            ${o.mensagem ? `<blockquote class="pd-mensagem-cliente">${esc(o.mensagem)}</blockquote>` : ""}
-            <ul class="pd-miniaturas pd-miniaturas-ver" id="pd-fotos-pedido"></ul>
-            <p class="pd-nota">${pedido ? "Se for orçar, preencha o orçamento: seu WhatsApp é enviado ao cliente junto com ele." : "Sim: você preenche um resumo do orçamento, que vai para o seu quadro e para o cliente."}</p>`,
-          acoes: [
-            { texto: "Responder depois", valor: "depois" },
-            { texto: pedido ? "Não vou orçar" : "Não fiz", valor: "nao", perigo: true },
-            { texto: pedido ? "Sim, fazer orçamento" : "Sim, preencher orçamento", valor: "sim", principal: true }
-          ],
-          aoAbrir: (d) => fotosDoPedido(o, d.querySelector("#pd-fotos-pedido"))
-        });
-        if (resposta === "nao") {
-          try { await D.responderNao(o.id); avisoRapido("Respondido. O pedido foi para Encerrados."); }
-          catch (e) { avisoRapido("Não foi salvo: " + D.mensagemErro(e), "erro"); }
-        } else if (resposta === "sim") {
-          const salvo = await abrirOrcamento(o);
-          if (!salvo) adiar(o.id);
-        } else { adiar(o.id); break; }                    // "depois" ou fechou: para de perguntar nesta visita
+        const resposta = await perguntarContato(o);
+        if (resposta !== "nao" && resposta !== "sim") break;   // "depois" ou fechou: para de perguntar nesta visita
       }
     } finally { perguntando = false; }
+  }
+
+  // Sino: clicar no aviso de um contato ainda sem resposta reabre a MESMA janela
+  // (Responder depois | Não fiz | Sim, preencher orçamento). Devolve true se abriu.
+  function responderContato(id) {
+    const o = D.lista().find((x) => x.id === id);
+    if (!o || o.situacao !== S.contato || D.papel() !== "prestador" || perguntando) return false;
+    perguntando = true;
+    perguntarContato(o).finally(() => { perguntando = false; });
+    return true;
   }
 
   /* ---------- 7. PRESTADOR: CARTÕES DO QUADRO ----------
@@ -567,7 +584,7 @@
   window.SDPedidos = Object.freeze({
     TEXTO, textoCobranca, resumoVisita, linkWhats,
     chamarWhatsApp, pedirContato,
-    abrirOrcamento, verOrcamento, tabelaOrcamento, perguntarPendentes, paraKanban, fotosDoPedido,
+    abrirOrcamento, verOrcamento, tabelaOrcamento, perguntarPendentes, responderContato, paraKanban, fotosDoPedido,
     renderizarEmOrcamento, realizados, avisoRapido, janela
   });
 

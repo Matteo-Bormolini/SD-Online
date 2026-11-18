@@ -101,18 +101,27 @@
       link.href = destino();
       link.innerHTML = `<span class="sino-texto">${esc(a.texto)}</span><span class="sino-quando">${esc(a.quando)}</span>`;
       link.addEventListener("click", (e) => {
-        if (a.local || a.lido) return;
         e.preventDefault();
-        a.lido = true;
-        D.marcarLido(a.id).catch(() => null).finally(() => {
-          // Já está no perfil? Só abre a aba (o hash muda e a página reage)
-          location.href = link.href;
-          if (location.pathname.endsWith(new URL(link.href).pathname)) { abrir(false); desenhar(); }
-        });
+        abrir(false);
+        if (!a.local && !a.lido) { a.lido = true; desenhar(); D.marcarLido(a.id).catch(() => null); }
+        // Contato ainda sem resposta (prestador): reabre a mesma janela "Você fez orçamento?"
+        if (a.tipo === "novo-contato" && window.SDPedidos && window.SDPedidos.responderContato(a.orcamentoId)) return;
+        irPara(link.href);
       });
       li.append(link);
       lista.append(li);
     });
+  }
+
+  // Abre o perfil na aba Serviços. Já está na página? Só troca a aba (sem recarregar).
+  function irPara(href) {
+    const destinoUrl = new URL(href, location.href);
+    if (destinoUrl.pathname === location.pathname) {
+      if (location.hash !== destinoUrl.hash) location.hash = destinoUrl.hash;
+      else window.dispatchEvent(new HashChangeEvent("hashchange"));
+      return;
+    }
+    location.href = destinoUrl.href;
   }
 
   /* ---------- 3. LER (ao abrir e ao voltar para a aba) ---------- */
