@@ -60,9 +60,48 @@
     <div class="resultados-grade">
 
       <div class="coluna-lista">
+        <!-- v0.8.0: filtros (funcionam na tela, sem novas leituras do banco). O tipo de serviço já é o filtro principal. -->
+        <form class="filtros" id="filtros" role="search" aria-label="Filtrar prestadores" novalidate>
+          <div class="filtro filtro-nome">
+            <label for="filtro-nome">Nome da pessoa ou empresa</label>
+            <input type="search" id="filtro-nome" autocomplete="off" placeholder="Digite um nome">
+          </div>
+          <div class="filtro">
+            <label for="filtro-horario">Horário</label>
+            <select id="filtro-horario">
+              <option value="">Qualquer horário</option>
+              <option value="semana">Dias de semana</option>
+              <option value="fimdesemana">Fim de semana</option>
+              <option value="emergencia">Atende emergência</option>
+            </select>
+          </div>
+          <div class="filtro">
+            <label for="filtro-distancia">Distância</label>
+            <select id="filtro-distancia">
+              <option value="">Qualquer distância</option>
+              <option value="5">Até 5 km</option>
+              <option value="10">Até 10 km</option>
+              <option value="20">Até 20 km</option>
+              <option value="50">Até 50 km</option>
+            </select>
+          </div>
+          <div class="filtro">
+            <label for="filtro-visita">Preço da visita</label>
+            <select id="filtro-visita">
+              <option value="">Qualquer preço</option>
+              <option value="0">Não cobra visita</option>
+              <option value="50">Até R$ 50</option>
+              <option value="100">Até R$ 100</option>
+              <option value="200">Até R$ 200</option>
+            </select>
+          </div>
+          <button type="reset" class="btn btn-pequeno filtro-limpar" id="filtro-limpar" hidden>Limpar filtros</button>
+          <p class="nota filtro-dica" id="filtro-dica" role="status" aria-live="polite"></p>
+        </form>
         <p class="resultados-dica" id="resultados-dica"></p>
         <ol class="lista-prestadores" id="lista-prestadores" aria-labelledby="resultados-titulo"></ol>
         <p class="lista-vazia" id="lista-vazia" hidden>Ainda não há prestadores deste tipo perto de você. Tente outro tipo de serviço.</p>
+        <p class="lista-vazia" id="lista-filtrada-vazia" hidden>Nenhum prestador com esses filtros. <button type="button" class="link-botao" id="filtro-limpar-2">Limpar filtros</button></p>
       </div>
 
       <div class="coluna-mapa">

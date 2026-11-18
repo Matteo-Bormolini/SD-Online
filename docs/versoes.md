@@ -15,7 +15,7 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 | v0.6.0 | Fim do Ciclo 1 (decisões: servidor, domínio, CNPJ verificado) |
 | v0.7.5 | Fim do Ciclo 2 (contas reais) — número escolhido pelo Marco (11/11/2026) |
 | v0.8.0 | Fim do Ciclo 3 (encontrar e pedir) |
-| v0.9.0 | Fim do Ciclo 4 (orçar e decidir) |
+| v0.9.0 | Fim do Ciclo 4 (avaliar e finalizar) |
 | v0.10.0 | Fim do Ciclo 5 (segurança e LGPD) |
 | v1.0.0 | Lançamento fechado (inclui os textos legais com advogado) |
 
@@ -23,6 +23,7 @@ Versões de teste no meio de um Ciclo: `vX.Y.Z-alpha.N`.
 
 | Versão | Data | O que entrou |
 |---|---|---|
+| v0.8.0 | 18/11/2026 | **Fim do Ciclo 3 — fluxo "Contato registrado".** Filtros em Localizar (nome, horário, distância, preço da visita). Aviso de preço da visita no perfil do prestador e aviso de cobrança antes do WhatsApp. Contato registrado + "Pedir contato" (anti-spam 7 dias). Janela "Você fez orçamento?" + formulário do orçamento (informativo). Quadro novo (Contatos · Orçado · A realizar · Prestados · Encerrados) com dados reais. Bloco "Em orçamento/Em andamento" no perfil do cliente (Fechei com este, Não fechei com nenhum, aviso sutil de 10 dias, lembretes). Concluir (prestador) → confirmar (cliente). Sino de avisos. Fotos salvas de graça no banco (WebP 0,80 até 1080 px). Regras do banco: áreas 50, 60 e 70. |
 | v0.7.9 | 17/11/2026 | **Sem dados fictícios + perfis de verdade.** Regras do banco organizadas por área (Perfil_CPF: Editar…), editar confere só os campos do tipo e que mudaram. Prestador: atividades secundárias em lista (aviso de taxa ao cliente), ano em lista (1975 até hoje), horário de atendimento (dias + horas), cidades atendidas (lista do IBGE). Componente **datahora** (rodinha do mouse 1 passo, digitar, relógio e calendário) no lugar do hora-rolante. Horário de visitas do CNPJ opcional. Aviso "Finalize seu cadastro" (prestador e CNPJ) e "Urgente: logo" lado a lado no computador. Foto de perfil salva de verdade (reduzida, ~1–40 KB). Login com "carregando". Mapa e busca com prestadores reais (vitrine) e GPS opcional. Correção: depois de um erro ao salvar, as caixas marcadas e o contador não voltam mais. |
 | v0.7.7–v0.7.8 | 17/11/2026 | Regras do banco (só texto): cadastro passava do limite de 1.000 cálculos do Firebase. |
 | v0.7.6 | 13/11/2026 | **Segurança do banco** (após os 187 testes de 12/11): cadastro em 2 passos (perfil e reserva do CPF/CNPJ só depois de confirmar o e-mail); dígitos do CPF/CNPJ conferidos nas regras; tipo da conta guardado na reserva; limite de tamanho em cada campo e lista fechada de campos; CSP em todas as páginas. |

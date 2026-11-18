@@ -18,6 +18,9 @@
      6. Ponto no mapa (endereço → latitude/longitude, OpenStreetMap Nominatim).
      7. VITRINE: cartão público do prestador (coleção "vitrine"), que os
         clientes leem na busca. Só dados públicos; nunca CPF/CNPJ, e-mail ou endereço completo.
+     8. Carrega os módulos do Ciclo 3 (v0.8.0), que usam esta mesma conexão:
+        firebase/fotos.js (fotos compactadas) e firebase/pedidos.js (contatos,
+        orçamentos e avisos). Eles importam { db, auth, pronto } daqui.
 
    SEGURANÇA: a apiKey abaixo PODE ficar pública (é assim no Firebase).
    Quem protege os dados são as REGRAS do banco: firebase/firestore.rules.
@@ -49,7 +52,8 @@ const firebaseConfig = {
 
 // Nomes das coleções do banco (Firestore)
 // cadastrosPendentes = dados do cadastro esperando o e-mail ser confirmado (passo 1 de 2)
-const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes", vitrine: "vitrine" };
+const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes", vitrine: "vitrine",
+                  orcamentos: "orcamentos", avisos: "avisos", fotos: "fotos" };
 // Configurações gerais do site (configuracoes/site no banco; só o adm muda)
 // conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
 //                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
@@ -58,6 +62,8 @@ const CONFIG_SITE_PADRAO = { conferirDocumentos: true };
 const TIPOS_CADASTRO = ["cliente-cpf", "cliente-cnpj", "prestador"];
 // Campos que a pessoa NÃO pode mudar sozinha (as regras do banco também bloqueiam)
 const PROTEGIDOS = ["tipo", "documento", "documentoChave", "email", "criadoEm", "tags", "avaliacao", "servicosAnteriores", "cargoBase", "verificado", "cnpjConsulta"];
+// Valor da visita técnica (R$): limite igual ao das regras do banco ← MUDE AQUI
+const MAX_VALOR_VISITA = 100000;
 // Botões liga/desliga que NÃO são salvos pela própria pessoa
 const INTERRUPTORES_SO_ADM = ["destaque"];
 // Botões do adm que valem para o SITE TODO (salvos em configuracoes/site)
@@ -355,11 +361,26 @@ async function excluirConta() {
   const u = auth && auth.currentUser;
   if (!u) throw erro("SEM_LOGIN");
   const dados = await meusDados(true);
+  // Contatos/orçamentos e avisos da pessoa (LGPD): apaga o que as regras permitem.
+  // O que não puder (ex.: serviço em andamento do prestador) é apagado no prazo de 1 ano.
+  if (Date.now() - new Date(u.metadata.lastSignInTime).getTime() <= 5 * 60 * 1000) {
+    for (const [colecao, campo] of [[COLECAO.orcamentos, dados && dados.tipo === "prestador" ? "prestadorUid" : "clienteUid"], [COLECAO.avisos, "para"]]) {
+      try {
+        const r = await getDocs(query(collection(db, colecao), where(campo, "==", u.uid)));
+        await Promise.all(r.docs.map((d) => deleteDoc(d.ref).catch(() => null)));
+      } catch (_) { /* segue */ }
+    }
+  }
   const lote = writeBatch(db);
   if (dados && dados.documentoChave) lote.delete(doc(db, COLECAO.documentos, dados.documentoChave));
   if (dados && dados.tipo === "prestador") lote.delete(doc(db, COLECAO.vitrine, u.uid));   // cartão público some junto
   lote.delete(doc(db, COLECAO.usuarios, u.uid));
   lote.delete(doc(db, COLECAO.pendentes, u.uid));     // se existir (cadastro esperando confirmação)
+  // Fotos da pessoa (coleção "fotos") somem junto (LGPD: apagar tudo)
+  try {
+    const fotos = await getDocs(query(collection(db, COLECAO.fotos), where("dono", "==", u.uid)));
+    fotos.docs.slice(0, 400).forEach((f) => lote.delete(f.ref));
+  } catch (_) { /* sem fotos ou sem permissão: segue */ }
   // Confere antes se o login aceita ser apagado agora (pede login recente)
   if (Date.now() - new Date(u.metadata.lastSignInTime).getTime() > 5 * 60 * 1000) throw erro("auth/requires-recent-login");
   await lote.commit();
@@ -432,6 +453,7 @@ function montarVitrine(p, interruptores) {
     sobre: p.sobre || "",
     anoInicio: p.anoInicio || "",
     emergencia: !!p.emergencia,
+    // Visita técnica (aviso ao cliente antes do WhatsApp e filtro de preço). Não informado = sem o campo.
     raioKm: Number(p.raioKm) || 0,
     cidadesAtendidas: (p.cidadesAtendidas || []).slice(0, 20),
     bairro: p.bairro || "", cidade: p.cidade || "", uf: p.uf || "",
@@ -443,6 +465,12 @@ function montarVitrine(p, interruptores) {
     atualizadoEm: serverTimestamp()
   };
   if (p.horarioAtendimento) v.horarioAtendimento = p.horarioAtendimento;
+  if (typeof p.cobraVisita === "boolean") {
+    v.cobraVisita = p.cobraVisita;
+    v.valorVisita = p.cobraVisita ? Math.min(Math.max(Number(p.valorVisita) || 0, 0), MAX_VALOR_VISITA) : 0;
+  }
+  // Fotos de trabalhos: só a lista { id, legenda } (a imagem fica na coleção "fotos")
+  if (Array.isArray(p.fotosTrabalho)) v.fotosTrabalho = p.fotosTrabalho.slice(0, 12).map((f) => ({ id: String(f.id), legenda: String(f.legenda || "").slice(0, 80) }));
   if (v.localizacao) { v.lat = arredondar(p.local.lat, GEO.casasVitrine); v.lng = arredondar(p.local.lng, GEO.casasVitrine); }
   return v;
 }
@@ -681,9 +709,15 @@ window.SDFirebase = Object.freeze({
 });
 document.dispatchEvent(new CustomEvent("sd:firebase-pronto"));
 
+// Para os módulos do Ciclo 3 (firebase/fotos.js e firebase/pedidos.js): mesma conexão
+export { db, auth, pronto, meusDados, publicarVitrine, mensagemErro, erro, nomeCurto, COLECAO };
+
 if (configurado) {
   tratarLinkDoEmail();
   sincronizarSessao();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", avisoEmailGlobal);
   else avisoEmailGlobal();
+  // Ciclo 3: fotos + contatos/orçamentos/avisos (carregados depois, sem atrasar a página)
+  import("./fotos.js").catch((e) => console.warn("[S.D] fotos.js:", e));
+  import("./pedidos.js").catch((e) => console.warn("[S.D] pedidos.js:", e));
 }

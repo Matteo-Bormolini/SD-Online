@@ -13,20 +13,21 @@ A "vitrine" do prestador e a sua ferramenta de trabalho (quadro de serviços).
 - **Região:** distância + cidades da lista oficial do IBGE (até 20).
 - **Avisos no topo:** "Finalize seu cadastro" (esquerda) e "Urgente: logo" (direita). Somem quando não há pendência.
 - O cartão público (**vitrine**) é atualizado sozinho ao abrir/salvar o perfil.
-- Fotos de trabalhos (opcional, até 12) e avaliações (sempre anônimas, salvo autorização).
+- Fotos de trabalhos (opcional, até 12) **salvas de graça** no banco (v0.8.0) e avaliações (sempre anônimas, salvo autorização).
+- **Visita técnica (aviso de preço)** em Editar perfil: não informar / não cobro / cobro + valor. O cliente vê antes de chamar no WhatsApp (v0.8.0).
 - **Linha das abas (à direita):** botões **Mostrar meus contatos** e **Localização**.
-  - *Mostrar meus contatos* (começa ligado): o cliente vê telefone e e-mail, e os botões **WhatsApp** e **Ligar** funcionam. Desligado: botões cinza "liberado após o orçamento" e um aviso de que fica mais difícil ser contratado.
+  - *Mostrar meus contatos* (começa ligado): o cliente vê telefone e e-mail, e os botões **WhatsApp** e **Ligar** funcionam (o WhatsApp passa pelo aviso de cobrança e registra o contato). Desligado: o cliente usa **Pedir contato**; seu WhatsApp vai junto com o orçamento.
   - *Localização* (começa ligado): desligado, a empresa não aparece em mapas nem listas.
 - **Ver como cliente:** mostra o perfil como o cliente vê.
 
 ## Aba Meus serviços (quadro)
-- Etapas: **A orçar → Orçando → Aceito → A realizar → Prestados**.
-- **A orçar:** pedidos novos de clientes, com a data "Responder até". Botões *Fazer orçamento* ou *Não vou orçar*. Sem resposta em **10 dias**, o pedido expira e vai para Encerrados.
-- **Prestados:** só o **cliente** marca como finalizado (com fotos e avaliação). O prestador não move cartões para lá.
-- **Encerrados:** pedidos que terminaram **sem serviço** (recusados, cancelados ou não atendidos).
-  Cada um mostra o motivo e a data em que **será apagado (1 ano depois)**. A lixeira apaga antes.
-- **No celular**, cada etapa abre e fecha (sanfona) para ocupar menos espaço.
-- Muda de etapa pelos botões ou arrastando o cartão (mouse). O prazo de 10 dias fica em `kanban-servicos.js` → `diasParaExpirarAOrcar`.
+- Etapas (v0.8.0): **Contatos → Orçado → A realizar → Prestados** + **Encerrados**. Dados reais (coleção `orcamentos`).
+- **Contatos:** clientes que chamaram você, com "Responder até" (10 dias). *Fiz orçamento* (abre o formulário) ou *Não fiz*. Ao entrar no site aparece a janela **"Você fez orçamento?"**.
+- **Orçado:** aguardando o cliente. *Editar orçamento* ou *Encerrar*.
+- **A realizar:** o cliente marcou "Fechei com este". *Marcar como concluído* → o cliente confirma → **Prestados**.
+- **Encerrados:** não orçados, sem resposta, outro prestador escolhido, cancelados ou encerrados. Apagados em **1 ano**; a lixeira tira do quadro antes.
+- **No celular**, cada etapa abre e fecha (sanfona). As etapas mudam **pelos botões** (não há mais arrastar).
+- Prazos: `firebase/pedidos.js` (REGRAS) e área 00 das regras do banco.
 - **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
 - A senha nunca aparece, só "••••••••".
 

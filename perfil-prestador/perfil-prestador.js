@@ -11,7 +11,11 @@
      - "Trabalhos e empresa": carrossel OPCIONAL de fotos com legenda.
      - Avaliações recentes (públicas e anônimas; nome só com autorização de quem avaliou).
      - "Ver como cliente": mostra o perfil como o cliente vê (sem dados privados).
-     - Aba "Meus serviços": quadro Kanban (componentes/kanban-servicos).
+     - Aba "Meus serviços": quadro Kanban (componentes/kanban-servicos) com os
+       contatos/orçamentos REAIS (componentes/pedidos · firebase/pedidos.js) — v0.8.0.
+     - Visita técnica (aviso de preço) e fotos de trabalhos SALVAS (firebase/fotos.js) — v0.8.0.
+     - Visão do cliente: WhatsApp passa pelo aviso de cobrança e registra o contato;
+       contatos escondidos → "Pedir contato".
    DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
      - Dono: lê/salva o próprio perfil e atualiza a VITRINE (cartão público).
      - Cliente (?visao=cliente&id=…): lê só a vitrine do prestador (dados públicos).
@@ -64,15 +68,18 @@
     responsavelNome: "", responsavelCargo: "", certificacoes: [], anoInicio: "", membroDesde: "",
     email: "", telefones: [{ numero: "", principal: true }],
     raioKm: 15, cidadesAtendidas: [], bairrosAtendidos: "", emergencia: false,
+    cobraVisita: null, valorVisita: 0,            // visita técnica: null = não informado
     horarioAtendimento: null, horario: "",
     endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
     sobre: "", avaliacao: { media: 0, total: 0 }, servicosAnteriores: 0,
     foto: null,                                    // null = SEM LOGO → foto padrão + alerta
-    fotosTrabalho: []                              // ainda só na tela (não salvas)
+    fotosTrabalho: []                              // [{ id, legenda }] — a imagem fica em fotos/{id} (firebase/fotos.js)
   };
-  // Avaliações reais chegam no pós-MVP; pedidos (Kanban) no Ciclo 3/4.
+  // Imagens já lidas das fotos de trabalho (id → src), fora do perfil para não ir ao banco
+  const srcFotos = new Map();
+  // Avaliações reais chegam no próximo ciclo; contatos/orçamentos vêm de SDPedidos (v0.8.0).
   const avaliacoes = [];
-  const servicosKanban = [];
+  let categoriaVisita = new URLSearchParams(location.search).get("categoria") || "";
   let horarioEditor = null, secundarias = null, cidades = null;
 
   let quadro = null, telefones = null, abas = null;
@@ -86,6 +93,11 @@
   }
   // Horário novo (dias + horas) ou o texto antigo, se ainda não foi editado
   const textoHorario = () => window.SDDataHora.textoSemana(perfil.horarioAtendimento || perfil.horario) + (perfil.emergencia ? " · Atende emergências" : "");
+
+  // Visita técnica (aviso de preço): sim + valor / não / não informado
+  const textoVisita = () => (perfil.cobraVisita === true
+    ? `Cobra visita: ${U.formatarMoeda(perfil.valorVisita)}`
+    : perfil.cobraVisita === false ? "Não cobra visita técnica" : "Não informado");
 
   // Etiquetas (especialidades / certificações)
   function renderizarChips(ul, itens, vazio) {
@@ -109,6 +121,7 @@
       email: perfil.email,
       regiao: textoRegiao(),
       horario: textoHorario(),
+      visita: textoVisita(),
       sobre: perfil.sobre || "A empresa ainda não escreveu uma apresentação.",
       avisoSecundarias: perfil.especialidades.length ? SD.config.avisoSecundarias : "",
       ...P.enderecoParaTela(perfil)
@@ -136,6 +149,10 @@
     P.preencherSelect($("#f-inicio"), perfil.anoInicio || "não informado", ANOS);
     P.preencherSelect($("#f-raio"), `${perfil.raioKm} km`, RAIOS_KM.map((r) => ({ texto: `${r} km`, valor: String(r) })));
     $("#f-emergencia").checked = !!perfil.emergencia;
+    $("#f-cobra-visita").value = perfil.cobraVisita === true ? "sim" : perfil.cobraVisita === false ? "nao" : "";
+    $("#f-valor-visita").value = perfil.cobraVisita === true && perfil.valorVisita ? String(perfil.valorVisita) : "";
+    $("#f-valor-visita").disabled = perfil.cobraVisita !== true;
+    $("#contato-visita").textContent = perfil.cobraVisita === true ? `Visita técnica: ${U.formatarMoeda(perfil.valorVisita)}.` : perfil.cobraVisita === false ? "Não cobra visita técnica." : "";
     // Listas e horário já vêm com o valor atual (mudou → salva)
     if (secundarias) { secundarias.definir(perfil.especialidades); }
     if (cidades) cidades.definir(perfil.cidadesAtendidas);
@@ -216,14 +233,45 @@
     });
   }
 
-  /* ---------- 5. FOTOS DE TRABALHOS (carrossel opcional) ---------- */
+  /* ---------- 5. FOTOS DE TRABALHOS (carrossel opcional) ----------
+     v0.8.0: SALVAS de graça (firebase/fotos.js): cada foto é reduzida (até 1080 px,
+     WebP 0,80; iPhone: JPEG) e vira 1 documento em "fotos". O perfil guarda só a
+     lista [{ id, legenda }]; a vitrine pública também (o cliente vê as fotos). */
   let carrosselTrabalho = null;
+  const fotosApi = () => (window.SDFotos ? Promise.resolve(window.SDFotos) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDFotos || null), 10000);
+    document.addEventListener("sd:fotos-pronto", () => { clearTimeout(t); ok(window.SDFotos); }, { once: true });
+  }));
+  const CARREGANDO_FOTO = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3"><rect width="4" height="3" fill="#EADFD6"/></svg>');
 
   const fotosParaCarrossel = () => perfil.fotosTrabalho.map((f, i) => ({
-    src: f.src,
+    src: srcFotos.get(f.id) || CARREGANDO_FOTO,
     legenda: f.legenda || "",
     alt: f.legenda ? `Foto ${i + 1}: ${f.legenda}` : `Foto ${i + 1} de trabalhos da empresa`
   }));
+
+  // Lê as imagens que ainda não estão na tela (uma por vez, sem travar a página)
+  async function lerFotosTrabalho() {
+    const F = await fotosApi();
+    if (!F) return;
+    for (const f of perfil.fotosTrabalho) {
+      if (srcFotos.has(f.id)) continue;
+      try { srcFotos.set(f.id, await F.ler(f.id)); } catch (_) { srcFotos.set(f.id, ""); }
+      if (carrosselTrabalho) redesenharFotos(carrosselTrabalho.indice);
+    }
+  }
+  // Salva a lista no perfil e atualiza a vitrine (cliente vê)
+  async function salvarListaFotos(msg, textoOk) {
+    if (!perfil._real) return;
+    perfil.fotosTrabalho = perfil.fotosTrabalho.map((f) => ({ id: f.id, legenda: f.legenda || "" }));
+    try {
+      await P.salvarDadosReais(perfil, ["fotosTrabalho"]);
+      publicar();
+      if (textoOk) U.mostrarMensagem(msg, "sucesso", textoOk);
+    } catch (e) {
+      U.mostrarMensagem(msg, "erro", "A lista de fotos não foi salva: " + window.SDFirebase.mensagemErro(e));
+    }
+  }
 
   function sincronizarControles(indice) {
     const total = perfil.fotosTrabalho.length;
@@ -260,50 +308,72 @@
       aoMudar: (i) => sincronizarControles(i)
     });
     sincronizarControles(0);
+    lerFotosTrabalho();
 
-    // Legenda da foto atual (aplica ao sair do campo ou com Enter)
+    // Legenda da foto atual (salva ao sair do campo ou com Enter)
     const legenda = $("#legenda-foto");
-    const aplicarLegenda = () => {
+    const aplicarLegenda = async () => {
       const i = carrosselTrabalho.indice;
-      if (!perfil.fotosTrabalho[i]) return;
-      const nova = legenda.value.trim();
-      if (nova === (perfil.fotosTrabalho[i].legenda || "")) return;
-      perfil.fotosTrabalho[i].legenda = nova;
+      const f = perfil.fotosTrabalho[i];
+      if (!f) return;
+      const nova = legenda.value.trim().slice(0, 80);
+      if (nova === (f.legenda || "")) return;
+      f.legenda = nova;
       redesenharFotos(i);
+      const F = await fotosApi();
+      if (F && perfil._real) F.legenda(f.id, nova).catch(() => null);
+      salvarListaFotos(msg, "Legenda salva.");
     };
     legenda.addEventListener("change", aplicarLegenda);
     legenda.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); aplicarLegenda(); } });
 
     $("#btn-remover-foto-trabalho").addEventListener("click", async () => {
-      if (!(await P.confirmar({ titulo: "Excluir esta foto?", texto: "A foto que está aparecendo agora (e a legenda dela) será removida.", sim: "Sim, excluir" }))) return;
+      if (!(await P.confirmar({ titulo: "Excluir esta foto?", texto: "A foto que está aparecendo agora (e a legenda dela) será apagada.", sim: "Sim, excluir" }))) return;
       const i = carrosselTrabalho.indice;
       const [removida] = perfil.fotosTrabalho.splice(i, 1);
-      if (removida && removida.src.startsWith("blob:")) URL.revokeObjectURL(removida.src);
       legenda.value = "";
       redesenharFotos(Math.max(0, Math.min(i, perfil.fotosTrabalho.length - 1)));
-      U.mostrarMensagem(msg, "atencao", "Foto removida nesta tela (ainda não salvo no servidor).");
+      if (removida && perfil._real) {
+        const F = await fotosApi();
+        if (F) F.apagar(removida.id).catch(() => null);
+        srcFotos.delete(removida.id);
+        await salvarListaFotos(msg, "Foto apagada.");
+      }
       if (!perfil.fotosTrabalho.length) $("#btn-add-fotos-trabalho").focus();
     });
 
     $("#btn-add-fotos-trabalho").addEventListener("click", () => $("#input-fotos-trabalho").click());
-    $("#input-fotos-trabalho").addEventListener("change", (e) => {
+    $("#input-fotos-trabalho").addEventListener("change", async (e) => {
       const arquivos = [...e.target.files];
       e.target.value = "";
       if (!arquivos.length) return;
+      if (!perfil._real) { U.mostrarMensagem(msg, "erro", "Entre na sua conta para salvar fotos."); return; }
+      const F = await fotosApi();
+      if (!F) { U.mostrarMensagem(msg, "erro", "O envio de fotos não carregou. Recarregue a página."); return; }
       const erros = [], primeiraNova = perfil.fotosTrabalho.length;
       let adicionadas = 0;
-      arquivos.forEach((arq) => {
-        if (perfil.fotosTrabalho.length >= CONFIG.maxFotosTrabalho) { erros.push(`"${arq.name}": limite de ${CONFIG.maxFotosTrabalho} fotos atingido.`); return; }
+      const parar = U.carregando($("#btn-add-fotos-trabalho"), "Enviando fotos…");
+      for (const arq of arquivos) {
+        if (perfil.fotosTrabalho.length >= CONFIG.maxFotosTrabalho) { erros.push(`"${arq.name}": limite de ${CONFIG.maxFotosTrabalho} fotos atingido.`); continue; }
         const erro = P.validarArquivo(arq, CONFIG);
-        if (erro) { erros.push(erro); return; }
-        perfil.fotosTrabalho.push({ src: URL.createObjectURL(arq), legenda: "" });
-        adicionadas++;
-      });
+        if (erro) { erros.push(erro); continue; }
+        U.mostrarMensagem(msg, "info", `Reduzindo e enviando "${arq.name}"…`);
+        try {
+          const f = await F.salvar(arq, { tipo: "trabalho" });
+          srcFotos.set(f.id, f.src);
+          perfil.fotosTrabalho.push({ id: f.id, legenda: "" });
+          adicionadas++;
+        } catch (err) {
+          erros.push(`"${arq.name}": ${err.message === "FOTO_INVALIDA" ? "não foi possível ler a imagem" : window.SDFirebase.mensagemErro(err)}.`);
+        }
+      }
+      parar();
       if (adicionadas) {
+        await salvarListaFotos(msg);
         legenda.value = "";
         redesenharFotos(primeiraNova);
-        const texto = `${adicionadas} ${adicionadas === 1 ? "foto adicionada" : "fotos adicionadas"} (pré-visualização, ainda não enviadas ao servidor). Escreva uma legenda para cada foto.`;
-        U.mostrarMensagem(msg, "atencao", erros.length ? `${texto} Não adicionadas: ${erros.join(" ")}` : texto);
+        const texto = `${adicionadas} ${adicionadas === 1 ? "foto salva" : "fotos salvas"}. Escreva uma legenda para cada foto.`;
+        U.mostrarMensagem(msg, erros.length ? "atencao" : "sucesso", erros.length ? `${texto} Não salvas: ${erros.join(" ")}` : texto);
         legenda.focus();
       } else {
         U.mostrarMensagem(msg, "erro", erros.join(" "));
@@ -363,6 +433,58 @@
       $("#btn-ligar-texto").textContent = "Telefone liberado após o orçamento";
     }
     $("#contato-nota").hidden = mostrar;
+    // v0.8.0 (cliente vendo o perfil): contatos escondidos → "Pedir contato" (botão ativo)
+    if (!mostrar && vitrineAtual) {
+      zap.removeAttribute("aria-disabled");
+      zap.setAttribute("role", "button");
+      zap.href = "#";
+      $("#btn-whatsapp-texto").textContent = "Pedir contato";
+    } else zap.removeAttribute("role");
+  }
+
+  /* ---------- 6c. CLIENTE: WHATSAPP COM AVISO DE COBRANÇA E REGISTRO (v0.8.0) ----------
+     Antes de abrir o WhatsApp: aviso de visita/taxa (componentes/pedidos). O contato fica
+     registrado e o prestador é avisado. Sem os contatos: "Pedir contato". */
+  function iniciarContatoCliente() {
+    const dadosPrestador = () => ({
+      id: vitrineAtual.id, nome: vitrineAtual.nome, cobraVisita: vitrineAtual.cobraVisita, valorVisita: vitrineAtual.valorVisita,
+      secundarias: (vitrineAtual.especialidades || []).length > 0
+    });
+    const servicoNome = () => {
+      const c = SD.config.categorias.find((x) => x.id === categoriaVisita);
+      return c ? c.nome : (vitrineAtual.areaAtuacao || "Serviço");
+    };
+    $("#btn-whatsapp").addEventListener("click", (e) => {
+      if (!vitrineAtual || !window.SDPedidos || !/^cliente-/.test(SD.tipoUsuario())) return;   // adm ou sem o módulo: link normal
+      const zap = e.currentTarget;
+      if (zap.getAttribute("aria-disabled") === "true") { e.preventDefault(); return; }
+      if (!vitrineAtual.whatsapp) { e.preventDefault(); window.SDPedidos.pedirContato({ prestador: dadosPrestador(), categoria: categoriaVisita, servicoNome: servicoNome() }); return; }
+      window.SDPedidos.chamarWhatsApp(e, { prestador: dadosPrestador(), categoria: categoriaVisita, servicoNome: servicoNome(), link: zap.href });
+    });
+  }
+
+  /* ---------- 6d. MEUS SERVIÇOS: QUADRO COM OS CONTATOS REAIS (v0.8.0) ---------- */
+  const pedidosApi = () => (window.SDPedidos ? Promise.resolve(window.SDPedidos) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDPedidos || null), 12000);
+    document.addEventListener("sd:pedidos-pronto", () => { clearTimeout(t); ok(window.SDPedidos); }, { once: true });
+  }));
+  async function acaoQuadro(acao, s) {
+    const T = window.SDPedidos, D = window.SDPedidosDados;
+    try {
+      if (acao === "orcar" || acao === "editar") await T.abrirOrcamento(s._orig);
+      else if (acao === "nao-fiz") await D.responderNao(s.id);
+      else if (acao === "concluir") await D.concluir(s.id);
+      else if (acao === "encerrar") await D.encerrarPeloPrestador(s.id);
+      else if (acao === "arquivar") await D.arquivar(s.id);
+    } catch (e) {
+      U.mostrarMensagem($("#msg-geral"), "erro", "Não foi salvo: " + D.mensagemErro(e));
+    }
+  }
+  async function ligarQuadro() {
+    const T = await pedidosApi();
+    if (!T || !quadro) return;
+    quadro.atualizar(T.paraKanban());
+    document.addEventListener("sd:pedidos-mudou", () => quadro.atualizar(T.paraKanban()));
   }
 
   // Mensagem curta quando o prestador liga/desliga um botão
@@ -419,6 +541,7 @@
     } catch (_) { return []; }
   }
 
+  let vitrineAtual = null;                       // visão do cliente: cartão público lido
   /* ---------- 7c. VITRINE (cartão público) ----------
      Dono: depois de abrir/salvar, atualiza a cópia pública que os clientes leem. */
   async function publicar() {
@@ -441,8 +564,12 @@
       sobre: v.sobre || "", anoInicio: v.anoInicio || "", emergencia: !!v.emergencia, raioKm: v.raioKm || 0,
       cidadesAtendidas: v.cidadesAtendidas || [], horarioAtendimento: v.horarioAtendimento || null,
       bairro: v.bairro || "", cidade: v.cidade || "", uf: v.uf || "", foto: v.foto || null,
-      telefones: [{ numero: v.whatsapp || "", principal: true }], documento: "—", email: ""
+      telefones: [{ numero: v.whatsapp || "", principal: true }], documento: "—", email: "",
+      cobraVisita: typeof v.cobraVisita === "boolean" ? v.cobraVisita : null, valorVisita: v.valorVisita || 0,
+      fotosTrabalho: Array.isArray(v.fotosTrabalho) ? v.fotosTrabalho : []
     });
+    vitrineAtual = { id, ...v };
+    if (!categoriaVisita) categoriaVisita = (v.categorias || [])[0] || "";
     // Sem WhatsApp na vitrine = o prestador não liberou o contato
     if (window.SD_INTERRUPTORES) window.SD_INTERRUPTORES.gravar("mostrar-contatos", !!v.whatsapp);
     return true;
@@ -476,6 +603,12 @@
       aoMudar: P.atualizarAltura
     });
 
+    // Valor da visita só com "Sim, cobro visita"
+    $("#f-cobra-visita").addEventListener("change", (e) => {
+      const sim = e.target.value === "sim";
+      $("#f-valor-visita").disabled = !sim;
+      if (!sim) $("#f-valor-visita").value = "";
+    });
     $("#f-sobre").addEventListener("input", (e) => { $("#contador-sobre").textContent = e.target.value.length; P.atualizarAltura(); });
     P.iniciarFormulario({
       perfil,
@@ -485,7 +618,8 @@
         especialidades: secundarias.valor, certificacoes: valor("f-certificacoes"),
         responsavelNome: valor("f-resp-nome"), responsavelCargo: valor("f-resp-cargo"), anoInicio: $("#f-inicio").value,
         horarioAtendimento: horarioEditor.valor, raioKm: $("#f-raio").value, cidadesAtendidas: cidades.valor,
-        emergencia: $("#f-emergencia").checked
+        emergencia: $("#f-emergencia").checked,
+        cobraVisita: $("#f-cobra-visita").value, valorVisita: $("#f-valor-visita").value
       }),
       camposTexto: ["razaoSocial", "nomeFantasia", "areaAtuacao", "sobre", "responsavelNome", "responsavelCargo", "anoInicio"],
       validar: (d, marcar) => {
@@ -503,6 +637,8 @@
         if (d.responsavelCargo && d.responsavelCargo.length < 2) marcar("f-resp-cargo", "Cargo muito curto.");
         if (d.anoInicio && !ANOS.includes(d.anoInicio)) marcar("f-inicio", `Escolha um ano entre ${SD.config.anoInicioMinimo} e ${anoAtual}.`);
         horarioEditor.validar(marcar);
+        if (d.cobraVisita === "sim" && !(Number(d.valorVisita) > 0)) marcar("f-valor-visita", "Informe o valor da visita (ou escolha \"Não cobro visita\").");
+        if (Number(d.valorVisita) > 100000) marcar("f-valor-visita", "Valor muito alto (máximo R$ 100.000).");
       },
       // Listas, número e caixa de seleção (não são texto simples)
       aplicarExtra: (d, alterados) => {
@@ -522,6 +658,12 @@
         }
         if (d.raioKm && Number(d.raioKm) !== perfil.raioKm) { perfil.raioKm = Number(d.raioKm); alterados.push("raioKm"); }
         if (d.emergencia !== !!perfil.emergencia) { perfil.emergencia = d.emergencia; alterados.push("emergencia"); }
+        // Visita técnica: "" = não informado (apaga do banco), "nao" = false, "sim" = true + valor
+        const cobra = d.cobraVisita === "sim" ? true : d.cobraVisita === "nao" ? false : null;
+        const valorVisita = cobra ? Math.round(Number(d.valorVisita) * 100) / 100 : null;
+        const antesCobra = typeof perfil.cobraVisita === "boolean" ? perfil.cobraVisita : null, antesValor = perfil.valorVisita || null;
+        if (cobra !== antesCobra) { perfil.cobraVisita = cobra; alterados.push("cobraVisita"); }
+        if ((valorVisita || null) !== antesValor) { perfil.valorVisita = valorVisita; alterados.push("valorVisita"); }
       },
       depoisDeSalvar: () => {
         publicar();
@@ -542,7 +684,7 @@
     quadro = window.SDKanban.criar({
       alvo: $("#kanban"), resumo: $("#kanban-resumo"), total: $("#servicos-total"), anuncio: $("#kanban-anuncio"),
       encerrados: $("#kanban-encerrados"),
-      servicos: servicosKanban, fotoPadraoCliente: CONFIG.fotoPadraoCliente,
+      servicos: [], aoAcao: acaoQuadro,
       aoMudar: () => { renderizarNumeros(); P.atualizarAltura(); }
     });
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios, classeRemover: "so-dono" });
@@ -561,6 +703,12 @@
     });
     iniciarInterruptores();
     iniciarVisao();
+    if (idOutro) iniciarContatoCliente();
+    if (real) ligarQuadro();
+    // Avisos do sino abrem direto a aba "Meus serviços" (#servicos)
+    const abrirServicosPeloEndereco = () => { if (location.hash === "#servicos" && real && !visaoCliente()) abas.ativar(1, true); };
+    abrirServicosPeloEndereco();
+    window.addEventListener("hashchange", abrirServicosPeloEndereco);
     if (real) {
       // Perfil sem ponto no mapa (contas antigas): calcula uma vez pelo endereço
       if (!perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) await window.SDFirebase.atualizarLocal(perfil);

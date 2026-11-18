@@ -124,3 +124,26 @@
 .localizar-gps { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin-top: .5rem; }
 .localizar-gps .btn svg { width: 1.125rem; height: 1.125rem; }
 .cartao-aviso { margin: .5rem 0 0; font-size: .8125rem; }
+
+/* ---------- v0.8.0: FILTROS + VISITA + PEDIR CONTATO ---------- */
+.filtros {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .625rem .75rem; align-items: end;
+  margin: 0 0 .875rem; padding: .875rem; background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao);
+}
+.filtro { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.filtro-nome { grid-column: 1 / -1; }
+.filtro label { font-size: .8125rem; font-weight: 600; }
+.filtro input, .filtro select {
+  width: 100%; min-height: 2.75rem; padding: .5rem .7rem; font: inherit; font-size: 1rem;
+  color: var(--cor-texto); background: var(--cor-superficie); border: 1px solid var(--cor-campo-borda); border-radius: var(--raio-botao);
+}
+.filtro input:focus-visible, .filtro select:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 1px; }
+.filtro select:disabled { opacity: .55; }
+.filtro-limpar { justify-self: start; }
+.filtro-dica { grid-column: 1 / -1; margin: 0; font-size: .8125rem; }
+.filtro-dica:empty { display: none; }
+@media (max-width: 22.49rem) { .filtros { grid-template-columns: 1fr; } }
+.link-botao { font: inherit; font-weight: 600; color: var(--cor-vinho); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+[data-tema="escuro"] .link-botao { color: #F29A9A; }
+.cartao-visita { margin: .75rem 0 0; font-size: .9375rem; font-weight: 600; }
+.btn-pedir-contato { background: var(--cor-superficie); color: var(--cor-texto); }

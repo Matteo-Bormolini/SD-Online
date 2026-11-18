@@ -3,7 +3,7 @@
 Tudo o que a S.D precisa ter, em uma lista só.
 Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoes.md).
 
-**Legenda:** ✅ pronto · 🟡 só na demonstração / em andamento · ⬜ a fazer
+**Legenda:** ✅ pronto · 🟠 tela pronta (falta ligar ao banco ou terminar) · 🟡 **PAGO** (sugestão) = só termina pagando · ⬜ a fazer · ➖ não é mais necessária
 
 ---
 
@@ -11,7 +11,7 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje (17/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 começando.** Contas reais pelo Firebase grátis. **Sem dados fictícios** (v0.7.9): perfis, busca, mapa e Home mostram só dados reais. Pedidos e orçamentos ainda não existem (Ciclo 3/4).
+Hoje (18/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta o teste do Marco com contas reais).** Contas reais pelo Firebase grátis. Fluxo **"Contato registrado"**: filtros, aviso de cobrança, WhatsApp/Pedir contato, orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas de graça.
 
 > **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
@@ -52,18 +52,26 @@ Hoje (17/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 começando.** Contas reai
 - [x] Regras do banco com menos cálculos (limite de 1.000 do Firebase) e organizadas por área (v0.7.7–v0.7.9, 17/11).
 - [x] Sem dados fictícios; perfis completos de verdade (foto salva, avisos, listas, horário); mapa com localização real (v0.7.9, 17/11).
 
-### 🟡 Ciclo 3 · Encontrar e pedir (v0.8.0) — Agora
-- [x] Prestadores reais na busca e no mapa (vitrine pública do prestador) e na Home do cliente (v0.7.9).
-- [x] Ponto do cliente: endereço do perfil ou "Usar minha localização atual" (GPS, não salvo) (v0.7.9).
-- [x] Perfil público do prestador lido da vitrine (v0.7.9).
-- [ ] Marco: publicar as regras v0.7.9 e testar com as 9 contas (3 prestadores, 3 CPF, 3 CNPJ).
-- [ ] US13/US14 Pedir orçamento (registro no banco) → A orçar do prestador → "Meus pedidos" do cliente.
-- [ ] ⚠️ Decidir: fotos do pedido (3 obrigatórias) sem Cloud Storage (pago).
+### 🟠 Ciclo 3 · Encontrar e pedir (v0.8.0) — entregue, falta o teste real
+> Fluxo trocado em 18/11/2026 (decisão do Marco): **"Contato registrado"** no lugar do orçamento feito dentro do site. Ver seção 3.
+- [x] Prestadores reais na busca e no mapa (vitrine) e na Home do cliente (v0.7.9).
+- [x] Ponto do cliente: endereço do perfil ou GPS (não salvo) (v0.7.9).
+- [x] **Filtros** em Localizar: nome, horário (1º horário + emergência), distância e preço da visita (US12, v0.8.0).
+- [x] **Aviso de preço** no perfil do prestador (visita técnica) e **aviso de cobrança** antes do WhatsApp (US61, v0.8.0).
+- [x] **Contato registrado** (WhatsApp) e **Pedir contato** (contatos escondidos), com anti-spam de 7 dias (US13, v0.8.0).
+- [x] Prestador: janela **"Você fez orçamento?"** ao entrar + **formulário do orçamento** (informativo) (US14, US15, v0.8.0).
+- [x] **Quadro** novo: Contatos · Orçado · A realizar · Prestados + Encerrados (US24, v0.8.0).
+- [x] Cliente: bloco **"Em orçamento / Em andamento"** em Serviços, "Fechei com este", "Não fechei com nenhum", aviso sutil de 10 dias e lembretes (3º, 7º, 15º dia) (US16, US17, v0.8.0).
+- [x] Prestador marca **concluído** → cliente **confirma** → Serviços realizados / Prestados (parte da US54, v0.8.0).
+- [x] **Sino de avisos** (coleção "avisos", apagados em 30 dias) (US62, v0.8.0).
+- [x] **Fotos salvas de graça** no banco, compactadas (WebP 0,80, até 1080 px; iPhone: JPEG): trabalhos do prestador, local do CNPJ e Pedir contato (US63, v0.8.0).
+- [ ] Marco: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
+- [ ] Release **v0.7.9** (pendente) e **v0.8.0**.
 - [ ] Decidir a Home do prestador (US46).
-- [ ] Testes do Ciclo (navegadores, celulares, regras).
+- [ ] Revisão dos Ciclos 1, 2 e 3.
 
 ### ⬜ Depois (na ordem)
-- **Ciclo 4 · Orçar e decidir (v0.9.0):** US16–US20, US22, US23, US26.
+- **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
 - **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
 - **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.
 - **Depois do MVP:** segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
@@ -76,27 +84,29 @@ Hoje (17/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 começando.** Contas reai
 | Sessão em cookie protegido (HttpOnly, Secure, SameSite) | Precisa de código no servidor (Cloud Functions = plano Blaze) | Sessão do próprio Firebase no navegador |
 | Selo de CNPJ **automático** e fila de aprovação no servidor | Cloud Functions (Blaze) | Consulta no navegador + selo dado pelo adm no console |
 | Apagar sozinho contas que nunca confirmaram o e-mail | Cloud Functions (Blaze) | Adm apaga no console; cadastro parado é limpo quando a pessoa tenta de novo |
-| Fotos (perfil, galeria, pedidos) no Cloud Storage | Storage exige Blaze | Fotos só na tela; **pedidos: decidir no Ciclo 3** |
+| Fotos no Cloud Storage (+ AVIF convertido no servidor) | Storage exige Blaze (desde 03/02/2026) | **Fotos compactadas no próprio banco** (v0.8.0). O campo `url` já está reservado para a mudança |
+| Fotos do pedido **obrigatórias** (3) — US13 | Fica viável com o Storage | Opcionais (até 6). Interruptor pronto: `fotosPedidoObrigatorias` (firebase/pedidos.js) e `FOTOS_PEDIDO_OBRIGATORIAS()` (regras) |
+| E-mail de aviso (novo contato, orçamento, concluído) | Cloud Functions ou extensão de e-mail (Blaze) | Sino de avisos dentro do site |
+| Notificação no celular (push) | Precisa de servidor para enviar | Sino de avisos dentro do site |
+| Prazos automáticos sem ninguém abrir o site (10 dias, 1 ano, 30 dias) | Cloud Functions (Blaze) | O site confere os prazos quando cliente ou prestador abre |
 | Segunda verificação no login (SMS) — US60 | SMS é cobrado | Senha + bloqueio de tentativas do Firebase |
 | Domínio .com.br | ~R$ 40/ano | Endereço grátis do site |
 
 ---
 
-## 3. O caminho do pedido (fluxo aprovado)
+## 3. O caminho do pedido — "Contato registrado" (aprovado em 18/11/2026)
 
-1. **Encontrar:** o cliente escolhe a área e vê os prestadores, do mais perto ao mais longe.
-2. **Pedir:** o cliente cria **uma solicitação** (descrição + **3 fotos obrigatórias**, até 6, de ângulos diferentes) e, em Localizar prestador, **marca os prestadores** que quer, depois de ver avaliações, serviços e localização. O mesmo pedido vai para todos os marcados.
-3. **Receber:** o pedido entra no quadro do prestador, na etapa **A orçar**. Ele é avisado no site e por e-mail. **Sem resposta em 10 dias, expira** e vai para Encerrados.
-4. **Orçar ou não:** o prestador clica em **Fazer orçamento** (orçamento padrão: serviço, materiais, mão de obra, valores, datas e **se cobra visita e quanto**; não existe preço fixo) ou em **Não vou orçar**.
-5. **Comparar:** o cliente vê até **4 orçamentos** lado a lado por pedido.
-6. **Decidir:** aceita (com confirmação) ou recusa (sem explicar). **Não há contraproposta no site:** o contato do prestador é liberado quando ele envia o orçamento, com o aviso "Quer negociar preço ou material? Fale com o prestador antes de aceitar".
-7. **Combinar:** WhatsApp e/ou e-mail do prestador (liberados no envio do orçamento, ou antes se "Mostrar meus contatos" estiver ligado). Cinza = ainda não liberado.
-8. **Finalizar e avaliar:** o **cliente** marca como finalizado, com **2 a 6 fotos** e a avaliação (anônima por padrão). Só então vai para **Prestados**. O prestador pode responder à avaliação.
-9. **Encerrados:** pedido que terminou **sem serviço** vai para Encerrados, com o motivo. É apagado **1 ano** depois; a lixeira apaga antes.
+1. **Encontrar:** o cliente escolhe o tipo de serviço, usa os **filtros** (nome, horário, distância, preço da visita) e vê os prestadores do mais perto ao mais longe.
+2. **Aviso de cobrança:** antes de abrir o WhatsApp aparece se o prestador **cobra visita** (e quanto), o aviso de **taxa extra** das atividades secundárias e que **a S.D não participa da negociação nem do pagamento**. O cliente clica em "Entendi". *(Aparece de novo só depois de 7 dias.)*
+3. **Registro mínimo:** o site grava 1 registro (cliente, prestador, serviço, datas) e avisa o prestador no **sino**. Prestador com os contatos escondidos: o cliente usa **"Pedir contato"** (descrição + fotos opcionais).
+4. **"Você fez orçamento?"** (ao prestador entrar no site): **Não** → Encerrados. **Sim** → **formulário** (valor total, visita, nº de visitas, materiais, mão de obra, funcionários, início, duração, validade, observações). Sem resposta em **10 dias** → "Sem resposta" (Encerrados) e o cliente vê um aviso sutil para chamar de novo ou procurar outro.
+5. **Comparar:** no perfil do cliente, em **Serviços**, cada pedido vira um bloco **"Em orçamento — ainda não realizado"** com um cartão por prestador (resumo; "Ver detalhes" abre tudo). Lembretes no 3º, 7º e 15º dia.
+6. **Decidir:** **"Fechei com este"** (com confirmação). Os outros vão para Encerrados do prestador ("Cliente escolheu outro"). Ou **"Não fechei com nenhum"**.
+7. **Finalizar:** o prestador marca **"Concluído"** → o cliente **confirma** → vai para **Serviços realizados** (cliente) e **Prestados** (prestador). *(Fotos do serviço finalizado e avaliação: Ciclo 4.)*
+8. **Encerrados:** ficam guardados até **1 ano** e são apagados; a lixeira do prestador tira do quadro antes.
 
-> **A S.D não mexe com o dinheiro do serviço.** O prestador só informa como cobra; cliente e prestador negociam e pagam entre eles.
-
----
+> **A S.D não mexe com o dinheiro do serviço.** O orçamento no site é **informativo**; cliente e prestador negociam e pagam entre eles.
+> **LGPD:** o registro guarda só IDs, nome de exibição (primeiro nome ou nome da empresa), região, serviço, datas e o orçamento. Nunca telefone do cliente, CPF/CNPJ ou a conversa.
 
 ## 4. Histórias
 
@@ -119,41 +129,44 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 ### Perfis
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US06 | Cliente CPF vê e edita os dados. | M | — | 🟡 |
-| US07 | Cliente CNPJ informa responsável, contato no local e fotos. | M | — | 🟡 |
-| US08 | Prestador com perfil completo. | M | — | 🟡 |
-| US09 | Prestador vê o perfil como o cliente vê. | S | — | 🟡 |
-| US10 | Adm dá suporte sem nunca ver senhas. | S | — | 🟡 |
-| US42 | Ligar/desligar a **localização** no perfil (botão na linha das abas). | M | 3 | 🟡 Tela pronta (09/11) |
-| US43 | Prestador escolhe **Mostrar meus contatos** (padrão ligado, também no cadastro). Desligado: WhatsApp e Ligar cinza + aviso de que fica mais difícil ser contratado. | S | 3 | 🟡 Tela pronta (09/11) |
+| US06 | Cliente CPF vê e edita os dados. | M | — | ✅ (v0.7.9) |
+| US07 | Cliente CNPJ informa responsável, contato no local e fotos. | M | — | ✅ Fotos do local salvas de graça no banco (v0.8.0) |
+| US08 | Prestador com perfil completo. | M | — | ✅ Fotos de trabalhos salvas + aviso de preço da visita (v0.8.0) |
+| US09 | Prestador vê o perfil como o cliente vê. | S | — | ✅ |
+| US10 | Adm dá suporte sem nunca ver senhas. | S | — | ✅ No MVP pelo console do Firebase (painel do adm: US35/US47, depois) |
+| US42 | Ligar/desligar a **localização** no perfil (botão na linha das abas). | M | 3 | ✅ Salvo no banco; desligado = some da busca (v0.7.9) |
+| US43 | Prestador escolhe **Mostrar meus contatos** (padrão ligado, também no cadastro). Desligado: o cliente usa "Pedir contato". | S | 3 | ✅ (v0.7.9 + Pedir contato na v0.8.0) |
 | US52 | Todo botão de excluir ou editar pede confirmação. | M | — | ✅ Padrão (09/11) |
 | US53 | Uma lista única de todos os botões liga/desliga (padrão, o que faz, onde fica). | S | — | ✅ (09/11) |
 
 ### Encontrar e pedir
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US11 | Escolher a área e ver prestadores do mais perto ao mais longe, com mapa. | M | 3 | 🟡 Tela pronta |
-| US12 | Filtrar por nome e avaliação. | C | Depois | ⬜ |
-| US13 | Criar uma solicitação (3 fotos obrigatórias, até 6) e marcar vários prestadores na página Localizar. | M | 3 | ⬜ |
-| US14 | Prestador recebe o pedido em **A orçar** e é avisado no site e por e-mail; expira em 10 dias. | M | 3 | 🟡 Etapa e prazo prontos na tela (09/11) |
-| US15 | Prestador preenche o orçamento padrão, informando se cobra visita e quanto. | M | 3 | ⬜ |
-| US24 | Quadro do prestador: A orçar, Orçando, Aceito, A realizar, Prestados; sanfona no celular. | S | 3 | 🟡 Tela pronta (09/11) |
-| US36 | ~~Informativo fixo de cobrança~~ → substituído: sem preço padrão; a visita vai dentro de cada orçamento (US15). | — | — | — |
+| US11 | Escolher a área e ver prestadores do mais perto ao mais longe, com mapa. | M | 3 | ✅ Dados reais (v0.7.9) |
+| US12 | Filtrar por nome, horário (1º horário / emergência), distância e preço da visita. *(Avaliação retirada: decisão de 18/11.)* | S | 3 | ✅ (v0.8.0) |
+| US13 | Registrar o contato (WhatsApp) ou **Pedir contato** (descrição + fotos); vários prestadores no mesmo pedido. | M | 3 | ✅ (v0.8.0) · fotos opcionais 🟡 **PAGO** (Storage): voltam a ser obrigatórias (3) |
+| US14 | Prestador recebe o contato em **Contatos**, é avisado no site (sino + janela "Fez orçamento?") e responde em 10 dias. | M | 3 | ✅ No site (v0.8.0) · por e-mail 🟡 **PAGO** (Cloud Functions/extensão de e-mail) |
+| US15 | Prestador preenche o orçamento (informativo): valor, visita, visitas, materiais, mão de obra, funcionários, início, duração, validade. | M | 3 | ✅ (v0.8.0) |
+| US24 | Quadro do prestador: Contatos, Orçado, A realizar, Prestados + Encerrados; sanfona no celular. | S | 3 | ✅ Dados reais (v0.8.0) |
+| US36 | ~~Informativo fixo de cobrança~~ → substituído pela US61 (aviso de preço da visita no perfil). | — | — | ➖ |
+| US61 | **Aviso de cobrança** antes do WhatsApp: visita técnica (sim + valor / não / não informado), taxa extra das secundárias e "a S.D não participa da negociação". | M | 3 | ✅ (v0.8.0) |
+| US62 | **Central de avisos** (sino) para cliente e prestador; apagados em 30 dias. | M | 3 | ✅ No site (v0.8.0) · e-mail/celular 🟡 **PAGO** (Cloud Functions / push) |
+| US63 | **Fotos salvas de graça**: compactadas no banco (WebP 0,80, até 1080 px; iPhone: JPEG), 1 documento por foto, campo `url` reservado. | M | 3 | ✅ (v0.8.0) · Storage + AVIF 🟡 **PAGO** (Storage) |
 
 ### Orçar e decidir
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
-| US16 | Cliente vê os pedidos e até 4 orçamentos lado a lado. | M | 4 | ⬜ |
-| US17 | Aceitar (com confirmação) ou recusar. Sem contraproposta: aviso para negociar com o prestador pelo WhatsApp. | M | 4 | ⬜ |
-| US18 | Prestador vê pedidos encerrados sem serviço em **Encerrados** (motivo; recusado em vermelho), apagados em 1 ano, com lixeira. | S | 4 | 🟡 Tela pronta (09/11; antes "Arquivados em 30 dias") |
-| US19 | Novo orçamento ao mesmo prestador, com aviso se já houver negociação. | S | 4 | ⬜ |
-| US20 | Voltar à lista sem perder a escolha. | S | 4 | 🟡 |
-| US21 | Comparação automática dos orçamentos. | C | Depois | ⬜ |
-| US22 | Contato do prestador liberado quando ele envia o orçamento; cliente é avisado. | M | 4 | ⬜ |
-| US23 | Prestador vê a região aproximada do cliente. | S | 4 | ⬜ |
-| US25 | Cliente vê os serviços já feitos, com fotos. | S | — | 🟡 |
-| US26 | Avaliar com estrelas e comentário (anônimo por padrão) só depois de finalizado; prestador pode responder. | S | 4 | 🟡 Parcial |
-| US54 | Cliente marca o serviço como finalizado com 2 a 6 fotos + avaliação; só então vai para Prestados. | M | 4 | 🟡 Quadro já impede o prestador de mover (09/11) |
+| US16 | Cliente vê os pedidos e os orçamentos lado a lado (bloco "Em orçamento" em Serviços). | M | 3 | ✅ (v0.8.0) |
+| US17 | "Fechei com este" (com confirmação) ou "Não fechei com nenhum". Negociação direto pelo WhatsApp. | M | 3 | ✅ (v0.8.0) |
+| US18 | Prestador vê contatos encerrados sem serviço em **Encerrados** (motivo), apagados em 1 ano, com lixeira. | S | 3 | ✅ Dados reais (v0.8.0) |
+| US19 | ~~Novo orçamento ao mesmo prestador~~ → o cliente chama de novo pelo WhatsApp (anti-spam de 7 dias). | — | — | ➖ |
+| US20 | Voltar à lista sem perder a escolha. | S | 4 | 🟠 Tipo e prestador ficam no endereço; filtros ainda não |
+| US21 | ~~Comparação automática dos orçamentos~~ → o bloco já mostra lado a lado. | — | — | ➖ |
+| US22 | Contato do prestador: à mostra (WhatsApp) ou enviado junto com o orçamento (Pedir contato); cliente é avisado. | M | 3 | ✅ (v0.8.0) |
+| US23 | Prestador vê a região aproximada do cliente (cidade; bairro só se o cliente autorizou). | S | 3 | ✅ (v0.8.0) |
+| US25 | Cliente vê os serviços já feitos, com fotos. | S | 4 | 🟠 Lista real (v0.8.0); fotos do serviço finalizado no Ciclo 4 |
+| US26 | Avaliar com estrelas e comentário (anônimo por padrão) **só quem realizou o serviço** (contato registrado + confirmado); prestador pode responder. | S | 4 | ⬜ |
+| US54 | Prestador marca concluído → cliente confirma → Prestados; depois: 2 a 6 fotos + avaliação. | M | 4 | 🟠 Concluir/confirmar pronto (v0.8.0); fotos + avaliação no Ciclo 4 |
 
 ### Ajuda e confiança
 | Nº | História | Prior. | Ciclo | Situação |
@@ -167,8 +180,8 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 |---|---|---|---|---|
 | US30 | Dados guardados com segurança; senha nunca visível. | M | 2 | ✅ (11/11) |
 | US31 | Servidor bloqueia os **dados** por tipo de conta (páginas: bloqueio na tela). | M | 2 | ✅ Regras publicadas (11/11) |
-| US32 | Ver, corrigir, baixar e apagar meus dados (LGPD). | M | 5 | 🟡 |
-| US33 | Fotos sem localização escondida (EXIF). | M | 5 | ⬜ |
+| US32 | Ver, corrigir, baixar e apagar meus dados (LGPD). | M | 5 | 🟠 Ver, corrigir e apagar a conta (com fotos, contatos e avisos) prontos; falta "baixar meus dados" |
+| US33 | Fotos sem localização escondida (EXIF). | M | 5 | ✅ As fotos são redesenhadas antes de enviar (o EXIF não vai junto) — conferir no Ciclo 5 |
 | US34 | Plano de aviso de vazamento (ANPD). | M | 5 | ⬜ |
 
 ### Depois do MVP

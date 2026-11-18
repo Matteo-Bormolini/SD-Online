@@ -84,7 +84,7 @@
     endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
     // Notas que os prestadores dão ao cliente NÃO aparecem aqui (só os prestadores as veem).
     foto: null,                               // null = usa a foto padrão
-    fotosLocal: []                            // opcional; ainda só na tela (não salvas)
+    fotosLocal: []                            // opcional; [{ id, area }] — a imagem fica em fotos/{id} (v0.8.0)
   };
   // Histórico de serviços realizados: chega com os pedidos reais (Ciclo 3/4)
   const servicos = [];
@@ -156,14 +156,42 @@
     });
   }
 
-  /* ---------- 4. FOTOS DO LOCAL (carrossel opcional) ---------- */
+  /* ---------- 4. FOTOS DO LOCAL (carrossel opcional) ----------
+     v0.8.0: SALVAS de graça (firebase/fotos.js): reduzidas (até 1080 px, WebP 0,80;
+     iPhone: JPEG), 1 documento por foto em "fotos". O perfil guarda [{ id, area }].
+     Só a própria empresa e o adm veem (regras do banco). */
   let carrosselLocal = null;
+  const srcFotos = new Map();                  // id → imagem lida (fora do perfil, não vai ao banco)
+  const fotosApi = () => (window.SDFotos ? Promise.resolve(window.SDFotos) : new Promise((ok) => {
+    const t = setTimeout(() => ok(window.SDFotos || null), 10000);
+    document.addEventListener("sd:fotos-pronto", () => { clearTimeout(t); ok(window.SDFotos); }, { once: true });
+  }));
+  const CARREGANDO_FOTO = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3"><rect width="4" height="3" fill="#EADFD6"/></svg>');
 
   const fotosParaCarrossel = () => perfil.fotosLocal.map((f, i) => ({
-    src: f.src,
+    src: srcFotos.get(f.id) || CARREGANDO_FOTO,
     legenda: f.area || "Área não informada",
     alt: `Foto ${i + 1} do local: ${f.area || "área não informada"}`
   }));
+  async function lerFotosLocal() {
+    const F = await fotosApi();
+    if (!F) return;
+    for (const f of perfil.fotosLocal) {
+      if (srcFotos.has(f.id)) continue;
+      try { srcFotos.set(f.id, await F.ler(f.id)); } catch (_) { srcFotos.set(f.id, ""); }
+      if (carrosselLocal) redesenharFotosLocal(carrosselLocal.indice);
+    }
+  }
+  async function salvarListaFotos(msg, textoOk) {
+    if (!perfil._real) return;
+    perfil.fotosLocal = perfil.fotosLocal.map((f) => ({ id: f.id, area: f.area || "" }));
+    try {
+      await P.salvarDadosReais(perfil, ["fotosLocal"]);
+      if (textoOk) U.mostrarMensagem(msg, "sucesso", textoOk);
+    } catch (e) {
+      U.mostrarMensagem(msg, "erro", "A lista de fotos não foi salva: " + window.SDFirebase.mensagemErro(e));
+    }
+  }
 
   // Controles da foto atual (área + remover) e contadores
   function sincronizarControles(indice) {
@@ -211,45 +239,67 @@
       aoMudar: (i) => sincronizarControles(i)
     });
     sincronizarControles(0);
+    lerFotosLocal();
 
-    // Trocar a área da foto atual
-    sel.addEventListener("change", () => {
+    // Trocar a área da foto atual (salva na hora)
+    sel.addEventListener("change", async () => {
       const i = carrosselLocal.indice;
-      if (!perfil.fotosLocal[i]) return;
-      perfil.fotosLocal[i].area = sel.value;
+      const f = perfil.fotosLocal[i];
+      if (!f) return;
+      f.area = sel.value;
       redesenharFotosLocal(i);
+      const F = await fotosApi();
+      if (F && perfil._real) F.legenda(f.id, f.area).catch(() => null);
+      salvarListaFotos(msg, "Área salva.");
     });
 
-    // Remover a foto atual
+    // Remover a foto atual (apaga do banco)
     $("#btn-remover-foto-local").addEventListener("click", async () => {
-      if (!(await P.confirmar({ titulo: "Excluir esta foto do local?", texto: "A foto que está aparecendo agora será removida.", sim: "Sim, excluir" }))) return;
+      if (!(await P.confirmar({ titulo: "Excluir esta foto do local?", texto: "A foto que está aparecendo agora será apagada.", sim: "Sim, excluir" }))) return;
       const i = carrosselLocal.indice;
       const [removida] = perfil.fotosLocal.splice(i, 1);
-      if (removida && removida.src.startsWith("blob:")) URL.revokeObjectURL(removida.src);
       redesenharFotosLocal(Math.max(0, Math.min(i, perfil.fotosLocal.length - 1)));
-      U.mostrarMensagem(msg, "atencao", "Foto removida nesta tela (ainda não salvo no servidor).");
+      if (removida && perfil._real) {
+        const F = await fotosApi();
+        if (F) F.apagar(removida.id).catch(() => null);
+        srcFotos.delete(removida.id);
+        await salvarListaFotos(msg, "Foto apagada.");
+      }
       if (!perfil.fotosLocal.length) $("#btn-add-fotos-local").focus();
     });
 
     // Adicionar fotos (várias de uma vez, respeitando o limite)
     $("#btn-add-fotos-local").addEventListener("click", () => $("#input-fotos-local").click());
-    $("#input-fotos-local").addEventListener("change", (e) => {
+    $("#input-fotos-local").addEventListener("change", async (e) => {
       const arquivos = [...e.target.files];
       e.target.value = "";
       if (!arquivos.length) return;
+      if (!perfil._real) { U.mostrarMensagem(msg, "erro", "Entre na sua conta para salvar fotos."); return; }
+      const F = await fotosApi();
+      if (!F) { U.mostrarMensagem(msg, "erro", "O envio de fotos não carregou. Recarregue a página."); return; }
       const erros = [], primeiraNova = perfil.fotosLocal.length;
       let adicionadas = 0;
-      arquivos.forEach((arq) => {
-        if (perfil.fotosLocal.length >= CONFIG.maxFotosLocal) { erros.push(`"${arq.name}": limite de ${CONFIG.maxFotosLocal} fotos atingido.`); return; }
+      const parar = U.carregando($("#btn-add-fotos-local"), "Enviando fotos…");
+      for (const arq of arquivos) {
+        if (perfil.fotosLocal.length >= CONFIG.maxFotosLocal) { erros.push(`"${arq.name}": limite de ${CONFIG.maxFotosLocal} fotos atingido.`); continue; }
         const erro = P.validarArquivo(arq, CONFIG);
-        if (erro) { erros.push(erro); return; }
-        perfil.fotosLocal.push({ src: URL.createObjectURL(arq), area: "" });
-        adicionadas++;
-      });
+        if (erro) { erros.push(erro); continue; }
+        U.mostrarMensagem(msg, "info", `Reduzindo e enviando "${arq.name}"…`);
+        try {
+          const f = await F.salvar(arq, { tipo: "local" });
+          srcFotos.set(f.id, f.src);
+          perfil.fotosLocal.push({ id: f.id, area: "" });
+          adicionadas++;
+        } catch (err) {
+          erros.push(`"${arq.name}": ${err.message === "FOTO_INVALIDA" ? "não foi possível ler a imagem" : window.SDFirebase.mensagemErro(err)}.`);
+        }
+      }
+      parar();
       if (adicionadas) {
+        await salvarListaFotos(msg);
         redesenharFotosLocal(primeiraNova);          // mostra a 1ª foto nova
-        const texto = `${adicionadas} ${adicionadas === 1 ? "foto adicionada" : "fotos adicionadas"} (pré-visualização, ainda não enviadas ao servidor). Escolha a área de cada foto.`;
-        U.mostrarMensagem(msg, "atencao", erros.length ? `${texto} Não adicionadas: ${erros.join(" ")}` : texto);
+        const texto = `${adicionadas} ${adicionadas === 1 ? "foto salva" : "fotos salvas"}. Escolha a área de cada foto.`;
+        U.mostrarMensagem(msg, erros.length ? "atencao" : "sucesso", erros.length ? `${texto} Não salvas: ${erros.join(" ")}` : texto);
         $("#area-foto").focus();
       } else {
         U.mostrarMensagem(msg, "erro", erros.join(" "));
@@ -291,6 +341,24 @@
     });
   }
 
+  /* ---------- SERVIÇOS: EM ORÇAMENTO + REALIZADOS (v0.8.0) ----------
+     Pedidos reais (componentes/pedidos): bloco "Em orçamento/Em andamento" e,
+     embaixo, os serviços que o cliente confirmou como realizados. */
+  function renderizarServicos() {
+    const T = window.SDPedidos;
+    const lista = T ? T.realizados() : servicos;
+    window.SDServicos.renderizar({
+      lista: $("#lista-servicos"), total: $("#servicos-total"), vazio: $("#servicos-vazio"),
+      servicos: lista, fotoPadraoEmpresa: CONFIG.fotoPadraoEmpresa
+    });
+    if (T) T.renderizarEmOrcamento($("#em-orcamento"), { aoMudar: P.atualizarAltura });
+    P.atualizarAltura();
+  }
+  function ligarPedidos() {
+    const ligar = () => { renderizarServicos(); document.addEventListener("sd:pedidos-mudou", renderizarServicos); };
+    if (window.SDPedidos) ligar(); else document.addEventListener("sd:pedidos-pronto", ligar, { once: true });
+  }
+
   /* ---------- 6. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
     // Conta real (Firebase): dados da conta logada
@@ -303,10 +371,8 @@
     });
     renderizarDados();
     iniciarFotosLocal();
-    window.SDServicos.renderizar({
-      lista: $("#lista-servicos"), total: $("#servicos-total"), vazio: $("#servicos-vazio"),
-      servicos, fotoPadraoEmpresa: CONFIG.fotoPadraoEmpresa
-    });
+    renderizarServicos();
+    ligarPedidos();
     P.iniciarSanfona();
     iniciarHorario();
     if (real && !perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) window.SDFirebase.atualizarLocal(perfil);   // ponto no mapa (uma vez)
@@ -318,6 +384,10 @@
     });
     iniciarFormulario();
     P.iniciarExclusao();
-    P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });
+    const abas = P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });
+    // Avisos do sino abrem direto a aba Serviços (#servicos)
+    const abrirServicosPeloEndereco = () => { if (location.hash === "#servicos") abas.ativar(1, true); };
+    abrirServicosPeloEndereco();
+    window.addEventListener("hashchange", abrirServicosPeloEndereco);
   });
 })();

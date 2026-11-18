@@ -50,7 +50,7 @@
     <div class="perfil-abas">
       <div class="abas-lista" role="tablist" aria-label="Seções do perfil">
         <button type="button" class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
-        <button type="button" class="btn aba" role="tab" id="aba-servicos" aria-controls="painel-servicos" aria-selected="false" tabindex="-1">Serviços realizados</button>
+        <button type="button" class="btn aba" role="tab" id="aba-servicos" aria-controls="painel-servicos" aria-selected="false" tabindex="-1">Serviços</button>
       </div>
       <!-- Botão liga/desliga da localização (configuracoes/interruptores.js) — totalmente à direita -->
       <div class="perfil-interruptores">
@@ -227,7 +227,9 @@
           <h2 id="titulo-servicos">Serviços realizados</h2>
           <span class="servicos-total" id="servicos-total"></span>
         </div>
-        <p class="servicos-dica">Clique em um serviço para ver as fotos e relembrar como ficou.</p>
+        <!-- v0.8.0: pedidos em orçamento / em andamento (componentes/pedidos). Some quando não há nenhum. -->
+        <div class="pd-em-orcamento" id="em-orcamento" hidden></div>
+        <p class="servicos-dica">Serviços já realizados. Clique em um serviço para ver os detalhes.</p>
         <!-- Lista (mais recente primeiro), montada por componentes/servicos-realizados -->
         <ol class="lista-servicos" id="lista-servicos" aria-labelledby="titulo-servicos"></ol>
         <p class="servicos-vazio" id="servicos-vazio" hidden>Você ainda não tem serviços realizados. Quando um serviço for concluído, o resumo aparecerá aqui.</p>

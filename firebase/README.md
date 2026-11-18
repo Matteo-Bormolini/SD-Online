@@ -7,6 +7,8 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 | Arquivo | Para que serve |
 |---|---|
 | `firebase.js` | Conexão: entrar, sair, criar conta, nova senha, confirmar e-mail, ler/salvar/excluir perfil. **Bloco 1 = configuração do projeto.** |
+| `fotos.js` | **v0.8.0** Fotos compactadas no banco (coleção `fotos`), grátis. `window.SDFotos`. |
+| `pedidos.js` | **v0.8.0** Contatos/orçamentos (coleção `orcamentos`) e avisos (coleção `avisos`). Carrega as telas `componentes/pedidos` e `componentes/avisos`. `window.SDPedidosDados`. |
 | `firestore.rules` | Regras de segurança do banco. Copiar e colar no console (não funciona sozinho aqui no GitHub). **Bloco 1 = limites de tamanho.** |
 
 ## Como entra nas páginas
@@ -39,21 +41,25 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 - O CPF/CNPJ já tinha dono quando ela confirmou? O login é apagado e aparece "Este CPF/CNPJ já tem uma conta".
 - Pendentes antigos (quem nunca confirmou): o adm pode apagar pelo console (`cadastrosPendentes`). Limpeza automática = pós-MVP (pago).
 
-## Regras do banco: mapa das áreas (v0.7.9)
+## Regras do banco: mapa das áreas (v0.8.0)
 `firestore.rules` é dividido em áreas com título padrão. Os números (limites) ficam **dentro de cada área**, marcados com `← MUDE AQUI`.
 
 | Área | O que faz |
 |---|---|
-| 00 Geral: Interruptores | `EXIGIR_EMAIL_CONFIRMADO`, `ANO_MINIMO` (1975) |
+| 00 Geral: Interruptores | `EXIGIR_EMAIL_CONFIRMADO`, `ANO_MINIMO` (1975), `DIAS_PARA_RESPONDER` (10), `FOTOS_PEDIDO_OBRIGATORIAS` (false até pagar o Storage) |
 | 01 Geral: Funções de apoio | texto, lista, booleano… |
 | 02 Geral: Campos comuns | e-mail, telefones, botões, foto (até 60.000 caracteres), ponto no mapa, endereço |
 | 03 Geral: CPF e CNPJ | dígitos verificadores |
 | 04 Geral: Horário da semana | até 3 faixas (dias + horas) + observação |
+| 05 Geral: Visita e lista de fotos | `cobraVisita` + `valorVisita` (até R$ 100.000) · lista de até 12 fotos `{ id, legenda/area }` |
 | 10–13 Cadastro | passo 1 de cada tipo (CPF, CNPJ, Prestador) |
 | 20 Perfil_Todos | ler, criar (passo 2), excluir |
 | 21–24 Perfil_CPF / CNPJ / Prestador / Adm: Editar | cada tipo edita só os SEUS campos; confere só o que mudou |
 | 25 Vitrine_Prestador | cartão público: clientes e adm leem; só o dono publica |
-| 30 Reserva_Documento · 40 Config_Site · 50 Pedidos (Ciclo 3) | |
+| 30 Reserva_Documento · 40 Config_Site | |
+| 50 Contatos_Orçamentos | cliente cria o contato; cada lado só muda o que é seu (situações: contato → orcado/nao-orcou/expirado → escolhido/nao-escolhido/cancelado/encerrado → concluido → prestado) |
+| 60 Avisos | só quem participa do contato avisa o outro lado; só o dono lê, marca como lido e apaga |
+| 70 Fotos | 1 foto = 1 documento (até 900.000 caracteres, WebP/JPEG, até 1080 px); trabalho: clientes leem; pedido: só o prestador daquele contato |
 
 Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que o banco aceita:
 
@@ -70,6 +76,9 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 | anoInicio | 1975 até o ano atual | `configuracoes/config.js` (anoInicioMinimo) + área 00 das regras |
 | certificacoes | 10 itens · 40 cada | `perfil-prestador/perfil-prestador.js` (CONFIG) |
 | foto | 60.000 caracteres (~45 KB) | `componentes/perfil-base/perfil-base.js` (FOTO) |
+| fotos (coleção) | 900.000 caracteres · 1080 px | `firebase/fotos.js` (FOTOS) |
+| orçamento | descrição 300 · observação 500 · valores até R$ 10 milhões · validade 1–365 dias | `firebase/pedidos.js` (limparOrcamento) |
+| Pedir contato | mensagem 10–500 · até 6 fotos | `firebase/pedidos.js` (REGRAS) |
 | telefones | 5 (1 + 4) | `componentes/perfil-base/perfil-base.js` (CONFIG) |
 | endereço: rua 150 · número 10 · complemento 60 · bairro 80 · cidade 80 | | `componentes/endereco/endereco.js` |
 | e-mail | 254 | todas as telas (norma do e-mail) |
@@ -94,10 +103,17 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 - Sem confirmar: **não** cria perfil nem reserva CPF/CNPJ (cadastro em 2 passos). Contas antigas sem confirmação continuam vendo o aviso.
 - Ações com outras pessoas (busca, pedidos, orçamentos, avaliações — Ciclos 3 e 4): usar `emailConfirmado()` nas regras.
 
-## Limites do plano grátis (conferido em 10/11/2026)
+## Coleções do Ciclo 3 (v0.8.0)
+- `orcamentos/{pedidoId_prestadorUid}`: 1 por prestador em cada pedido (sem repetição). Campos: ids, situação, origem (whatsapp/pedido), categoria, serviço, nome de exibição e região do cliente, nome do prestador, datas (`contatoEm`, `ultimoContatoEm`, `respondidoEm`, `decididoEm`, `concluidoEm`, `prestadoEm`, `atualizadoEm`, `apagarEm` = +1 ano), `orcamento` (mapa), `mensagem`/`fotos` (só Pedir contato), `whatsapp` (só Pedir contato, enviado com o orçamento), `arquivadoPrestador`.
+- `avisos/{id}`: para, de, tipo, orcamentoId, nome, serviço, lido, criadoEm, apagarEm (+30 dias).
+- `fotos/{id}`: dono, tipo (trabalho/local/pedido), ref, legenda, formato, largura, altura, dados, url (reservado), criadoEm.
+- **Índices:** as buscas usam só `where(campo, "==", …)` (clienteUid, prestadorUid, para) — o Firestore cria esses índices sozinho. Nada a configurar.
+- **Sem servidor:** prazos (10 dias, 1 ano, 30 dias) são conferidos quando cliente ou prestador abre o site; as regras conferem as datas.
+
+## Limites do plano grátis (conferido em 10/11/2026 e 18/11/2026)
 - Login: cerca de 3.000 usuários ativos por dia · e-mails de confirmação 1.000/dia · nova senha 150/dia.
 - Banco: 1 GiB · 50 mil leituras e 20 mil gravações por dia.
-- **Fotos não são salvas** (Cloud Storage exige o plano pago Blaze).
+- Cloud Storage exige o plano pago Blaze (desde 03/02/2026) → **fotos ficam no próprio banco**, compactadas (v0.8.0). Estimativa medida nos testes: 57–370 KB de texto por foto (foto comum ~60–130 KB) → 1 GiB ≈ 8 a 15 mil fotos. Cada abertura de foto conta no limite de 10 GiB/mês de download.
 
 ## Situação
 - ✅ Login por e-mail, cadastro (CPF/CNPJ único), sair, nova senha pelo pop-up, confirmação de e-mail.
@@ -105,5 +121,6 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 - ✅ Botão do adm "Conferir CPF e CNPJ", consulta do CNPJ do prestador, limpeza de cadastro parado no meio, aviso de e-mail em todas as páginas (v0.7.5).
 - ✅ v0.7.6: cadastro em 2 passos, CPF/CNPJ conferido nas regras, tipo da conta travado na reserva, limite de tamanho por campo, lista fechada de campos, CSP.
 - ✅ v0.7.9: regras por área, vitrine do prestador, ponto no mapa (Nominatim), foto de perfil salva, sem dados fictícios.
-- ⬜ Pedidos, orçamentos e avaliações reais (Ciclos 3 e 4) · login por CPF/CNPJ.
-- ⏸️ Pago (pós-MVP): fotos no Storage, cookie HttpOnly, selo automático, limpeza automática de contas e de cadastros pendentes, consulta do CNPJ no servidor.
+- ✅ v0.8.0: contatos/orçamentos, avisos (sino), fotos compactadas, aviso de preço da visita.
+- ⬜ Avaliações reais (Ciclo 4) · login por CPF/CNPJ.
+- ⏸️ Pago (pós-MVP): fotos no Storage (+ AVIF), e-mail/celular de aviso, prazos automáticos sem abrir o site, cookie HttpOnly, selo automático, limpeza automática de contas e de cadastros pendentes, consulta do CNPJ no servidor.

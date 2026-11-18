@@ -1,5 +1,12 @@
 # Testes e segurança
 
+
+## v0.8.0 — Ciclo 3 (18/11/2026, Chromium + Firebase FALSO em memória)
+- **70 verificações de ponta a ponta, 0 falhas, 0 erros de JS:** filtros (nome sem acento, horário, emergência, distância, preço da visita), aviso de cobrança, WhatsApp aberto dentro do clique, registro mínimo (LGPD: primeiro nome, só cidade sem autorização, sem CPF/telefone), anti-spam de 7 dias, Pedir contato com 2 fotos, "Você fez orçamento?" (Sim/Não/Depois), formulário com validação, expiração de 10 dias, bloco "Em orçamento", "Fechei com este" (outros → não escolhido), concluir → confirmar → Serviços realizados/Prestados, aviso sutil de 10 dias, sino, visita no perfil e na vitrine, fotos de trabalho e do local salvas.
+- **Varredura:** 14 páginas × 3 telas (360, 1366, 1920) × 2 temas × 2 tipos de conta = 168 aberturas: 0 erro de JS, 0 rolagem lateral, 0 bloqueio de CSP.
+- **Fotos medidas (1080 px, WebP 0,80):** foto comum 57–122 KB de texto; textura muito detalhada (pior caso) 366 KB. Limite: 900.000.
+- **NÃO testado:** regras do banco reais (o emulador do Firestore não baixa neste ambiente) → testar no **Playground de regras** do console e com contas reais; Safari/iPhone (JPEG no lugar de WebP); Firefox real.
+
 ## 12/11/2026 — testes automáticos no Firebase real (v0.7.5)
 187 testes (57 por conta: cliente CPF, cliente CNPJ, prestador + 16 sem login/força bruta/ciclo de vida).
 Contas de teste @example.com, apagadas no fim. Adm não testado. **178 passaram, 9 falharam** → corrigidos na v0.7.6:

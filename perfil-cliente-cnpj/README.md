@@ -6,10 +6,10 @@ Espaço de empresas, condomínios e MEI: dados da empresa, quem atende o prestad
 - A própria empresa (e o adm, para suporte).
 
 ## O que tem
-- **Linha das abas:** Perfil · Serviços realizados · botão **Localização** (à direita).
+- **Linha das abas:** Perfil · Serviços · botão **Localização** (à direita).
 - Razão social, nome fantasia, CNPJ (não muda), responsável (cargo em lista ou "Outro").
 - Contato no local (zelador, portaria) e **horário de visitas** (dias + rodinhas de hora, até 3 faixas).
-- Endereço com CEP automático, telefones, fotos do local (opcional, até 12).
+- Endereço com CEP automático, telefones, fotos do local (opcional, até 12, salvas de graça no banco desde a v0.8.0).
 - **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
 - A senha nunca aparece, só "••••••••".
 

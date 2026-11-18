@@ -4,6 +4,19 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 18/11/2026 — Ciclo 3 · fluxo "Contato registrado" (v0.8.0)
+- **Fluxo trocado** (substitui o de 09/11): o cliente chama pelo WhatsApp (ou "Pedir contato") e o site **registra o contato**; o prestador responde "Fez orçamento?" (Não → Encerrados; Sim → formulário). O site **não** faz o orçamento no lugar das partes; ele é **informativo**.
+- **Orçamento padrão = informativo** (valor, visita, visitas, materiais, mão de obra, funcionários, início, duração, validade, observações). Sem dependência nem cobrança.
+- **Aviso de cobrança** antes do WhatsApp: visita técnica (campo novo no perfil do prestador), taxa extra das secundárias e "a S.D não participa da negociação". Repete só depois de **7 dias** (anti-spam também nos avisos).
+- **Regra dos 10 dias** vale só para o prestador responder (Contatos). O cliente vê um **aviso sutil** para chamar de novo ou procurar outro. O bloco do cliente **não expira**; lembretes no 3º, 7º e 15º dia.
+- Cliente: bloco **"Em orçamento — ainda não realizado"** em Serviços; **"Fechei com este"** manda os outros para Encerrados do prestador ("Cliente escolheu outro"); **"Não fechei com nenhum"**.
+- Finalizar: **prestador marca concluído → cliente confirma**. Avaliação **só de quem realizou o serviço** (Ciclo 4).
+- **Quadro**: Contatos · Orçado · A realizar · Prestados + Encerrados (lixeira = arquivar; apagado em 1 ano).
+- **Central de avisos** (sino) no banco (coleção "avisos", apagados em 30 dias). E-mail/celular = pago (pausado).
+- **Filtros**: nome, horário (1º horário + "Atende emergência"), distância, preço da visita (não cobra = R$ 0; não informado só em "Qualquer preço"). Filtro por avaliação **retirado**.
+- **Fotos grátis**: compactadas no próprio banco (coleção "fotos", 1 por documento, WebP 0,80 até 1080 px; iPhone: JPEG; campo `url` reservado). AVIF e "só URL" ficam para quando houver Storage (pago). Fotos do pedido **opcionais** até pagar; depois voltam a ser obrigatórias (US13).
+- **LGPD**: o registro guarda só IDs, nome de exibição (primeiro nome ou empresa), região (bairro só com autorização do CPF), serviço, datas e orçamento. Apagado em 1 ano; ao excluir a conta, apaga fotos, contatos e avisos que as regras permitem.
+
 ### 17/11/2026 — v0.7.9 (testes do Marco com contas reais)
 - **Sem dados fictícios** em nenhuma página (perfis, Home, busca, mapa, login, recuperação de senha). Modo demonstração retirado do código.
 - **Regras do banco organizadas por área**, com título padrão (`Perfil_CPF: Editar`, `Cadastro_CNPJ: Criar`…). Cada tipo de conta edita só os próprios campos.

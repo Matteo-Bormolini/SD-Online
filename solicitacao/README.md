@@ -17,4 +17,4 @@ Onde o cliente pede um orçamento a um prestador.
 | `index.html` | Página provisória ("em desenvolvimento"). |
 
 ## Situação
-- ⬜ Página do pedido (US13) e orçamento padrão (US15) — **Ciclo 3**.
+- ➖ Página não usada desde a v0.8.0 (fluxo "Contato registrado"): o pedido acontece em **Localizar prestador** (WhatsApp ou "Pedir contato") e no perfil. Telas em `componentes/pedidos`. Fica guardada; decidir no fim do Ciclo 3 se apaga.

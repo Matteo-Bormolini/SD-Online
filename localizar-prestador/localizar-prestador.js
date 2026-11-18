@@ -3,7 +3,7 @@
    1. O cliente escolhe um tipo de serviço (caixas, mesma lista da Home).
    2. Abre a lista de prestadores (do mais perto ao mais longe) e o mapa.
    3. Ao escolher um prestador: o mapa mostra a empresa e, abaixo do mapa,
-      aparece o cartão (logo, nome, WhatsApp, serviços, "Fazer orçamento").
+      aparece o cartão (logo, nome, WhatsApp ou "Pedir contato", serviços, visita, "Ver perfil").
    Regras aprovadas (05/11/2026):
      - Destaque pago (tag "destaque"): contorno vermelho e etiqueta, mas
        NÃO muda a posição na lista (ordem só por distância).
@@ -18,6 +18,12 @@
    ou, se ele tocar em "Usar minha localização atual", do GPS do aparelho
    (pede permissão; o GPS NÃO é salvo em lugar nenhum). A distância é em linha reta.
    O ponto público do prestador é aproximado (~110 m), protegendo quem trabalha em casa.
+   v0.8.0 (Ciclo 3):
+     - FILTROS na tela (sem novas leituras do banco): nome, horário (1º horário = principal:
+       dias de semana / fim de semana; "Atende emergência"), distância e preço da visita
+       (quem não cobra = R$ 0; quem não informou só aparece em "Qualquer preço").
+     - WhatsApp passa pelo AVISO DE COBRANÇA e registra o contato (componentes/pedidos).
+     - Prestador sem contatos à mostra: botão "Pedir contato".
    ===================================================================== */
 (function () {
   "use strict";
@@ -74,7 +80,12 @@
         secundarias: (p.especialidades || []).length > 0,
         bairro: [p.bairro, p.cidade].filter(Boolean).join(", "), lat: p.lat, lng: p.lng, tags: [],
         whatsapp: p.whatsapp || null,                                           // só vem de quem liberou
-        distancia: comLocal ? distanciaKm(cliente, p) : null
+        distancia: comLocal ? distanciaKm(cliente, p) : null,
+        // v0.8.0: dados dos filtros e do aviso de cobrança
+        emergencia: !!p.emergencia,
+        faixaPrincipal: p.horarioAtendimento && Array.isArray(p.horarioAtendimento.faixas) ? p.horarioAtendimento.faixas[0] || null : null,
+        cobraVisita: typeof p.cobraVisita === "boolean" ? p.cobraVisita : undefined,
+        valorVisita: Number(p.valorVisita) || 0
       }));
     // Ordem: distância (com localização) ou alfabética (sem). Destaque NÃO muda a ordem.
     lista.sort(comLocal
@@ -101,7 +112,69 @@
     gps: document.getElementById("btn-gps"),
     gpsMsg: document.getElementById("msg-gps")
   };
-  const estado = { cliente: { localizacaoAtiva: false }, categoria: null, lista: [], selecionado: null, mapa: null, mapaPromessa: null };
+  const estado = { cliente: { localizacaoAtiva: false }, categoria: null, lista: [], visiveis: [], selecionado: null, mapa: null, mapaPromessa: null };
+
+  /* ---------- 5b. FILTROS (v0.8.0) ← MUDE AQUI as opções no index.html ---------- */
+  const filtro = {
+    form: document.getElementById("filtros"),
+    nome: document.getElementById("filtro-nome"),
+    horario: document.getElementById("filtro-horario"),
+    distancia: document.getElementById("filtro-distancia"),
+    visita: document.getElementById("filtro-visita"),
+    limpar: document.getElementById("filtro-limpar"),
+    limpar2: document.getElementById("filtro-limpar-2"),
+    dica: document.getElementById("filtro-dica"),
+    vazia: document.getElementById("lista-filtrada-vazia")
+  };
+  const semAcento = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const DIAS_SEMANA = [1, 2, 3, 4, 5], FIM_DE_SEMANA = [0, 6];          // 0 = domingo (componentes/datahora)
+  function passaFiltros(p) {
+    const nome = semAcento(filtro.nome.value.trim());
+    if (nome && !semAcento(p.nome).includes(nome)) return false;
+    const h = filtro.horario.value, dias = (p.faixaPrincipal && p.faixaPrincipal.dias) || [];
+    if (h === "semana" && !dias.some((d) => DIAS_SEMANA.includes(d))) return false;
+    if (h === "fimdesemana" && !dias.some((d) => FIM_DE_SEMANA.includes(d))) return false;
+    if (h === "emergencia" && !p.emergencia) return false;
+    const km = filtro.distancia.value;
+    if (km && p.distancia != null && p.distancia > Number(km)) return false;
+    const visita = filtro.visita.value;
+    if (visita !== "") {
+      if (p.cobraVisita === undefined) return false;                     // não informou: só em "Qualquer preço"
+      const preco = p.cobraVisita ? p.valorVisita : 0;                   // não cobra = R$ 0
+      if (preco > Number(visita)) return false;
+    }
+    return true;
+  }
+  const filtrosAtivos = () => [filtro.nome.value.trim(), filtro.horario.value, filtro.distancia.value, filtro.visita.value].filter(Boolean).length;
+  function aplicarFiltros() {
+    estado.visiveis = estado.lista.filter(passaFiltros);
+    const ativos = filtrosAtivos();
+    filtro.limpar.hidden = !ativos;
+    filtro.dica.textContent = ativos ? `Mostrando ${estado.visiveis.length} de ${estado.lista.length}.` : "";
+    filtro.vazia.hidden = !(ativos && estado.lista.length && !estado.visiveis.length);
+    renderizarLista();
+    if (estado.selecionado && !estado.visiveis.some((p) => p.id === estado.selecionado)) { estado.selecionado = null; renderizarCartao(null); salvarNaUrl(); }
+    else if (estado.selecionado) el.lista.querySelectorAll(".item-prestador").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === estado.selecionado)));
+    if (estado.mapa) {
+      estado.mapa.definirPontos(estado.visiveis.map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) })),
+        { aoClicar: aoClicarNoMapa });
+      if (estado.selecionado) estado.mapa.selecionar(estado.selecionado);
+    }
+  }
+  function iniciarFiltros() {
+    let espera = null;
+    filtro.nome.addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(aplicarFiltros, 200); });
+    [filtro.horario, filtro.distancia, filtro.visita].forEach((c) => c.addEventListener("change", aplicarFiltros));
+    filtro.form.addEventListener("submit", (e) => { e.preventDefault(); aplicarFiltros(); });
+    filtro.form.addEventListener("reset", () => setTimeout(aplicarFiltros, 0));
+    filtro.limpar2.addEventListener("click", () => { filtro.form.reset(); filtro.nome.focus(); });
+  }
+  // Sem a localização do cliente, o filtro de distância não funciona
+  function atualizarFiltroDistancia() {
+    filtro.distancia.disabled = !estado.cliente.localizacaoAtiva;
+    if (filtro.distancia.disabled) filtro.distancia.value = "";
+    filtro.distancia.title = filtro.distancia.disabled ? "Ative a localização no perfil ou use a localização atual" : "";
+  }
   const suave = () => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 
   // Guarda a escolha no endereço da página (ao voltar do perfil, tudo continua igual)
@@ -138,7 +211,8 @@
     el.dica.textContent = estado.cliente.localizacaoAtiva
       ? `Do mais perto ao mais longe (${estado.cliente.origem === "gps" ? "da sua localização atual" : "do endereço do seu perfil"}). Toque em um prestador para ver no mapa.`
       : "Em ordem alfabética (sem a sua localização). Toque em um prestador para ver no mapa.";
-    renderizarLista();
+    estado.visiveis = estado.lista.filter(passaFiltros);
+    aplicarFiltros();
     renderizarCartao(null);
 
     el.resultados.hidden = false;
@@ -150,7 +224,7 @@
       el.titulo.focus({ preventScroll: true });
     }
     await atualizarMapa();
-    if (prestador && estado.lista.some((p) => p.id === prestador)) selecionar(prestador, { rolar: false });
+    if (prestador && estado.visiveis.some((p) => p.id === prestador)) selecionar(prestador, { rolar: false });
     salvarNaUrl();
   }
 
@@ -164,7 +238,7 @@
 
   function renderizarLista() {
     el.vazia.hidden = estado.lista.length > 0;
-    el.lista.innerHTML = estado.lista.map((p) => `
+    el.lista.innerHTML = estado.visiveis.map((p) => `
       <li><button type="button" class="item-prestador" data-id="${esc(p.id)}" aria-pressed="false"${atributoDestaque(p)}>
         ${logo(p, "item-logo")}
         <span class="item-texto">
@@ -203,9 +277,13 @@
     const visiveis = p.servicos.slice(0, CONFIG.maxServicosCartao);
     const resto = p.servicos.length - visiveis.length;
     const perfil = `${SD.urlPagina("perfilPrestador")}?visao=cliente&id=${encodeURIComponent(p.id)}`;
+    const perfilUrl = `${perfil}&categoria=${encodeURIComponent(estado.categoria || "")}`;
+    // v0.8.0: WhatsApp com aviso de cobrança + registro; sem contatos à mostra → "Pedir contato"
     const whatsapp = p.whatsapp
-      ? `<a class="btn btn-whatsapp" href="https://wa.me/55${esc(p.whatsapp.replace(/\D/g, ""))}?text=${encodeURIComponent(CONFIG.mensagemWhatsApp)}" target="_blank" rel="noopener noreferrer">${SD.icones.whatsapp}<span>WhatsApp<span class="visualmente-oculto"> de ${esc(p.nome)} (abre em nova aba)</span></span></a>`
-      : `<span class="btn btn-whatsapp-off" role="note">${SD.icones.whatsapp}<span>WhatsApp liberado após o orçamento</span></span>`;
+      ? `<a class="btn btn-whatsapp" id="cartao-whatsapp" href="https://wa.me/55${esc(p.whatsapp.replace(/\D/g, ""))}?text=${encodeURIComponent(CONFIG.mensagemWhatsApp)}" target="_blank" rel="noopener noreferrer">${SD.icones.whatsapp}<span>WhatsApp<span class="visualmente-oculto"> de ${esc(p.nome)} (abre em nova aba)</span></span></a>`
+      : `<button type="button" class="btn btn-pedir-contato" id="cartao-pedir-contato">${SD.icones.whatsapp}<span>Pedir contato<span class="visualmente-oculto"> a ${esc(p.nome)}</span></span></button>`;
+    const visita = p.cobraVisita === true ? `Visita técnica: ${Number(p.valorVisita).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+      : p.cobraVisita === false ? "Não cobra visita técnica" : "Visita técnica: não informado";
 
     SD.ehDestaque(p) ? el.cartao.setAttribute("data-tag", C.destaque.tag) : el.cartao.removeAttribute("data-tag");
     el.cartao.innerHTML = `
@@ -221,14 +299,40 @@
         ${visiveis.map((s) => `<li>${esc(s)}</li>`).join("")}
         ${resto > 0 ? `<li class="cartao-mais" title="${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}">+${resto}<span class="visualmente-oculto"> serviços: ${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}</span></li>` : ""}
       </ul>
+      <p class="cartao-visita">${esc(visita)}</p>
       ${p.secundarias ? `<p class="nota cartao-aviso">${esc(C.avisoSecundarias)}</p>` : ""}
       <div class="cartao-acoes">
         ${whatsapp}
-        <a class="btn btn-orcamento" href="${esc(perfil)}">Fazer orçamento<span class="visualmente-oculto"> com ${esc(p.nome)}</span></a>
+        <a class="btn btn-orcamento" href="${esc(perfilUrl)}">Ver perfil<span class="visualmente-oculto"> de ${esc(p.nome)}</span></a>
       </div>`;
+    ligarContato(p);
+  }
+
+  /* ---------- 8b. CONTATO (v0.8.0): aviso de cobrança + registro (componentes/pedidos) ---------- */
+  function ligarContato(p) {
+    const categoria = C.categorias.find((c) => c.id === estado.categoria);
+    const dados = {
+      prestador: { id: p.id, nome: p.nome, cobraVisita: p.cobraVisita, valorVisita: p.valorVisita, secundarias: p.secundarias },
+      categoria: estado.categoria, servicoNome: categoria ? categoria.nome : "Serviço"
+    };
+    const zap = document.getElementById("cartao-whatsapp");
+    if (zap) zap.addEventListener("click", (e) => {
+      if (!window.SDPedidos) return;                                     // módulo ainda não carregou: link normal
+      window.SDPedidos.chamarWhatsApp(e, { ...dados, link: zap.href });
+    });
+    const pedir = document.getElementById("cartao-pedir-contato");
+    if (pedir) pedir.addEventListener("click", () => {
+      if (!window.SDPedidos) return;                                     // ainda carregando
+      window.SDPedidos.pedirContato(dados);
+    });
   }
 
   /* ---------- 9. MAPA ---------- */
+  function aoClicarNoMapa(id) {
+    selecionar(id);
+    const botao = el.lista.querySelector(`.item-prestador[data-id="${CSS.escape(id)}"]`);
+    if (botao) botao.scrollIntoView({ behavior: suave(), block: "nearest" });
+  }
   function avisoMapa(texto) {
     el.mapaAviso.textContent = texto;
     el.mapaAviso.hidden = !texto;
@@ -249,12 +353,8 @@
       estado.mapa.redimensionar();
       estado.mapa.marcarUsuario(estado.cliente.localizacaoAtiva ? estado.cliente : null);
       estado.mapa.definirPontos(
-        estado.lista.map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) })),
-        { aoClicar: (id) => {
-          selecionar(id);
-          const botao = el.lista.querySelector(`.item-prestador[data-id="${CSS.escape(id)}"]`);
-          if (botao) botao.scrollIntoView({ behavior: suave(), block: "nearest" });
-        } }
+        estado.visiveis.map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) })),
+        { aoClicar: aoClicarNoMapa }
       );
       estado.mapa.ajustarVisao();
     } catch (erro) {
@@ -284,6 +384,7 @@
       el.gps.disabled = false;
       el.gpsMsg.textContent = "Usando sua localização atual (não fica salva).";
       mostrarAvisoLocal();
+      atualizarFiltroDistancia();
       if (estado.mapa) estado.mapa.marcarUsuario(estado.cliente);
       if (estado.categoria) await escolherCategoria(estado.categoria, { prestador: estado.selecionado });
     }, (erro) => {
@@ -298,8 +399,10 @@
   async function iniciar() {
     montarSetores();
     el.gps.addEventListener("click", usarGps);
+    iniciarFiltros();
     estado.cliente = await lerCliente();
     mostrarAvisoLocal();
+    atualizarFiltroDistancia();
     // Chegou com um tipo escolhido (Home ou voltando do perfil do prestador)
     const params = new URLSearchParams(location.search);
     const categoria = params.get("categoria");

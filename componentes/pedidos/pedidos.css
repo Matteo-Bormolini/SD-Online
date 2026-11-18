@@ -1,0 +1,96 @@
+/* =====================================================================
+   S.D — TELAS DO PEDIDO (componentes/pedidos/pedidos.css) · v0.8.0
+   Janelas (aviso de cobrança, pedir contato, "fez orçamento?", formulário),
+   bloco "Em orçamento" do cliente e aviso rápido. Prefixo "pd-".
+   Usa as cores do padrão do site (configuracoes/base.css). Claro e escuro.
+   ===================================================================== */
+
+/* ---------- 1. JANELAS ---------- */
+.pd-janela { width: min(36rem, calc(100vw - 1.5rem)); }
+.pd-janela-form { width: min(44rem, calc(100vw - 1.5rem)); }
+.pd-janela .pd-janela-corpo { display: grid; gap: .875rem; }
+.pd-janela p { color: var(--cor-texto); }
+.pd-sub { font-weight: 600; color: var(--cor-texto-secundario) !important; }
+.pd-nota { font-size: .875rem !important; color: var(--cor-texto-secundario) !important; }
+.pd-cobranca { margin: 0; padding: .875rem 1rem .875rem 2rem; display: grid; gap: .375rem; font-size: .9375rem;
+  color: var(--cor-atencao); background: var(--cor-atencao-fundo); border-radius: var(--raio-botao); }
+.pd-mensagem-cliente { margin: 0; padding: .75rem 1rem; font-size: .9375rem; white-space: pre-wrap; overflow-wrap: anywhere;
+  background: var(--cor-superficie-2); border-left: 4px solid var(--cor-vinho); border-radius: 0 var(--raio-botao) var(--raio-botao) 0; }
+.pd-btn-principal { background: var(--cor-vinho); color: #FFFFFF; border-color: var(--cor-vinho); }
+.pd-btn-principal:hover { background: var(--cor-vinho-escuro); }
+.pd-btn-perigo { color: var(--cor-erro); }
+[data-tema="escuro"] .pd-btn-perigo { color: #A11B1B; }
+
+/* ---------- 2. CAMPOS (as janelas abrem em qualquer página) ---------- */
+.pd-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .875rem 1rem; }
+.pd-campo { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.pd-largo { grid-column: 1 / -1; }
+.pd-campo label { font-size: .875rem; font-weight: 600; }
+.pd-campo input:not([type="checkbox"]), .pd-campo select, .pd-campo textarea {
+  width: 100%; min-height: 2.75rem; padding: .55rem .75rem; font: inherit; font-size: 1rem;
+  color: var(--cor-texto); background: var(--cor-superficie); border: 1px solid var(--cor-campo-borda); border-radius: var(--raio-botao);
+}
+.pd-campo textarea { resize: vertical; line-height: 1.5; }
+.pd-campo input:focus-visible, .pd-campo select:focus-visible, .pd-campo textarea:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 1px; }
+.pd-campo input:disabled { opacity: .55; }
+.pd-check { flex-direction: row; align-items: center; gap: .5rem; }
+.pd-check input { width: 1.25rem; height: 1.25rem; accent-color: var(--cor-vinho); }
+.pd-obrig { color: var(--cor-erro); }
+.pd-dica { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.pd-erro { font-size: .8125rem; font-weight: 600; color: var(--cor-erro); }
+.pd-erro:empty { display: none; }
+@media (max-width: 35.99rem) { .pd-form { grid-template-columns: 1fr; } }
+
+/* Miniaturas das fotos (pedir contato / janela do prestador) */
+.pd-miniaturas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.pd-miniaturas:empty { display: none; }
+.pd-miniaturas li { position: relative; }
+.pd-miniaturas img { display: block; width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: var(--raio-botao); border: 1px solid var(--cor-divisoria); }
+.pd-miniaturas-ver img { width: 6rem; height: 6rem; }
+.pd-carregando-foto { display: flex; align-items: center; justify-content: center; width: 6rem; height: 6rem; font-size: .75rem;
+  color: var(--cor-texto-secundario); background: var(--cor-superficie-2); border-radius: var(--raio-botao); }
+.pd-tirar { position: absolute; top: -.4rem; right: -.4rem; width: 1.6rem; height: 1.6rem; padding: 0; font: inherit; font-weight: 700; line-height: 1;
+  color: #FFFFFF; background: var(--cor-vinho); border: 2px solid var(--cor-superficie); border-radius: 50%; cursor: pointer; }
+
+/* Tabela do orçamento */
+.pd-tabela { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.pd-tabela th, .pd-tabela td { padding: .45rem .5rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--cor-divisoria); }
+.pd-tabela th { width: 40%; font-weight: 600; color: var(--cor-texto-secundario); }
+.pd-tabela td { overflow-wrap: anywhere; }
+
+/* ---------- 3. AVISO RÁPIDO (canto da tela) ---------- */
+.pd-aviso-rapido { position: fixed; z-index: 60; left: 50%; bottom: 1rem; transform: translateX(-50%);
+  width: min(32rem, calc(100vw - 2rem)); box-shadow: 0 8px 28px rgba(0, 0, 0, .25); }
+
+/* ---------- 4. BLOCO "EM ORÇAMENTO" (perfil do cliente, aba Serviços) ---------- */
+.pd-em-orcamento { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+.pd-bloco-titulo { margin: 0; font-size: 1rem; }
+.pd-bloco { padding: 1rem; background: var(--cor-superficie); border: 1px dashed var(--cor-vinho); border-radius: var(--raio-cartao); }
+.pd-bloco-andamento { border-style: solid; }
+.pd-bloco-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; flex-wrap: wrap; }
+.pd-bloco-topo h4 { margin: 0 0 .35rem; font-size: 1rem; }
+.pd-bloco-conta { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.pd-bloco-rodape { display: flex; justify-content: flex-end; margin-top: .75rem; }
+.pd-bloco-rodape:empty { display: none; }
+.pd-selo { display: inline-block; padding: .1rem .55rem; font-size: .75rem; font-weight: 700; border-radius: 999px;
+  color: var(--cor-info); background: var(--cor-info-fundo); }
+.pd-selo-processo { color: var(--cor-atencao); background: var(--cor-atencao-fundo); }
+.pd-selo-orcado, .pd-selo-escolhido { color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
+.pd-selo-concluido { color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); }
+.pd-selo-nao-orcou, .pd-selo-expirado, .pd-selo-encerrado { color: var(--cor-texto-secundario); background: var(--cor-superficie-2); }
+.pd-cartoes { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+.pd-cartao { display: flex; flex-direction: column; gap: .5rem; padding: .875rem; background: var(--cor-superficie-2);
+  border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); }
+.pd-cartao-topo { display: flex; align-items: center; gap: .625rem; }
+.pd-cartao-foto { width: 2.5rem; height: 2.5rem; border-radius: 50%; object-fit: cover; flex: none; }
+.pd-cartao-nome { display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; min-width: 0; }
+.pd-cartao-nome .link { overflow-wrap: anywhere; }
+.pd-cartao-resumo { display: flex; flex-direction: column; gap: .15rem; }
+.pd-valor { font-size: 1.125rem; font-weight: 700; }
+.pd-linha { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.pd-cartao-acoes { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; }
+.pd-btn-zap { display: inline-flex; align-items: center; gap: .35rem; }
+.pd-btn-zap svg { width: 1.1rem; height: 1.1rem; }
+/* Aviso sutil (10 dias sem resposta, lembretes) */
+.pd-sutil { margin: .25rem 0 0; font-size: .8125rem; color: var(--cor-texto-secundario); }
+.pd-lembrete { padding: .4rem .6rem; background: var(--cor-info-fundo); color: var(--cor-info); border-radius: var(--raio-botao); }

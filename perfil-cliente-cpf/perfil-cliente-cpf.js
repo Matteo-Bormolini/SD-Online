@@ -57,6 +57,24 @@
     if (foto) foto.renderizar();
   }
 
+  /* ---------- SERVIÇOS: EM ORÇAMENTO + REALIZADOS (v0.8.0) ----------
+     Pedidos reais (componentes/pedidos): bloco "Em orçamento/Em andamento" e,
+     embaixo, os serviços que o cliente confirmou como realizados. */
+  function renderizarServicos() {
+    const T = window.SDPedidos;
+    const lista = T ? T.realizados() : servicos;
+    window.SDServicos.renderizar({
+      lista: $("#lista-servicos"), total: $("#servicos-total"), vazio: $("#servicos-vazio"),
+      servicos: lista, fotoPadraoEmpresa: CONFIG.fotoPadraoEmpresa
+    });
+    if (T) T.renderizarEmOrcamento($("#em-orcamento"), { aoMudar: P.atualizarAltura });
+    P.atualizarAltura();
+  }
+  function ligarPedidos() {
+    const ligar = () => { renderizarServicos(); document.addEventListener("sd:pedidos-mudou", renderizarServicos); };
+    if (window.SDPedidos) ligar(); else document.addEventListener("sd:pedidos-pronto", ligar, { once: true });
+  }
+
   /* ---------- 4. INÍCIO ---------- */
   document.addEventListener("DOMContentLoaded", async () => {
     // Conta real (Firebase): dados da conta logada
@@ -69,10 +87,8 @@
       textoAlt: (temFoto) => (temFoto ? "Foto de perfil de " + perfil.nome : "Foto padrão de perfil")
     });
     renderizarDados();
-    window.SDServicos.renderizar({
-      lista: $("#lista-servicos"), total: $("#servicos-total"), vazio: $("#servicos-vazio"),
-      servicos, fotoPadraoEmpresa: CONFIG.fotoPadraoEmpresa
-    });
+    renderizarServicos();
+    ligarPedidos();
     P.iniciarSanfona();
     P.iniciarFormulario({
       perfil,
@@ -103,6 +119,10 @@
           .finally(() => P.atualizarAltura());
       }
     });
-    P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });
+    const abas = P.iniciarAbas({ abas: ["#aba-perfil", "#aba-servicos"] });
+    // Avisos do sino abrem direto a aba Serviços (#servicos)
+    const abrirServicosPeloEndereco = () => { if (location.hash === "#servicos") abas.ativar(1, true); };
+    abrirServicosPeloEndereco();
+    window.addEventListener("hashchange", abrirServicosPeloEndereco);
   });
 })();

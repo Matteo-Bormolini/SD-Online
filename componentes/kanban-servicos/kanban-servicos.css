@@ -19,9 +19,9 @@
 .kanban-resumo dt { font-size: .75rem; color: var(--cor-texto-secundario); text-transform: uppercase; letter-spacing: .03em; font-weight: 600; }
 .kanban-resumo dd { margin: .125rem 0 0; font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-/* ---------- 2. QUADRO: 5 COLUNAS (larguras na seção 10) ---------- */
+/* ---------- 2. QUADRO: 4 COLUNAS (v0.8.0; larguras na seção 10) ---------- */
 .kanban {
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .875rem;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .875rem;
   align-items: start;
 }
 .kanban-coluna {
@@ -43,8 +43,8 @@
 
 /* Marcador da etapa: forma + cor (acessível para daltônicos) */
 .kanban-marcador { width: .75rem; height: .75rem; flex: none; border: 2px solid var(--cor-texto-secundario); }
-[data-etapa="orcando"]  .kanban-marcador { border-radius: 50%; border-style: dashed; }               /* círculo tracejado */
-[data-etapa="aceito"]   .kanban-marcador { border-radius: 50%; border-color: var(--cor-info); }       /* círculo */
+[data-etapa="contatos"] .kanban-marcador { border-radius: 50%; border-style: dashed; }               /* círculo tracejado */
+[data-etapa="orcado"]   .kanban-marcador { border-radius: 50%; border-color: var(--cor-info); }       /* círculo */
 [data-etapa="realizar"] .kanban-marcador { border-radius: 2px; border-color: var(--cor-atencao); background: var(--cor-atencao-fundo); } /* quadrado */
 [data-etapa="prestado"] .kanban-marcador { border-radius: 50%; border-color: var(--cor-sucesso); background: var(--cor-sucesso); }       /* círculo cheio */
 
@@ -221,9 +221,9 @@
 .kanban-encerrar { color: var(--cor-erro); }
 .kanban-acoes .kanban-encerrar { flex-basis: 100%; }
 
-/* ---------- 10. LARGURAS COM 5 COLUNAS ---------- */
-@media (min-width: 75.01rem) { .kanban { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-@media (min-width: 48rem) and (max-width: 75rem) { .kanban { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* ---------- 10. LARGURAS COM 4 COLUNAS ---------- */
+@media (min-width: 75.01rem) { .kanban { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 48rem) and (max-width: 75rem) { .kanban { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 47.99rem) {
   .kanban { gap: .5rem; }
   .kanban-coluna { padding: .5rem .75rem; }
@@ -235,7 +235,7 @@
 @media (prefers-reduced-motion: reduce) { .kanban-coluna-botao .kanban-seta, .kanban-encerrados-botao .kanban-seta { transition: none; } }
 /* Títulos não quebram no meio da palavra (só hífen, quando preciso) */
 .kanban-card-titulo, .kanban-card-cliente { overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
-/* 5 colunas: foto menor para sobrar espaço ao texto */
+/* 4 colunas: foto menor para sobrar espaço ao texto */
 @media (min-width: 75.01rem) {
   .kanban-card-topo { grid-template-columns: 2rem minmax(0, 1fr) 1rem; gap: .25rem .5rem; padding-left: .625rem; }
   .kanban-foto { width: 2rem; height: 2rem; }
@@ -245,3 +245,13 @@
 .kanban-aviso { margin: 0 0 .75rem; }
 .kanban-aviso[hidden] { display: none; }
 .kanban-nota { flex-basis: 100%; margin: 0; font-size: .8125rem; font-style: italic; color: var(--cor-texto-secundario); }
+
+/* ---------- 12. v0.8.0: aguardando o cliente + fotos do pedido ---------- */
+.kanban-card.aguardando { border-style: dashed; }
+.kanban-selo { flex-basis: 100%; font-size: .75rem; font-weight: 700; color: var(--cor-sucesso); }
+.kanban-card-info { flex-wrap: wrap; }
+.kanban-fotos-pedido:empty { display: none; }
+.kanban-fotos-pedido { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.kanban-fotos-pedido img { width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: 8px; border: 1px solid var(--cor-divisoria); display: block; }
+.kanban-acoes .kanban-avancar { background: var(--cor-vinho); color: #FFFFFF; border-color: var(--cor-vinho); }
+.kanban-acoes .kanban-avancar:hover { background: var(--cor-vinho-escuro); }

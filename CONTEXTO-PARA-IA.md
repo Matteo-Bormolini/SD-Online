@@ -26,7 +26,7 @@
 ## 4. Regras técnicas obrigatórias
 - Página nova nasce de `modelo-pagina/index.html`.
 - Scripts: `seguranca/acesso.js` → `configuracoes/config.js` → (`configuracoes/interruptores.js`) → `navbar` → `rodape` → componentes → página → **`firebase/firebase.js` por último** (`type="module"`).
-- **Servidor = Firebase** (Auth + Firestore, plano grátis). Só `firebase/firebase.js` fala com ele. Regras do banco: `firebase/firestore.rules` (colar no console). Login do MVP só por e-mail.
+- **Servidor = Firebase** (Auth + Firestore, plano grátis). Só a pasta `firebase/` fala com ele: `firebase.js` (conta e perfil), `fotos.js` (fotos compactadas, coleção "fotos") e `pedidos.js` (contatos/orçamentos e avisos, coleções "orcamentos" e "avisos") — v0.8.0. Telas do pedido: `componentes/pedidos`; sino: `componentes/avisos`. Regras do banco: `firebase/firestore.rules` (colar no console). Login do MVP só por e-mail.
 - **Nada pago no MVP.** O que só funciona pagando fica em "Pós-MVP · precisa pagar" (`docs/backlog.md`, seção 2).
 - Conferência de CPF/CNPJ: botão do adm `conferir-documentos` (`configuracoes/site` no banco). CNPJ do prestador: `servicos/consulta-cnpj.js`. Selo `verificado` só pelo adm.
 - Navbar e rodapé são montados por JS. **Nunca escrever à mão.** Links só em `configuracoes/config.js`.

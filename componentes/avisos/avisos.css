@@ -1,0 +1,36 @@
+/* =====================================================================
+   S.D — CENTRAL DE AVISOS / SINO (componentes/avisos/avisos.css) · v0.8.0
+   Botão no padrão da NavBar (.nav-btn) + painel que abre embaixo.
+   ===================================================================== */
+.sino-caixa { position: relative; display: inline-flex; }
+.sino-botao { position: relative; }
+.sino-numero {
+  position: absolute; top: -.35rem; right: -.35rem; min-width: 1.15rem; height: 1.15rem; padding: 0 .25rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .6875rem; font-weight: 700; line-height: 1; color: var(--cor-vinho);
+  background: #FFFFFF; border: 1px solid var(--cor-vinho); border-radius: 999px;
+}
+.sino-painel {
+  position: absolute; z-index: 55; top: calc(100% + .5rem); right: 0;
+  width: min(22rem, calc(100vw - 1rem)); max-height: min(28rem, calc(100dvh - 5rem)); overflow: auto;
+  padding: .75rem; color: var(--cor-texto); background: var(--cor-superficie);
+  border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao); box-shadow: 0 12px 32px rgba(0, 0, 0, .25);
+}
+/* Celular: o painel ocupa a largura da tela (alinhado à direita da NavBar) */
+@media (max-width: 47.99rem) { .sino-painel { position: fixed; top: 3.6rem; right: .5rem; } }
+.sino-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.sino-topo h2 { margin: 0; font-size: 1rem; }
+.sino-ler-todos { font: inherit; font-size: .8125rem; font-weight: 600; color: var(--cor-vinho); background: none; border: 0; cursor: pointer; text-decoration: underline; padding: .25rem; }
+[data-tema="escuro"] .sino-ler-todos { color: #F29A9A; }
+.sino-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .375rem; }
+.sino-item a {
+  display: flex; flex-direction: column; gap: .15rem; padding: .55rem .65rem;
+  color: var(--cor-texto); text-decoration: none; border-radius: var(--raio-botao); border: 1px solid transparent;
+}
+.sino-item a:hover { background: var(--cor-superficie-2); border-color: var(--cor-divisoria); }
+.sino-item a:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 1px; }
+.sino-item.nao-lido a { background: var(--cor-info-fundo); }
+.sino-item.nao-lido .sino-texto { font-weight: 600; }
+.sino-texto { font-size: .875rem; line-height: 1.4; }
+.sino-quando { font-size: .75rem; color: var(--cor-texto-secundario); }
+.sino-vazio, .sino-rodape { margin: .5rem 0 0; font-size: .8125rem; color: var(--cor-texto-secundario); }
