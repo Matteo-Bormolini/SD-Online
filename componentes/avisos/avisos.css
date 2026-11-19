@@ -1,5 +1,5 @@
 /* =====================================================================
-   S.D — CENTRAL DE AVISOS / SINO (componentes/avisos/avisos.css) · v0.8.0
+   S.D — CENTRAL DE AVISOS / SINO (componentes/avisos/avisos.css) · v0.8.1
    Botão no padrão da NavBar (.nav-btn) + painel que abre embaixo.
    ===================================================================== */
 .sino-caixa { position: relative; display: inline-flex; }
@@ -28,6 +28,8 @@
   color: var(--cor-texto); text-decoration: none; border-radius: var(--raio-botao); border: 1px solid transparent;
 }
 .sino-item a:hover { background: var(--cor-superficie-2); border-color: var(--cor-divisoria); }
+/* Toque: sem hover preso; o item lido não fica com cara de selecionado */
+@media (hover: none) { .sino-item a:hover { background: transparent; border-color: transparent; } .sino-item.nao-lido a:hover { background: var(--cor-info-fundo); } }
 .sino-item a:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 1px; }
 .sino-item.nao-lido a { background: var(--cor-info-fundo); }
 .sino-item.nao-lido .sino-texto { font-weight: 600; }

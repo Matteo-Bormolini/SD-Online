@@ -1,5 +1,5 @@
 /* =====================================================================
-   S.D — CENTRAL DE AVISOS / SINO (componentes/avisos/avisos.js) · v0.8.0
+   S.D — CENTRAL DE AVISOS / SINO (componentes/avisos/avisos.js) · v0.8.1
    Carregado sozinho por firebase/pedidos.js (quem tem conta completa).
    - Botão de sino na NavBar (ao lado de "Meu perfil") com o número de não lidos.
    - Lista os avisos da coleção "avisos" (apagados sozinhos em 30 dias) e os
@@ -47,8 +47,11 @@
 
   function montar() {
     const direita = document.querySelector("#sd-navbar .nav-direita");
-    if (!direita || document.getElementById("sd-btn-avisos")) return !!direita;
-    const caixa = document.createElement("div");
+    if (!direita || document.getElementById("sd-avisos-painel")) return !!direita;
+    // A NavBar já deixa o lugar do sino (#sd-sino-lugar). Tocado antes de carregar? Abre já.
+    const lugar = document.getElementById("sd-sino-lugar");
+    const tocouAntes = !!(lugar && lugar.dataset.tocado);
+    const caixa = lugar || document.createElement("div");
     caixa.className = "sino-caixa";
     caixa.innerHTML = `
       <button type="button" class="nav-btn sino-botao" id="sd-btn-avisos" aria-expanded="false" aria-controls="sd-avisos-painel" aria-label="Avisos">
@@ -63,19 +66,23 @@
         <p class="sino-vazio">Nenhum aviso por enquanto.</p>
         <p class="sino-rodape">Os avisos são apagados depois de 30 dias.</p>
       </section>`;
-    const perfil = direita.querySelector("a.nav-btn");
-    direita.insertBefore(caixa, perfil || direita.firstChild);
+    if (!lugar) {
+      const perfil = direita.querySelector("a.nav-btn");
+      direita.insertBefore(caixa, perfil || direita.firstChild);
+    }
     botao = caixa.querySelector("#sd-btn-avisos");
     painel = caixa.querySelector("#sd-avisos-painel");
     botao.addEventListener("click", () => abrir(painel.hidden));
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !painel.hidden) { abrir(false); botao.focus(); } });
-    document.addEventListener("click", (e) => { if (!painel.hidden && !e.composedPath().includes(caixa)) abrir(false); });
+    // Toque fora fecha. "pointerdown": no iPhone tocar em área sem botão não gera "click" (v0.8.1)
+    document.addEventListener("pointerdown", (e) => { if (!painel.hidden && !e.composedPath().includes(caixa)) abrir(false); });
     caixa.querySelector(".sino-ler-todos").addEventListener("click", async () => {
       const nao = avisos.filter((a) => !a.lido && !a.local);
       nao.forEach((a) => { a.lido = true; });
       desenhar();
       await Promise.all(nao.map((a) => D.marcarLido(a.id).catch(() => null)));
     });
+    if (tocouAntes) abrir(true);
     return true;
   }
   function abrir(sim) {
