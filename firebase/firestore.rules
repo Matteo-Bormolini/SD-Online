@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.3 (organizadas por ÁREA · 23/11/2026 · área 80: campo exemplo)
+// S.D — REGRAS DO BANCO v0.8.4 (organizadas por ÁREA · 23/11/2026 · listas de texto conferidas em 1 cálculo)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -36,15 +36,25 @@ service cloud.firestore {
     function texto(d, k, c, max) { return !(c in k) || !(c in d) || (d[c] is string && d[c].size() <= max); }
     function booleano(d, k, c) { return !(c in k) || !(c in d) || d[c] is bool; }
     function digitos(d, k, c, regex) { return !(c in k) || !(c in d) || (d[c] is string && d[c].matches(regex)); }
-    // Listas: as regras do Firebase NÃO têm "for". item() confere 1 posição; ate10() confere 10.
+    // Listas: as regras do Firebase NÃO têm "for". item() confere 1 posição; ate10() confere 10 (usado só em CNAEs e fotos).
     function item(l, i, tam) { return l.size() <= i || (l[i] is string && l[i].size() <= tam); }
     function ate10(l, tam) {
       return item(l, 0, tam) && item(l, 1, tam) && item(l, 2, tam) && item(l, 3, tam) && item(l, 4, tam)
           && item(l, 5, tam) && item(l, 6, tam) && item(l, 7, tam) && item(l, 8, tam) && item(l, 9, tam);
     }
+    // Listas de TEXTO (v0.8.4): junta os itens com "|" e confere tudo de uma vez (poucos cálculos).
+    // Antes (item por item) a vitrine do prestador passava do limite com 5 itens ou mais → permission-denied.
+    // Regra: até maxItens itens, cada um com até "tam" letras, sem o caractere "|".
     function lista(d, k, c, maxItens, tam) {
       return !(c in k) || !(c in d) || (d[c] is list && d[c].size() <= maxItens
-        && ate10(d[c], tam) && (d[c].size() <= 10 || ate10(d[c][10:d[c].size()], tam)));
+        && (d[c].size() == 0 || textosOk(d[c].join('|'), d[c].size(), tam)));
+    }
+    function textosOk(j, n, tam) {
+      return j.split('[|]').size() == n
+        && ((tam == 20 && j.matches('([^|]{0,20}[|])*[^|]{0,20}'))      // ← tamanhos usados nas listas
+         || (tam == 30 && j.matches('([^|]{0,30}[|])*[^|]{0,30}'))
+         || (tam == 40 && j.matches('([^|]{0,40}[|])*[^|]{0,40}'))
+         || (tam == 60 && j.matches('([^|]{0,60}[|])*[^|]{0,60}')));
     }
 
     // ===== 02 · Geral: Campos comuns (todos os tipos de conta) =====

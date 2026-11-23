@@ -547,7 +547,10 @@
   async function publicar() {
     const F = window.SDFirebase;
     if (!perfil._real || !F || !F.publicarVitrine) return;
-    await F.publicarVitrine(perfil);
+    // v0.8.4: se o banco recusar, o prestador fica SEM aparecer certo na busca → avisa na tela
+    if (!(await F.publicarVitrine(perfil)) && !visaoCliente()) {
+      U.mostrarMensagem($("#msg-geral"), "atencao", "Seu cartão na busca de prestadores não foi atualizado agora. Os clientes podem ver dados antigos. Tente salvar de novo; se continuar, fale com o Suporte.");
+    }
   }
   // Cliente abrindo ?visao=cliente&id=… → mostra só os dados públicos da vitrine
   async function carregarVitrine(id) {

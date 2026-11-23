@@ -494,9 +494,11 @@
           return;
         }
         botao.disabled = false; botao.removeAttribute("aria-busy");
-        // Endereço novo → atualiza o ponto no mapa (sem travar a tela se falhar)
+        // Endereço novo → atualiza o ponto no mapa ANTES do depoisDeSalvar (v0.8.4: o prestador
+        // publicava o cartão da busca com o ponto antigo). Se falhar, só avisa.
         if (alterados.some((c) => CAMPOS_ENDERECO.includes(c)) && F.atualizarLocal) {
-          F.atualizarLocal(perfil).then((ok) => { if (!ok) U.mostrarMensagem(msg, "atencao", "Endereço salvo, mas o ponto no mapa não foi encontrado. Confira o número e o CEP."); });
+          const ok = await F.atualizarLocal(perfil).catch(() => false);
+          if (!ok) U.mostrarMensagem(msg, "atencao", "Endereço salvo, mas o ponto no mapa não foi encontrado. Confira o número e o CEP.");
         }
         if (opcoes.depoisDeSalvar) opcoes.depoisDeSalvar(alterados);
       }

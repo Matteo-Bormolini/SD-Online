@@ -11,7 +11,7 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta o teste do Matteo com contas reais). Home do prestador na v0.8.2.** Contas reais pelo Firebase grátis. Fluxo **"Contato registrado"**: filtros, aviso de cobrança, WhatsApp/Pedir contato, orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas de graça.
+Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta o teste do Marco com contas reais). Home do prestador na v0.8.2.** Contas reais pelo Firebase grátis. Fluxo **"Contato registrado"**: filtros, aviso de cobrança, WhatsApp/Pedir contato, orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas de graça.
 
 > **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
@@ -34,14 +34,14 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - ✅ **Ciclo 1 concluído em 11/11/2026 → v0.6.0.**
 
 ### ✅ Ciclo 2 · Contas reais (v0.7.5)
-> Versão de fechamento: **v0.7.5** (decisão do Matteo, 11/11). O Ciclo 3 continua sendo a v0.8.0.
+> Versão de fechamento: **v0.7.5** (decisão do Marco, 11/11). O Ciclo 3 continua sendo a v0.8.0.
 - [x] US03 Cadastro real (Cliente CPF, Cliente CNPJ, Prestador) — CPF/CNPJ único (11/11).
 - [x] US04 Login real (senha conferida pelo Firebase) + bloqueio temporário do próprio Firebase após muitas tentativas (11/11).
 - [x] US05 Nova senha pelo e-mail, abrindo o pop-up do site (11/11).
 - [x] US30 Senha só com hash no Firebase (ninguém vê, nem o adm); regras do banco publicadas (11/11).
 - [x] US31 Dados bloqueados por tipo de conta nas regras do banco. Páginas: bloqueio na tela (site estático; o que precisa de proteção são os dados) (11/11).
 - [x] Modo demonstração desligado no site publicado (11/11).
-- [x] Senha mínima de **6** caracteres no site e no Firebase (decisão do Matteo, 11/11).
+- [x] Senha mínima de **6** caracteres no site e no Firebase (decisão do Marco, 11/11).
 - [x] US56 Botão do adm **Conferir CPF e CNPJ** (desligado = modo teste) (11/11).
 - [x] US57 Consulta do CNPJ do prestador na Receita (CNPJá; reserva CNPJ.ws). Bloqueia só CNPJ inativo (11/11).
 - [x] US58 Cadastro que parou no meio é apagado/reaproveitado sozinho (11/11).
@@ -53,7 +53,7 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [x] Sem dados fictícios; perfis completos de verdade (foto salva, avisos, listas, horário); mapa com localização real (v0.7.9, 17/11).
 
 ### 🟠 Ciclo 3 · Encontrar e pedir (v0.8.0) — entregue, falta o teste real
-> Fluxo trocado em 18/11/2026 (decisão do Matteo): **"Contato registrado"** no lugar do orçamento feito dentro do site. Ver seção 3.
+> Fluxo trocado em 18/11/2026 (decisão do Marco): **"Contato registrado"** no lugar do orçamento feito dentro do site. Ver seção 3.
 - [x] Prestadores reais na busca e no mapa (vitrine) e na Home do cliente (v0.7.9).
 - [x] Ponto do cliente: endereço do perfil ou GPS (não salvo) (v0.7.9).
 - [x] **Filtros** em Localizar: nome, horário (1º horário + emergência), distância e preço da visita (US12, v0.8.0).
@@ -65,11 +65,11 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [x] Prestador marca **concluído** → cliente **confirma** → Serviços realizados / Prestados (parte da US54, v0.8.0).
 - [x] **Sino de avisos** (coleção "avisos", apagados em 30 dias) (US62, v0.8.0).
 - [x] **Fotos salvas de graça** no banco, compactadas (WebP 0,80, até 1080 px; iPhone: JPEG): trabalhos do prestador, local do CNPJ e Pedir contato (US63, v0.8.0).
-- [ ] Matteo: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
+- [ ] Marco: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
 - [ ] Release **v0.7.9** (pendente) e **v0.8.0**.
 - [x] **Home do prestador** (US46, v0.8.2, 19/11): comunicados, agenda de eventos (gerais e por atividade) e grupos/comunidades. Conteúdo cadastrado pelo adm no console (coleção `divulgacoes`).
 - [x] Aba **Divulgações** no Perfil do adm + exemplos ilustrativos (v0.8.3, 23/11).
-- [ ] Matteo: publicar as regras **v0.8.3**, criar os 2 índices e testar com conta real (no teste de 23/11 o banco negou a leitura: regras da área 80 ainda não estavam valendo).
+- [ ] Marco: publicar as regras **v0.8.3**, criar os 2 índices e testar com conta real (no teste de 23/11 o banco negou a leitura: regras da área 80 ainda não estavam valendo).
 - [ ] **Antes do lançamento:** apagar os exemplos ilustrativos (aba Divulgações) e as imagens `fotos/divulgacoes/exemplo-*.webp`.
 - [ ] Revisão dos Ciclos 1, 2 e 3.
 
@@ -80,7 +80,7 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - **Depois do MVP:** Home do prestador paga/presença/capacitação (US64–US67), segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
 
 ### ⏸️ Pós-MVP · precisa pagar (pausado)
-> Regra do Matteo (11/11/2026): no MVP **nada pago** (nem plano com cartão "grátis até um limite", como o Blaze do Firebase). Cada item volta quando o projeto der resultado.
+> Regra do Marco (11/11/2026): no MVP **nada pago** (nem plano com cartão "grátis até um limite", como o Blaze do Firebase). Cada item volta quando o projeto der resultado.
 
 | O quê | Por que precisa pagar | Enquanto isso (grátis) |
 |---|---|---|

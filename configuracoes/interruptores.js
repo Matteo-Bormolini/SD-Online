@@ -17,6 +17,7 @@
      onde     → em que página/lugar ele fica
      situacao → "ativo" (já na tela) ou "planejado" (ainda não criado)
      avisoDesligado → (opcional) aviso que aparece embaixo do botão quando ele está DESLIGADO
+     avisoDesligadoPorTipo → (opcional) o mesmo, só para um tipo de conta: { prestador: "texto" }
    ===================================================================== */
 (function () {
   "use strict";
@@ -27,6 +28,8 @@
       oQueFaz: "Usa o endereço do cadastro para calcular distâncias e mostrar no mapa.",
       ligado: "Prestador aparece no mapa e na lista por proximidade. Cliente vê os prestadores do mais perto ao mais longe.",
       desligado: "Prestador não aparece em mapas nem listas. Cliente vê a lista em ordem alfabética.",
+      // v0.8.4: aviso só para o prestador (cliente com ela desligada só perde a ordem por distância)
+      avisoDesligadoPorTipo: { prestador: "Com a Localização desligada, você NÃO aparece na busca nem no mapa dos clientes. Ligue para ser encontrado." },
       padrao: true,
       quem: ["cliente-cpf", "cliente-cnpj", "prestador"],
       onde: "Meu perfil — linha das abas, à direita",
@@ -132,11 +135,12 @@
     }
     // Aviso que aparece embaixo do botão quando ele está desligado (se o cadastro tiver)
     let aviso = null;
-    if (item.avisoDesligado) {
+    const textoAviso = (item.avisoDesligadoPorTipo && item.avisoDesligadoPorTipo[document.body.dataset.tipo]) || item.avisoDesligado;
+    if (textoAviso) {
       aviso = document.createElement("p");
       aviso.className = "mensagem atencao interruptor-aviso";
       aviso.setAttribute("role", "status");
-      aviso.textContent = item.avisoDesligado;
+      aviso.textContent = textoAviso;
       botao.insertAdjacentElement("afterend", aviso);
     }
     const pintar = (ligado) => {
