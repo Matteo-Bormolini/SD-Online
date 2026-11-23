@@ -21,6 +21,8 @@
      8. Carrega os módulos do Ciclo 3 (v0.8.0), que usam esta mesma conexão:
         firebase/fotos.js (fotos compactadas) e firebase/pedidos.js (contatos,
         orçamentos e avisos). Eles importam { db, auth, pronto } daqui.
+     9. Home do prestador (v0.8.2): carrega firebase/divulgacoes.js SÓ na
+        página inicial (eventos, grupos e comunicados publicados pelo adm).
 
    SEGURANÇA: a apiKey abaixo PODE ficar pública (é assim no Firebase).
    Quem protege os dados são as REGRAS do banco: firebase/firestore.rules.
@@ -53,7 +55,8 @@ const firebaseConfig = {
 // Nomes das coleções do banco (Firestore)
 // cadastrosPendentes = dados do cadastro esperando o e-mail ser confirmado (passo 1 de 2)
 const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes: "configuracoes", pendentes: "cadastrosPendentes", vitrine: "vitrine",
-                  orcamentos: "orcamentos", avisos: "avisos", fotos: "fotos" };
+                  orcamentos: "orcamentos", avisos: "avisos", fotos: "fotos",
+                  divulgacoes: "divulgacoes" };   // v0.8.2: eventos, grupos e comunicados da Home do prestador
 // Configurações gerais do site (configuracoes/site no banco; só o adm muda)
 // conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
 //                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
@@ -720,4 +723,8 @@ if (configurado) {
   // Ciclo 3: fotos + contatos/orçamentos/avisos (carregados depois, sem atrasar a página)
   import("./fotos.js").catch((e) => console.warn("[S.D] fotos.js:", e));
   import("./pedidos.js").catch((e) => console.warn("[S.D] pedidos.js:", e));
+  // v0.8.2: divulgações da Home do prestador (só na página inicial, só para quem está logado)
+  if (document.body && document.body.dataset.pagina === "inicio" && document.body.dataset.logado === "sim") {
+    import("./divulgacoes.js").catch((e) => console.warn("[S.D] divulgacoes.js:", e));
+  }
 }

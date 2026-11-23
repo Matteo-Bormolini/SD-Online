@@ -44,6 +44,20 @@
 .nav-btn-destaque { background: #FFFFFF; color: var(--cor-vinho); border-color: #FFFFFF; }
 .nav-btn-destaque:hover { background: var(--cor-vinho-escuro); color: #FFFFFF; }
 .btn-menu { display: none; }
+/* Lugar do sino (a NavBar cria; componentes/avisos completa). Esperando carregar: meio apagado */
+.sino-caixa { position: relative; display: inline-flex; }
+.sino-botao[aria-busy="true"] { opacity: .6; }
+
+/* Tela de toque (celular/tablet): o "hover" fica preso depois do toque e o botão
+   parece travado/apertado. Aqui ele volta ao normal (v0.8.1). */
+@media (hover: none) {
+  .nav-btn:hover { background: transparent; border-color: rgba(255, 255, 255, .7); }
+  .nav-btn[aria-current="page"]:hover { background: var(--cor-vinho-escuro); border-color: #FFFFFF; }
+  .nav-btn-destaque:hover { background: #FFFFFF; color: var(--cor-vinho); border-color: #FFFFFF; }
+  .menu a:hover { background: transparent; text-decoration: none; }
+  .menu a[aria-current="page"]:hover { background: var(--cor-vinho-escuro); }
+  .nav-btn:active, .menu a:active { background: var(--cor-vinho-escuro); }
+}
 
 /* Menu compacto (3 riscos) abaixo de 1260px */
 @media (max-width: 78.74rem) {

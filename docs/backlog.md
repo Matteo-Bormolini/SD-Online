@@ -11,7 +11,7 @@ Resumo no [README principal](../README.md). Decisões em [`decisoes.md`](decisoe
 
 > **Um cliente real e um prestador real conseguem cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato, com dados reais e seguros, e o site publicado.**
 
-Hoje (18/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta o teste do Marco com contas reais).** Contas reais pelo Firebase grátis. Fluxo **"Contato registrado"**: filtros, aviso de cobrança, WhatsApp/Pedir contato, orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas de graça.
+Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta o teste do Marco com contas reais). Home do prestador na v0.8.2.** Contas reais pelo Firebase grátis. Fluxo **"Contato registrado"**: filtros, aviso de cobrança, WhatsApp/Pedir contato, orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas de graça.
 
 > **Regra do MVP: nada pago.** O que só funciona pagando fica **pausado** na lista "Pós-MVP · precisa pagar" (seção 2).
 
@@ -67,14 +67,15 @@ Hoje (18/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [x] **Fotos salvas de graça** no banco, compactadas (WebP 0,80, até 1080 px; iPhone: JPEG): trabalhos do prestador, local do CNPJ e Pedir contato (US63, v0.8.0).
 - [ ] Marco: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
 - [ ] Release **v0.7.9** (pendente) e **v0.8.0**.
-- [ ] Decidir a Home do prestador (US46).
+- [x] **Home do prestador** (US46, v0.8.2, 19/11): comunicados, agenda de eventos (gerais e por atividade) e grupos/comunidades. Conteúdo cadastrado pelo adm no console (coleção `divulgacoes`).
+- [ ] Marco: publicar as regras v0.8.2, criar os 2 índices e testar a Home do prestador com conta real.
 - [ ] Revisão dos Ciclos 1, 2 e 3.
 
 ### ⬜ Depois (na ordem)
 - **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
 - **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
 - **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.
-- **Depois do MVP:** segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
+- **Depois do MVP:** Home do prestador paga/presença/capacitação (US64–US67), segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
 
 ### ⏸️ Pós-MVP · precisa pagar (pausado)
 > Regra do Marco (11/11/2026): no MVP **nada pago** (nem plano com cartão "grátis até um limite", como o Blaze do Firebase). Cada item volta quando o projeto der resultado.
@@ -197,7 +198,11 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | US41 | Cadastro único CNPJ/MEI. | C |
 | US44 | Página do adm para ligar/desligar o destaque. | C |
 | US45 | Seus Serviços: mapa dos clientes do prestador (região aproximada). | S |
-| US46 | Home própria do prestador — **decidir no fim do Ciclo 3**. | S |
+| US46 | Home própria do prestador (comunidade e networking): comunicados, agenda de eventos e grupos. **✅ v0.8.2 (19/11), falta teste real.** | S |
+| US64 | **Eventos seletivos e divulgação comercial:** organizador contrata espaço e escolhe o público (todos, 1 atividade, várias atividades ou um segmento). Adm aprova e controla o período. Etiqueta "Patrocinado". Relatório só com números agregados (visualizações, se for medido). Nunca dados pessoais dos prestadores. | C |
+| US65 | **Divulgação paga de grupos:** o responsável cadastra o grupo e paga **por anúncio** (valor + período), com aprovação do adm, redes sociais, segmentação por atividade e etiqueta "Patrocinado". | C |
+| US66 | **Capacitação:** divulgar cursos (idiomas, profissionalizantes), palestras, treinamentos e parcerias educacionais de fora. Sem plataforma de ensino própria. | C |
+| US67 | **"Confirmar que vou"** em eventos (ver regras abaixo). | S |
 | US47 | Perfil Master: cadastrar admins e o que cada um pode fazer. | C |
 | US48 | Registrar acompanhante e número de visitas. | C |
 | US49 | Entrar com o telefone principal. | C |
@@ -205,6 +210,24 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | US60 | Segunda verificação no login (ex.: código por e-mail ou SMS). **Pausado: SMS é pago.** | S |
 
 **Não agora:** pagamento dentro do app · chat dentro do app · prestador só com CPF · categorias guardadas (Serviços domésticos, Aulas, Eventos, Beleza, Automóveis, Pets).
+
+### Home do prestador — Pós-MVP (anotado em 19/11/2026)
+**Nada disto está implementado.** Base pronta na v0.8.2: coleção `divulgacoes` com `publico` (geral/atividades) e `atividades`.
+
+**US64 e US65 · Divulgação paga (eventos e grupos)**
+- Cobrança **por anúncio** (período contratado), não assinatura geral. Pagamento = pós-MVP (regra "nada pago no MVP").
+- Adm aprova, publica, suspende e define o período. Todo conteúdo pago com etiqueta **"Patrocinado"** e página de transparência sobre patrocinadores.
+- Organizador recebe só **números agregados** (ex.: quantos prestadores da área viram), nunca nomes, telefones, e-mails, CPF ou CNPJ, nem listas de usuários. Sem rastreamento individual, cookies publicitários ou GPS.
+- Medir visualizações exige registro novo: definir antes finalidade, base legal (LGPD) e prazo de guarda.
+
+**US67 · "Confirmar que vou"**
+- Prestador confirma, cancela e vê os eventos em que confirmou. 1 confirmação por conta e evento (id = evento + uid, sem repetição).
+- Adm vê: total por evento, por categoria e a evolução. Organizador: **só estatística agregada**.
+- Confirmação **não é** presença real. Se precisar: check-in por QR Code ou código de validação.
+- Antes de implementar: finalidade, base legal, prazo de guarda, como a pessoa consulta e apaga (direitos do titular), texto claro e opcional na tela.
+- O cadastro na S.D **não** autoriza uso comercial dos dados do prestador. Política de Privacidade e contratos comerciais passam por **advogado** antes de ativar (Ciclo 6).
+
+**US66 · Capacitação:** nova seção na mesma coleção (`tipo: "capacitacao"`), só links externos.
 
 ### Anotações para depois do MVP (09/11/2026)
 

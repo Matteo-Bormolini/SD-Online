@@ -4,6 +4,15 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 19/11/2026 — Home do prestador (v0.8.2 · US46)
+- Home **só informativa**: Comunicados da S.D → Agenda de eventos → Grupos e comunidades. Conceito interno "Comunidade e Networking Profissional" (só comentário no código).
+- Não repete o Perfil (contatos, orçamentos, serviços e dados da empresa ficam lá).
+- Eventos: **gerais** ou por **atividade** (principal ou secundária), usando a lista única de serviços (`config.js → servicos`). Sem lista nova de categorias.
+- Conteúdo: coleção `divulgacoes`, **só o adm** cadastra, pelo Firebase Console (sem painel novo). Sem dados fictícios no site; prévia com dados fictícios só fora do repositório.
+- Regras do banco conferem o público (área 80). Plano B pronto (`SEGMENTAR_PUBLICO()`), caso a consulta por atividade seja negada no teste real.
+- Imagens: só arquivos da pasta `fotos/divulgacoes/` ou imagem em texto (links de outros sites bloqueados: rastreamento).
+- Pós-MVP (não feito): divulgação paga de eventos e grupos (US64/US65), capacitação (US66), "Confirmar que vou" (US67). LGPD: organizador só recebe números agregados; textos legais com advogado antes de cobrar.
+
 ### 18/11/2026 — Ciclo 3 · fluxo "Contato registrado" (v0.8.0)
 - **Fluxo trocado** (substitui o de 09/11): o cliente chama pelo WhatsApp (ou "Pedir contato") e o site **registra o contato**; o prestador responde "Fez orçamento?" (Não → Encerrados; Sim → formulário). O site **não** faz o orçamento no lugar das partes; ele é **informativo**.
 - **Orçamento padrão = informativo** (valor, visita, visitas, materiais, mão de obra, funcionários, início, duração, validade, observações). Sem dependência nem cobrança.

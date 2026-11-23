@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.0 (organizadas por ÁREA · 18/11/2026)
+// S.D — REGRAS DO BANCO v0.8.2 (organizadas por ÁREA · 19/11/2026 · área 80 nova)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -12,6 +12,7 @@ rules_version = '2';
 //   25 Vitrine_Prestador: Ler e Publicar    30 Reserva_Documento: Criar e Excluir
 //   40 Config_Site: Ler e Alterar (adm)     50 Contatos_Orçamentos (v0.8.0)
 //   60 Avisos: sino (v0.8.0)                70 Fotos: compactadas, sem Storage (v0.8.0)
+//   80 Divulgacoes_Home: eventos, grupos e comunicados da Home do prestador (v0.8.2)
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -455,6 +456,69 @@ service cloud.firestore {
           && f.legenda is string && f.legenda.size() <= 80 && f.formato in ['webp', 'jpeg']
           && f.largura is int && f.largura > 0 && f.largura <= 1080 && f.altura is int && f.altura > 0 && f.altura <= 1080
           && f.dados is string && f.dados.size() <= 900000 && f.dados.matches('data:image/(webp|jpeg);base64,[A-Za-z0-9+/=]+');
+      }
+    }
+
+    // ===== 80 · Divulgacoes_Home: Home do prestador (v0.8.2) =====
+    // Eventos, grupos/comunidades e comunicados da S.D. Só o ADM cadastra, edita, publica e apaga.
+    // Lê: o adm (tudo) e o PRESTADOR (só "publicado" e só o que é do público dele):
+    //   publico == 'geral'      → todos os prestadores
+    //   publico == 'atividades' → só quem tem uma das "atividades" como área de atuação ou atividade secundária
+    //                             (nomes iguais aos da lista única de serviços: configuracoes/config.js → servicos)
+    // Clientes e visitantes NÃO leem. Não guarda nada do prestador (nem quem viu).
+    // ATENÇÃO: o Firebase Console ignora estas regras (é acesso de dono). Ao cadastrar pelo console,
+    // siga o modelo de firebase/README.md; a tela (firebase/divulgacoes.js) também confere cada campo.
+    match /divulgacoes/{id} {
+      // ← MUDE AQUI: true = o banco confere a área do prestador (padrão).
+      // false = PLANO B, só se a Agenda der "permissão negada" no teste real: qualquer prestador lê o que
+      // está publicado e a tela filtra pela área (conteúdo é divulgação, não é dado pessoal).
+      function SEGMENTAR_PUBLICO() { return true; }
+      allow read: if emailOk() && (leituraPrestador(resource.data) || ehAdm());
+      allow create, update: if ehAdm() && divulgacaoOk(novo());
+      allow delete: if ehAdm();
+      function minhasAtividades() {
+        let u = get(caminho('usuarios', request.auth.uid)).data;
+        return [u.get('areaAtuacao', '')] + u.get('especialidades', []);
+      }
+      function leituraPrestador(d) {
+        return tipoLogado() == 'prestador' && d.situacao == 'publicado'
+          && (d.publico == 'geral' || (d.publico == 'atividades' && (!SEGMENTAR_PUBLICO() || d.atividades.hasAny(minhasAtividades()))));
+      }
+      // Campos e limites ← MUDE AQUI (iguais a firebase/divulgacoes.js → LIMITES)
+      function linkOk(d, k, c) { return !(c in k) || (d[c] is string && d[c].size() <= 500 && d[c].matches('https://[^\\s<>"]+')); }
+      function dataOk(d, k, c) { return !(c in k) || (d[c] is string && d[c].matches('20[0-9]{2}-[01][0-9]-[0-3][0-9]')); }
+      function horaOk(d, k, c) { return !(c in k) || hora(d[c]); }
+      function imagemOk(d, k) {
+        return !('imagem' in k) || (d.imagem is string && d.imagem.size() <= 300000
+          && (d.imagem.matches('[a-z0-9-]{1,60}[.](webp|jpg|jpeg|png)') || d.imagem.matches('data:image/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+')));
+      }
+      function redesOk(d, k) {
+        return !('redes' in k) || (d.redes is map && d.redes.keys().hasOnly(['facebook', 'instagram', 'youtube', 'whatsapp', 'telegram', 'linkedin', 'site'])
+          && linkOk(d.redes, d.redes.keys(), 'facebook') && linkOk(d.redes, d.redes.keys(), 'instagram') && linkOk(d.redes, d.redes.keys(), 'youtube')
+          && linkOk(d.redes, d.redes.keys(), 'whatsapp') && linkOk(d.redes, d.redes.keys(), 'telegram') && linkOk(d.redes, d.redes.keys(), 'linkedin')
+          && linkOk(d.redes, d.redes.keys(), 'site'));
+      }
+      function divulgacaoOk(d) {
+        let k = d.keys();
+        return k.hasAll(['tipo', 'titulo', 'situacao', 'publico'])
+          && k.hasOnly(['tipo', 'titulo', 'situacao', 'publico', 'atividades', 'ordem', 'imagem', 'descricao', 'link', 'linkTexto',
+                        'subtitulo', 'data', 'dataFim', 'horaInicio', 'horaFim', 'modalidade', 'localNome', 'cidade', 'uf', 'endereco',
+                        'buffet', 'buffetEmpresa', 'estacionamento', 'estacionamentoObs', 'organizador', 'regiao', 'redes', 'nivel',
+                        'criadoEm', 'atualizadoEm'])
+          && d.tipo in ['evento', 'grupo', 'comunicado'] && d.situacao in ['publicado', 'suspenso', 'encerrado']
+          && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 120
+          && (d.publico == 'geral' || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
+          && lista(d, k, 'atividades', 10, 60) && (!('ordem' in k) || d.ordem is int)
+          && texto(d, k, 'descricao', 1500) && texto(d, k, 'linkTexto', 40) && texto(d, k, 'subtitulo', 160)
+          && texto(d, k, 'localNome', 120) && texto(d, k, 'cidade', 80) && digitos(d, k, 'uf', '([A-Z]{2})?') && texto(d, k, 'endereco', 200)
+          && booleano(d, k, 'buffet') && texto(d, k, 'buffetEmpresa', 120) && texto(d, k, 'estacionamentoObs', 120)
+          && texto(d, k, 'organizador', 120) && texto(d, k, 'regiao', 80)
+          && (!('modalidade' in k) || d.modalidade in ['presencial', 'online', 'hibrido'])
+          && (!('estacionamento' in k) || d.estacionamento in ['gratuito', 'pago', 'nao'])
+          && (!('nivel' in k) || d.nivel in ['info', 'atencao'])
+          && dataOk(d, k, 'data') && dataOk(d, k, 'dataFim') && horaOk(d, k, 'horaInicio') && horaOk(d, k, 'horaFim')
+          && linkOk(d, k, 'link') && imagemOk(d, k) && redesOk(d, k)
+          && (!('criadoEm' in k) || d.criadoEm is timestamp) && (!('atualizadoEm' in k) || d.atualizadoEm is timestamp);
       }
     }
   }

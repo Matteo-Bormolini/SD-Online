@@ -9,6 +9,8 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 | `firebase.js` | Conexão: entrar, sair, criar conta, nova senha, confirmar e-mail, ler/salvar/excluir perfil. **Bloco 1 = configuração do projeto.** |
 | `fotos.js` | **v0.8.0** Fotos compactadas no banco (coleção `fotos`), grátis. `window.SDFotos`. |
 | `pedidos.js` | **v0.8.0** Contatos/orçamentos (coleção `orcamentos`) e avisos (coleção `avisos`). Carrega as telas `componentes/pedidos` e `componentes/avisos`. `window.SDPedidosDados`. |
+| `divulgacoes.js` | **v0.8.2** Eventos, grupos e comunicados da **Home do prestador** (coleção `divulgacoes`). Só lê. Carregado só na página inicial. `window.SDDivulgacoes`. |
+| `firestore.indexes.json` | **v0.8.2** Índices da coleção `divulgacoes` (criar 1 vez no console: veja abaixo). |
 | `firestore.rules` | Regras de segurança do banco. Copiar e colar no console (não funciona sozinho aqui no GitHub). **Bloco 1 = limites de tamanho.** |
 
 ## Como entra nas páginas
@@ -60,6 +62,7 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 | 50 Contatos_Orçamentos | cliente cria o contato; cada lado só muda o que é seu (situações: contato → orcado/nao-orcou/expirado → escolhido/nao-escolhido/cancelado/encerrado → concluido → prestado) |
 | 60 Avisos | só quem participa do contato avisa o outro lado; só o dono lê, marca como lido e apaga |
 | 70 Fotos | 1 foto = 1 documento (até 900.000 caracteres, WebP/JPEG, até 1080 px); trabalho: clientes leem; pedido: só o prestador daquele contato |
+| 80 Divulgacoes_Home | **v0.8.2** só o adm grava; prestador lê só `publicado` e do público dele (geral ou uma das atividades dele); clientes e visitantes não leem. Interruptor `SEGMENTAR_PUBLICO()` (plano B) |
 
 Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que o banco aceita:
 
@@ -110,6 +113,50 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 - **Índices:** as buscas usam só `where(campo, "==", …)` (clienteUid, prestadorUid, para) — o Firestore cria esses índices sozinho. Nada a configurar.
 - **Sem servidor:** prazos (10 dias, 1 ano, 30 dias) são conferidos quando cliente ou prestador abre o site; as regras conferem as datas.
 
+## Coleção `divulgacoes` — Home do prestador (v0.8.2)
+Eventos, grupos/comunidades e comunicados que aparecem na **Home do prestador**. **Só o adm cadastra** (por enquanto pelo console; não existe painel).
+
+### 1. Criar os índices (uma vez, grátis)
+Firestore Database → **Índices** → **Compostos** → **Criar índice**:
+| Coleção | Campo 1 | Campo 2 |
+|---|---|---|
+| `divulgacoes` | `situacao` · Crescente | `atividades` · **Matrizes (array-contains)** |
+| `divulgacoes` | `situacao` · Crescente | `publico` · Crescente |
+Escopo: **Coleção**. Leva alguns minutos para ficar "Ativado". (O mesmo está em `firestore.indexes.json`.)
+Se faltar um índice, o console do navegador (F12) mostra o erro com um **link que cria o índice** sozinho.
+
+### 2. Cadastrar pelo console
+Firestore → `divulgacoes` → **Adicionar documento** → **ID automático** → crie os campos abaixo (tipo entre parênteses).
+> O console **não passa pelas regras** (é acesso de dono). Siga o modelo: campo com nome ou formato errado é **ignorado** pela tela, e a divulgação pode não aparecer.
+
+**Campos de todos**
+| Campo | Tipo | Obrigatório | Valores |
+|---|---|---|---|
+| `tipo` | string | sim | `evento` · `grupo` · `comunicado` |
+| `titulo` | string | sim | até 120 |
+| `situacao` | string | sim | `publicado` (aparece) · `suspenso` · `encerrado` (não aparecem) |
+| `publico` | string | sim | `geral` (todos os prestadores) · `atividades` (só as áreas da lista abaixo) |
+| `atividades` | array de string | se `publico` = `atividades` | até 10 nomes **iguais** aos de `configuracoes/config.js` → `servicos` (ex.: `Marcenaria`, `Elétrica`). Vale para a área de atuação **e** para as atividades secundárias |
+| `descricao` | string | não | até 1.500 (linha em branco = novo parágrafo) |
+| `imagem` | string | não | nome do arquivo em `fotos/divulgacoes/` (ex.: `feira-2026.webp`) **ou** imagem em texto `data:image/webp;base64,...` (até 300.000). Links de outros sites são **bloqueados** |
+| `link` | string | não | só `https://...` (inscrição ou mais informações) · `linkTexto` (string, até 40) muda o texto do botão |
+| `ordem` | number (inteiro) | não | menor aparece primeiro (sem ordem = fim) |
+| `data` | string | evento: sim · comunicado: não | `AAAA-MM-DD` (ex.: `2026-12-05`) |
+
+**Só evento:** `subtitulo` (160) · `dataFim` (`AAAA-MM-DD`, vários dias) · `horaInicio` / `horaFim` (`HH:MM`) · `modalidade` (`presencial`, `online`, `hibrido`) · `localNome` (120) · `cidade` (80) · `uf` (`SP`) · `endereco` (200) · `buffet` (boolean) + `buffetEmpresa` (120) · `estacionamento` (`gratuito`, `pago`, `nao`) + `estacionamentoObs` (120) · `organizador` (120).
+Evento cuja data (ou `dataFim`) já passou **some sozinho**. Para tirar antes: `situacao` = `suspenso` ou `encerrado`.
+
+**Só grupo:** `redes` (**map**) com os links que existirem: `whatsapp`, `telegram`, `instagram`, `facebook`, `youtube`, `linkedin`, `site` (todos `https://`) · `regiao` (80) ou `cidade` + `uf`. Grupo sem nenhum link válido não aparece.
+
+**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela).
+
+Campo não informado **não aparece** na tela (nada é inventado).
+
+### 3. Privacidade (LGPD)
+- A tela lê só a **área de atuação** e as **atividades secundárias** do próprio prestador, para escolher os eventos. Nada é gravado; não há registro de quem viu ou clicou.
+- Links externos abrem em nova aba com `noopener noreferrer` (o outro site não controla a S.D nem recebe o endereço da página).
+- Sem cookies, rastreadores, GPS ou dados de redes sociais.
+
 ## Limites do plano grátis (conferido em 10/11/2026 e 18/11/2026)
 - Login: cerca de 3.000 usuários ativos por dia · e-mails de confirmação 1.000/dia · nova senha 150/dia.
 - Banco: 1 GiB · 50 mil leituras e 20 mil gravações por dia.
@@ -122,5 +169,6 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 - ✅ v0.7.6: cadastro em 2 passos, CPF/CNPJ conferido nas regras, tipo da conta travado na reserva, limite de tamanho por campo, lista fechada de campos, CSP.
 - ✅ v0.7.9: regras por área, vitrine do prestador, ponto no mapa (Nominatim), foto de perfil salva, sem dados fictícios.
 - ✅ v0.8.0: contatos/orçamentos, avisos (sino), fotos compactadas, aviso de preço da visita.
+- ✅ v0.8.2: coleção `divulgacoes` (Home do prestador) + área 80 das regras + 2 índices.
 - ⬜ Avaliações reais (Ciclo 4) · login por CPF/CNPJ.
 - ⏸️ Pago (pós-MVP): fotos no Storage (+ AVIF), e-mail/celular de aviso, prazos automáticos sem abrir o site, cookie HttpOnly, selo automático, limpeza automática de contas e de cadastros pendentes, consulta do CNPJ no servidor.

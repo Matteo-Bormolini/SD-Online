@@ -15,6 +15,7 @@
   }
   const SD = window.SD;
   const I = SD.icones;
+  const SINO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
 
   /* ---------- 1. MONTAR A BARRA ---------- */
   function montar() {
@@ -23,8 +24,13 @@
     alvo.classList.add("navbar");
 
     const ehPerfil = SD.paginaAtual() === "perfil" ? ' aria-current="page"' : "";
+    // Logado: o lugar do sino (avisos) já nasce aqui, para os botões não "pularem"
+    // quando componentes/avisos/avisos.js terminar de carregar (v0.8.1).
+    const sino = SD.logado()
+      ? `<div class="sino-caixa" id="sd-sino-lugar"><button type="button" class="nav-btn sino-botao" id="sd-btn-avisos" aria-label="Avisos (carregando)" aria-busy="true">${SINO}</button></div>`
+      : "";
     const conta = SD.logado()
-      ? `<a class="nav-btn" href="${SD.esc(SD.urlPerfil())}" aria-label="Meu perfil"${ehPerfil}>${I.usuario}<span class="rotulo-oculto-celular">Meu perfil</span></a>
+      ? `${sino}<a class="nav-btn" href="${SD.esc(SD.urlPerfil())}" aria-label="Meu perfil"${ehPerfil}>${I.usuario}<span class="rotulo-oculto-celular">Meu perfil</span></a>
          <a class="nav-btn" href="${SD.esc(SD.urlPagina("sair"))}" aria-label="Sair da conta">${I.sair}<span class="rotulo-oculto-celular">Sair</span></a>`
       : `<a class="nav-btn" href="${SD.esc(SD.urlPagina("login"))}" aria-label="Entrar">${I.entrar}<span class="rotulo-oculto-celular">Entrar</span></a>
          <a class="nav-btn nav-btn-destaque" href="${SD.esc(SD.urlPagina("cadastro"))}"><span>Criar conta</span></a>`;
@@ -89,8 +95,9 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && aberto()) { definir(false); btn.focus(); }
     });
-    // Clique fora da barra fecha (composedPath: funciona mesmo depois que o ícone do botão foi trocado)
-    document.addEventListener("click", (e) => {
+    // Toque/clique fora da barra fecha. "pointerdown" e não "click": no iPhone (Safari)
+    // tocar numa área sem botão não gera "click" no documento (v0.8.1).
+    document.addEventListener("pointerdown", (e) => {
       if (aberto() && !e.composedPath().includes(barra)) definir(false);
     });
     // Clicar num item (ex.: "Serviços" com #) fecha o menu
@@ -102,6 +109,9 @@
   /* ---------- 4. INÍCIO ---------- */
   function iniciar() {
     if (!montar()) return;
+    // Sino tocado antes de carregar: guarda o toque (avisos.js abre o painel quando chegar)
+    const sino = document.getElementById("sd-btn-avisos");
+    if (sino) sino.addEventListener("click", () => { document.getElementById("sd-sino-lugar").dataset.tocado = "1"; }, { once: true });
     iniciarTema();
     iniciarMenu();
   }

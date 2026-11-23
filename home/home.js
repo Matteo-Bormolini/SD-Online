@@ -76,7 +76,7 @@
     const ehCliente = tipo.startsWith("cliente");
 
     // PRESTADOR: não vê a vitrine (outros prestadores, avaliações e trabalhos são
-    // dados da concorrência). A Home própria do prestador ainda será definida.
+    // dados da concorrência). Tem Home própria (v0.8.2): home/home-prestador.js.
     if (ehPrestador) { montarPrestador(alvo, nome); return; }
 
     const atalhos = [
@@ -150,13 +150,15 @@
     iniciarFaixa(alvo);
   }
 
-  /* ---------- 7b. LOGADO COMO PRESTADOR (provisório) ----------
-     Só atalhos para as áreas dele. Nada de dados de outros prestadores. */
+  /* ---------- 7b. LOGADO COMO PRESTADOR (v0.8.2) ----------
+     Home própria do prestador: home/home-prestador.js (eventos, grupos e
+     comunicados). Nada de dados de outros prestadores. Se o arquivo não
+     carregar, ficam só os atalhos (como antes). */
   function montarPrestador(alvo, nome) {
+    if (window.SDHomePrestador) { window.SDHomePrestador.montar(alvo, nome); return; }
     alvo.innerHTML = `
       <section class="boas-vindas" aria-labelledby="ola-titulo">
         <h1 id="ola-titulo">Olá${nome}!</h1>
-        <p>A sua página inicial de prestador está em construção. Use os atalhos abaixo.</p>
         <div class="atalhos">
           <a class="btn" href="${CAMINHOS.localizarCondominios}">Seus Serviços</a>
           <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>

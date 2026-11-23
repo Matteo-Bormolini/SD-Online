@@ -90,6 +90,11 @@ Chromium (Playwright) + Firebase FALSO em memória (o emulador do Firestore não
 - ✅ No site publicado: leitura do banco sem login negada; APIs CNPJá, CNPJ.ws e BrasilAPI respondem do navegador (CORS liberado).
 - ❌ Não testado aqui: regras reais com login (testar no "Playground de regras" do console) e o projeto real com e-mail de verdade.
 
+## 3c. Home do prestador (19/11/2026, v0.8.2)
+Chromium (Playwright) + Firebase FALSO em memória que imita a área 80 das regras (o emulador oficial do Firestore não baixa no ambiente de testes).
+- ✅ 58 verificações: prestador com atividade principal, só secundária e outra área; clientes CPF/CNPJ e visitante (Home igual, nada consultado); suspenso, encerrado, evento passado e outra área não aparecem; grupos com 3 tipos de rede; sem conteúdo; sem conexão + "Tentar de novo"; falha só na consulta por área (gerais continuam); e-mail não confirmado; HTML/script no título (não executa); imagem de outro site, link `javascript:`/`http:` e campos fora do modelo (CPF, telefone) descartados; pop-up (abre, Esc fecha, foco volta); teclado nas faixas; 10 telas (iPhone SE ao 4K) × tema claro/escuro sem rolagem lateral; movimento reduzido; 0 erros no console.
+- ❌ Não testado aqui: **regras reais** (área 80) e os **índices** no Firebase de verdade; Safari/Samsung reais. Fazer no teste do Marco (passo a passo no chat da entrega).
+
 ## 4. Piores cenários e como contornar
 
 | Cenário | Risco | Como contornar | Quando |

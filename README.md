@@ -5,7 +5,7 @@
 A S.D liga quem precisa de **manutenção** a **prestadores de serviço perto de você**.
 Você encontra, pede orçamento, compara e combina tudo **direto com o prestador**.
 
-> **Situação:** em construção (MVP). As **contas já são reais** (cadastro, login, perfil e nova senha pelo Firebase). Sem dados fictícios desde a v0.7.9. Desde a v0.8.0: filtros, contato registrado (WhatsApp ou "Pedir contato"), orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas.
+> **Situação:** em construção (MVP). As **contas já são reais** (cadastro, login, perfil e nova senha pelo Firebase). Sem dados fictícios desde a v0.7.9. Desde a v0.8.0: filtros, contato registrado (WhatsApp ou "Pedir contato"), orçamento informativo, quadro do prestador, bloco "Em orçamento" do cliente, sino de avisos e fotos salvas. Desde a v0.8.2: Home do prestador (eventos, grupos e comunicados).
 
 ---
 
