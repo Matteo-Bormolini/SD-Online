@@ -129,8 +129,9 @@
     let lista = [], eu = null;
     try { [lista, eu] = await Promise.all([F.listarPrestadores(null), F.meusDados().catch(() => null)]); } catch (_) { return; }
     const local = eu && eu.local && (!eu.interruptores || eu.interruptores.localizacao !== false) ? eu.local : null;
-    lista = lista.filter((p) => p.nome && p.localizacao).map(   // localização desligada = não aparece (mesma regra da busca)
-      (p) => ({ ...p, km: local && p.localizacao ? distanciaKm(local, p) : null }));
+    // v0.8.4: Localização desligada = aparece, mas sem distância (vai para o fim) — mesma regra da busca
+    lista = lista.filter((p) => p.nome).map(
+      (p) => ({ ...p, km: local && p.localizacao && typeof p.lat === "number" ? distanciaKm(local, p) : null }));
     lista.sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9) || a.nome.localeCompare(b.nome, "pt-BR"));
     lista = lista.slice(0, MAX_PRESTADORES_HOME);
     if (!lista.length) return;

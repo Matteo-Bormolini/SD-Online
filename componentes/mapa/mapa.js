@@ -115,7 +115,8 @@
       selecionar(id) {
         pontos.forEach((p, chave) => p.elemento.classList.toggle("selecionado", chave === id));
         const alvo = pontos.get(id);
-        if (!alvo) return;
+        // Prestador sem ponto (Localização desligada): volta o mapa para o cliente
+        if (!alvo) { if (api.usuario) mapa.easeTo({ center: [api.usuario.lng, api.usuario.lat], zoom: Math.max(mapa.getZoom(), 12.5), duration: 600 }); return; }
         // Só centraliza (aproxima um pouco se estiver longe), sem esconder os vizinhos
         mapa.easeTo({ center: [alvo.ponto.lng, alvo.ponto.lat], zoom: Math.max(mapa.getZoom(), 12.5), duration: 600 });
       },

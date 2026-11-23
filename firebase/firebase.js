@@ -473,18 +473,21 @@ function montarVitrine(p, interruptores) {
     v.valorVisita = p.cobraVisita ? Math.min(Math.max(Number(p.valorVisita) || 0, 0), MAX_VALOR_VISITA) : 0;
   }
   // Fotos de trabalhos: só a lista { id, legenda } (a imagem fica na coleção "fotos")
-  if (Array.isArray(p.fotosTrabalho)) v.fotosTrabalho = p.fotosTrabalho.slice(0, 12).map((f) => ({ id: String(f.id), legenda: String(f.legenda || "").slice(0, 80) }));
+  // (cópia exata do perfil: as regras conferem que é igual ao salvo — v0.8.4)
+  if (Array.isArray(p.fotosTrabalho)) v.fotosTrabalho = p.fotosTrabalho;
   if (v.localizacao) { v.lat = arredondar(p.local.lat, GEO.casasVitrine); v.lng = arredondar(p.local.lng, GEO.casasVitrine); }
   return v;
 }
+// v0.8.4: monta SÓ com o perfil SALVO no banco (lido de novo). As regras conferem que
+// listas, horário e fotos são iguais aos do perfil; dados só da tela seriam recusados.
 async function publicarVitrine(perfil) {
   await pronto;
   const u = auth && auth.currentUser;
   if (!u || !perfil) return false;
-  const dados = await meusDados().catch(() => null);
+  const dados = await meusDados(true).catch(() => null);
   if (!dados || dados.tipo !== "prestador") return false;
   try {
-    await setDoc(doc(db, COLECAO.vitrine, u.uid), montarVitrine({ ...dados, ...perfil }, dados.interruptores));
+    await setDoc(doc(db, COLECAO.vitrine, u.uid), montarVitrine(dados, dados.interruptores));
     return true;
   } catch (e) { console.warn("[S.D] Vitrine não atualizada:", e.code || e); return false; }
 }

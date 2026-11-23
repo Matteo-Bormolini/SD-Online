@@ -27,9 +27,9 @@
       nome: "Localização",
       oQueFaz: "Usa o endereço do cadastro para calcular distâncias e mostrar no mapa.",
       ligado: "Prestador aparece no mapa e na lista por proximidade. Cliente vê os prestadores do mais perto ao mais longe.",
-      desligado: "Prestador não aparece em mapas nem listas. Cliente vê a lista em ordem alfabética.",
+      desligado: "Prestador continua na lista, mas sem ponto no mapa e sem distância (vai para o fim da lista). Cliente vê a lista em ordem alfabética.",
       // v0.8.4: aviso só para o prestador (cliente com ela desligada só perde a ordem por distância)
-      avisoDesligadoPorTipo: { prestador: "Com a Localização desligada, você NÃO aparece na busca nem no mapa dos clientes. Ligue para ser encontrado." },
+      avisoDesligadoPorTipo: { prestador: "Com a Localização desligada, você continua na busca, mas sem ponto no mapa e sem distância: fica no fim da lista e some quando o cliente filtra por distância." },
       padrao: true,
       quem: ["cliente-cpf", "cliente-cnpj", "prestador"],
       onde: "Meu perfil — linha das abas, à direita",

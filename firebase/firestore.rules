@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.4 (organizadas por ÁREA · 23/11/2026 · listas de texto conferidas em 1 cálculo)
+// S.D — REGRAS DO BANCO v0.8.4 (organizadas por ÁREA · 23/11/2026 · listas em 1 cálculo · vitrine = cópia do perfil salvo)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -305,22 +305,34 @@ service cloud.firestore {
       allow read: if logado() && (eDono(uid) || tipoLogado() in ['cliente-cpf', 'cliente-cnpj', 'adm']);
       allow create, update: if eDono(uid) && tipoLogado() == 'prestador' && vitrineOk(novo());
       allow delete: if eDono(uid) || ehAdm();
+      // v0.8.4: a vitrine é uma CÓPIA do perfil já salvo (e já conferido na área 23).
+      // Os campos "pesados" (listas, horário, fotos) só precisam ser IGUAIS aos do perfil:
+      // 1 comparação cada, em vez de conferir item por item (passava do limite de cálculos).
       function vitrineOk(v) {
         let k = v.keys();
+        let p = get(caminho('usuarios', request.auth.uid)).data;
         return k.hasOnly(['nome', 'areaAtuacao', 'especialidades', 'categorias', 'sobre', 'anoInicio', 'emergencia', 'raioKm',
                           'cidadesAtendidas', 'bairro', 'cidade', 'uf', 'foto', 'whatsapp', 'localizacao', 'lat', 'lng',
                           'horarioAtendimento', 'atualizadoEm', 'cobraVisita', 'valorVisita', 'fotosTrabalho'])
           && v.nome is string && v.nome.size() > 0 && v.nome.size() <= 150
           && texto(v, k, 'areaAtuacao', 80) && texto(v, k, 'sobre', 600) && texto(v, k, 'anoInicio', 4)
-          && lista(v, k, 'especialidades', 8, 60) && lista(v, k, 'categorias', 10, 20) && lista(v, k, 'cidadesAtendidas', 20, 60)
+          && (!('especialidades' in k) || v.especialidades == p.get('especialidades', []))
+          && (!('cidadesAtendidas' in k) || v.cidadesAtendidas == p.get('cidadesAtendidas', []))
+          && (!('horarioAtendimento' in k) || v.horarioAtendimento == p.get('horarioAtendimento', null))
+          && (!('fotosTrabalho' in k) || v.fotosTrabalho == p.get('fotosTrabalho', []))
+          && (!('categorias' in k) || (v.categorias is list && v.categorias.size() <= 10 && v.categorias.hasOnly(CATEGORIAS())))
           && booleano(v, k, 'emergencia') && booleano(v, k, 'localizacao')
           && (!('raioKm' in v) || (v.raioKm is number && v.raioKm >= 0 && v.raioKm <= 200))
           && texto(v, k, 'bairro', 80) && texto(v, k, 'cidade', 80) && digitos(v, k, 'uf', '([A-Z]{2})?')
           && digitos(v, k, 'whatsapp', '[0-9]{0,11}') && (!('foto' in v) || fotoOk(v.foto))
-          && semana(v, k, 'horarioAtendimento') && visitaOk(v, k) && fotosLista(v, k, 'fotosTrabalho')
+          && visitaOk(v, k)
           && (!('lat' in v) || (v.lat is number && v.lat >= -34 && v.lat <= 6))
           && (!('lng' in v) || (v.lng is number && v.lng >= -74 && v.lng <= -28))
           && v.atualizadoEm == request.time;
+      }
+      // Tipos de serviço da busca ← MUDE AQUI junto com "categorias" em configuracoes/config.js
+      function CATEGORIAS() {
+        return ['eletrica', 'hidraulica', 'infiltracao', 'pintura', 'climatizacao', 'portoes', 'monitoramento', 'reparos', 'equipamentos'];
       }
     }
 

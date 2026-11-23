@@ -72,15 +72,18 @@
     try { vitrine = F && F.listarPrestadores ? await F.listarPrestadores(categoria) : []; }
     catch (e) { console.warn("[S.D] Lista de prestadores:", e.code || e); throw e; }
     const comLocal = cliente.localizacaoAtiva;
+    // v0.8.4 (decisão 23/11): Localização desligada = continua na LISTA, mas sem ponto no mapa e sem distância
     const lista = vitrine
-      .filter((p) => p.localizacao && typeof p.lat === "number" && typeof p.lng === "number" && p.nome)   // localização desligada = não aparece
+      .filter((p) => p.nome)
+      .map((p) => ({ ...p, semPonto: !(p.localizacao && typeof p.lat === "number" && typeof p.lng === "number") }))
       .map((p) => ({
-        id: p.id, nome: p.nome, logo: p.foto || null,
+        id: p.id, nome: p.nome, logo: p.foto || null, semPonto: p.semPonto,
         servicos: [p.areaAtuacao, ...(p.especialidades || [])].filter(Boolean),
         secundarias: (p.especialidades || []).length > 0,
-        bairro: [p.bairro, p.cidade].filter(Boolean).join(", "), lat: p.lat, lng: p.lng, tags: [],
+        bairro: [p.bairro, p.cidade].filter(Boolean).join(", "),
+        lat: p.semPonto ? null : p.lat, lng: p.semPonto ? null : p.lng, tags: [],
         whatsapp: p.whatsapp || null,                                           // só vem de quem liberou
-        distancia: comLocal ? distanciaKm(cliente, p) : null,
+        distancia: comLocal && !p.semPonto ? distanciaKm(cliente, p) : null,
         // v0.8.0: dados dos filtros e do aviso de cobrança
         emergencia: !!p.emergencia,
         faixaPrincipal: p.horarioAtendimento && Array.isArray(p.horarioAtendimento.faixas) ? p.horarioAtendimento.faixas[0] || null : null,
@@ -88,9 +91,11 @@
         valorVisita: Number(p.valorVisita) || 0
       }));
     // Ordem: distância (com localização) ou alfabética (sem). Destaque NÃO muda a ordem.
+    // Prestador sem ponto no mapa vai para o FIM da lista (em ordem alfabética).
+    const alfabetica = (a, b) => a.nome.localeCompare(b.nome, "pt-BR");
     lista.sort(comLocal
-      ? (a, b) => a.distancia - b.distancia
-      : (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+      ? (a, b) => (a.semPonto - b.semPonto) || (a.semPonto ? alfabetica(a, b) : a.distancia - b.distancia)
+      : alfabetica);
     return lista;
   }
 
@@ -136,7 +141,7 @@
     if (h === "fimdesemana" && !dias.some((d) => FIM_DE_SEMANA.includes(d))) return false;
     if (h === "emergencia" && !p.emergencia) return false;
     const km = filtro.distancia.value;
-    if (km && p.distancia != null && p.distancia > Number(km)) return false;
+    if (km && (p.distancia == null || p.distancia > Number(km))) return false;   // sem ponto: não dá para saber a distância
     const visita = filtro.visita.value;
     if (visita !== "") {
       if (p.cobraVisita === undefined) return false;                     // não informou: só em "Qualquer preço"
@@ -156,7 +161,7 @@
     if (estado.selecionado && !estado.visiveis.some((p) => p.id === estado.selecionado)) { estado.selecionado = null; renderizarCartao(null); salvarNaUrl(); }
     else if (estado.selecionado) el.lista.querySelectorAll(".item-prestador").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === estado.selecionado)));
     if (estado.mapa) {
-      estado.mapa.definirPontos(estado.visiveis.map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) })),
+      estado.mapa.definirPontos(pontosDoMapa(),
         { aoClicar: aoClicarNoMapa });
       if (estado.selecionado) estado.mapa.selecionar(estado.selecionado);
     }
@@ -243,7 +248,7 @@
         ${logo(p, "item-logo")}
         <span class="item-texto">
           <strong class="item-nome">${esc(p.nome)}</strong>
-          <span class="item-local">${esc(p.bairro)}${p.distancia != null ? ` · ${km(p.distancia)}` : ""}</span>
+          <span class="item-local">${esc(p.bairro)}${p.distancia != null ? ` · ${km(p.distancia)}` : ""}${p.semPonto ? " · sem localização no mapa" : ""}</span>
           ${etiquetaDestaque(p)}
         </span>
       </button></li>`).join("");
@@ -300,6 +305,7 @@
         ${resto > 0 ? `<li class="cartao-mais" title="${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}">+${resto}<span class="visualmente-oculto"> serviços: ${esc(p.servicos.slice(CONFIG.maxServicosCartao).join(", "))}</span></li>` : ""}
       </ul>
       <p class="cartao-visita">${esc(visita)}</p>
+      ${p.semPonto ? '<p class="nota cartao-aviso cartao-sem-ponto">Este prestador não mostra a localização no mapa.</p>' : ""}
       ${p.secundarias ? `<p class="nota cartao-aviso">${esc(C.avisoSecundarias)}</p>` : ""}
       <div class="cartao-acoes">
         ${whatsapp}
@@ -328,6 +334,9 @@
   }
 
   /* ---------- 9. MAPA ---------- */
+  // Só quem tem ponto vai para o mapa (Localização desligada = só na lista)
+  const pontosDoMapa = () => estado.visiveis.filter((p) => !p.semPonto)
+    .map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) }));
   function aoClicarNoMapa(id) {
     selecionar(id);
     const botao = el.lista.querySelector(`.item-prestador[data-id="${CSS.escape(id)}"]`);
@@ -353,7 +362,7 @@
       estado.mapa.redimensionar();
       estado.mapa.marcarUsuario(estado.cliente.localizacaoAtiva ? estado.cliente : null);
       estado.mapa.definirPontos(
-        estado.visiveis.map((p) => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng, destaque: SD.ehDestaque(p) })),
+        pontosDoMapa(),
         { aoClicar: aoClicarNoMapa }
       );
       estado.mapa.ajustarVisao();
