@@ -23,3 +23,33 @@
 }
 .painel-admin h2 { font-size: 1.75rem; font-weight: 700; margin: 0; }
 .painel-admin p  { margin: .375rem 0 0; color: var(--cor-texto-secundario); font-size: 1rem; }
+
+/* ---------- 3. ABA DIVULGAÇÕES (v0.8.3) — um bloco embaixo do outro ---------- */
+.painel-divulgacoes { padding: 1.5rem; position: relative; }   /* prende o campo de arquivo oculto (sem rolagem lateral) */
+.painel-divulgacoes > h2 { margin: 0; font-size: 1.5rem; }
+.dv-bloco { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--cor-divisoria); }
+.dv-bloco h3 { margin: 0 0 .5rem; font-size: 1.125rem; }
+.dv-bloco h4 { margin: 1.25rem 0 .5rem; font-size: 1rem; }
+.dv-acoes { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.dv-atividades { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: .25rem 1rem; margin-top: .75rem; }
+.dv-imagem { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.dv-imagem img { width: 12rem; max-width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; box-shadow: var(--sombra-imagem); }
+.dv-imagem > div { flex: 1 1 16rem; display: grid; gap: .5rem; justify-items: start; }
+.dv-lista-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.dv-itens { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.dv-item {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: .875rem 1rem;
+  background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao);
+}
+.dv-item-texto { display: grid; gap: .25rem; min-width: 0; flex: 1 1 18rem; }
+.dv-item-acoes { display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; }
+.dv-etiquetas { display: flex; flex-wrap: wrap; gap: .375rem; margin: 0; }
+.dv-tag { padding: .0625rem .5rem; font-size: .75rem; font-weight: 700; border-radius: .875rem; border: 1px solid var(--cor-divisoria); background: var(--cor-superficie-2); color: var(--cor-texto-secundario); }
+.dv-sit-publicado { color: var(--cor-sucesso); background: var(--cor-sucesso-fundo); border-color: transparent; }
+.dv-sit-suspenso  { color: var(--cor-atencao); background: var(--cor-atencao-fundo); border-color: transparent; }
+.dv-sit-encerrado { color: var(--cor-texto-secundario); }
+.dv-exemplo { color: var(--cor-info); background: var(--cor-info-fundo); border-color: transparent; }
+@media (max-width: 47.99rem) {
+  .painel-divulgacoes { padding: 1rem; }
+  .painel-divulgacoes .form-grade { grid-template-columns: 1fr; }
+}

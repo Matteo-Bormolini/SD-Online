@@ -125,7 +125,12 @@ Firestore Database → **Índices** → **Compostos** → **Criar índice**:
 Escopo: **Coleção**. Leva alguns minutos para ficar "Ativado". (O mesmo está em `firestore.indexes.json`.)
 Se faltar um índice, o console do navegador (F12) mostra o erro com um **link que cria o índice** sozinho.
 
-### 2. Cadastrar pelo console
+### 2. Cadastrar pelo site (v0.8.3) — Perfil do adm → aba **Divulgações**
+Formulário (novo/editar), lista com **Editar · Publicar/Suspender · Encerrar · Excluir** (todos pedem confirmação) e
+**Criar exemplos ilustrativos / Apagar exemplos** (9 divulgações fictícias com `exemplo: true`, etiqueta "Exemplo ilustrativo" na Home).
+**Apague os exemplos antes do lançamento** (e as imagens `fotos/divulgacoes/exemplo-*.webp`).
+
+### 2b. Cadastrar pelo console (alternativa)
 Firestore → `divulgacoes` → **Adicionar documento** → **ID automático** → crie os campos abaixo (tipo entre parênteses).
 > O console **não passa pelas regras** (é acesso de dono). Siga o modelo: campo com nome ou formato errado é **ignorado** pela tela, e a divulgação pode não aparecer.
 
@@ -141,6 +146,7 @@ Firestore → `divulgacoes` → **Adicionar documento** → **ID automático** �
 | `imagem` | string | não | nome do arquivo em `fotos/divulgacoes/` (ex.: `feira-2026.webp`) **ou** imagem em texto `data:image/webp;base64,...` (até 300.000). Links de outros sites são **bloqueados** |
 | `link` | string | não | só `https://...` (inscrição ou mais informações) · `linkTexto` (string, até 40) muda o texto do botão |
 | `ordem` | number (inteiro) | não | menor aparece primeiro (sem ordem = fim) |
+| `exemplo` | boolean | não | `true` = exemplo ilustrativo (só para visualizar; "Apagar exemplos" remove) |
 | `data` | string | evento: sim · comunicado: não | `AAAA-MM-DD` (ex.: `2026-12-05`) |
 
 **Só evento:** `subtitulo` (160) · `dataFim` (`AAAA-MM-DD`, vários dias) · `horaInicio` / `horaFim` (`HH:MM`) · `modalidade` (`presencial`, `online`, `hibrido`) · `localNome` (120) · `cidade` (80) · `uf` (`SP`) · `endereco` (200) · `buffet` (boolean) + `buffetEmpresa` (120) · `estacionamento` (`gratuito`, `pago`, `nao`) + `estacionamentoObs` (120) · `organizador` (120).
@@ -170,5 +176,6 @@ Campo não informado **não aparece** na tela (nada é inventado).
 - ✅ v0.7.9: regras por área, vitrine do prestador, ponto no mapa (Nominatim), foto de perfil salva, sem dados fictícios.
 - ✅ v0.8.0: contatos/orçamentos, avisos (sino), fotos compactadas, aviso de preço da visita.
 - ✅ v0.8.2: coleção `divulgacoes` (Home do prestador) + área 80 das regras + 2 índices.
+- ✅ v0.8.3: aba Divulgações do adm (cadastrar/editar/apagar pelo site) + exemplos ilustrativos (campo `exemplo`).
 - ⬜ Avaliações reais (Ciclo 4) · login por CPF/CNPJ.
 - ⏸️ Pago (pós-MVP): fotos no Storage (+ AVIF), e-mail/celular de aviso, prazos automáticos sem abrir o site, cookie HttpOnly, selo automático, limpeza automática de contas e de cadastros pendentes, consulta do CNPJ no servidor.

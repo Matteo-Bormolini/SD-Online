@@ -68,7 +68,9 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [ ] Marco: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
 - [ ] Release **v0.7.9** (pendente) e **v0.8.0**.
 - [x] **Home do prestador** (US46, v0.8.2, 19/11): comunicados, agenda de eventos (gerais e por atividade) e grupos/comunidades. Conteúdo cadastrado pelo adm no console (coleção `divulgacoes`).
-- [ ] Marco: publicar as regras v0.8.2, criar os 2 índices e testar a Home do prestador com conta real.
+- [x] Aba **Divulgações** no Perfil do adm + exemplos ilustrativos (v0.8.3, 23/11).
+- [ ] Marco: publicar as regras **v0.8.3**, criar os 2 índices e testar com conta real (no teste de 23/11 o banco negou a leitura: regras da área 80 ainda não estavam valendo).
+- [ ] **Antes do lançamento:** apagar os exemplos ilustrativos (aba Divulgações) e as imagens `fotos/divulgacoes/exemplo-*.webp`.
 - [ ] Revisão dos Ciclos 1, 2 e 3.
 
 ### ⬜ Depois (na ordem)

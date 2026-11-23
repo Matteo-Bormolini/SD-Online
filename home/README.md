@@ -29,7 +29,8 @@ Contatos, orçamentos e serviços **continuam no Perfil** (não são repetidos a
 - Cartões por tela: celular 1 (com o próximo aparecendo) · tablet 2 · computador 3 · TV 4. Sem rolagem automática.
 - Links externos: nova aba, `noopener noreferrer`, com o domínio escrito no pop-up.
 - **Dados:** `firebase/divulgacoes.js` (coleção `divulgacoes`). Quem cadastra é o **adm pelo console** — modelo dos campos em `firebase/README.md`. Sem dados fictícios no site.
-- Etiqueta de público: "Todos os prestadores" ou "Para a sua área · Marcenaria".
+- Etiqueta de público: "Todos os prestadores" ou "Para a sua área · Marcenaria". Exemplos criados pelo adm mostram "Exemplo ilustrativo" (v0.8.3).
+- **Quem cadastra:** Perfil do adm → aba **Divulgações** (v0.8.3).
 
 ## Situação
 ✅ pronto · 🟠 pronto, falta teste real · ⬜ a fazer

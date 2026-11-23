@@ -28,6 +28,7 @@
 <script src="../componentes/endereco/endereco.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="perfil-adm.js" defer></script>
+<script src="divulgacoes-adm.js" defer></script><!-- v0.8.3: aba Divulgações -->
 <!-- Firebase (login e banco). Sempre o ÚLTIMO script, com type="module" -->
 <script type="module" src="../firebase/firebase.js"></script>
 </head>
@@ -48,6 +49,7 @@
       <div class="abas-lista" role="tablist" aria-label="Seções do perfil">
         <button type="button" class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
         <button type="button" class="btn aba" role="tab" id="aba-admin" aria-controls="painel-admin" aria-selected="false" tabindex="-1">Administração</button>
+        <button type="button" class="btn aba" role="tab" id="aba-divulgacoes" aria-controls="painel-divulgacoes" aria-selected="false" tabindex="-1">Divulgações</button>
       </div>
     </div>
 
@@ -223,6 +225,14 @@
         <div class="mensagem" id="msg-config-site" role="status"></div>
         <p class="nota">Selo de prestador verificado: por enquanto pelo console do Firebase (campo <code>verificado</code> = true no perfil). Fila de aprovação no site: pós-MVP.</p>
         <p><a class="link" href="../interruptores/index.html">Ver todos os botões liga/desliga do site</a></p>
+      </div>
+
+      <!-- ===================== PAINEL DIVULGAÇÕES (v0.8.3) =====================
+           Eventos, grupos e comunicados da Home do prestador. Montado por divulgacoes-adm.js. -->
+      <div class="painel painel-divulgacoes" role="tabpanel" id="painel-divulgacoes" aria-labelledby="aba-divulgacoes" tabindex="0">
+        <h2>Divulgações</h2>
+        <p class="nota">O que aparece na Home dos prestadores. Só o adm vê e muda esta aba (as regras do banco também conferem).</p>
+        <div id="adm-divulgacoes"></div>
       </div>
 
     </div>

@@ -22,7 +22,7 @@
         firebase/fotos.js (fotos compactadas) e firebase/pedidos.js (contatos,
         orçamentos e avisos). Eles importam { db, auth, pronto } daqui.
      9. Home do prestador (v0.8.2): carrega firebase/divulgacoes.js SÓ na
-        página inicial (eventos, grupos e comunicados publicados pelo adm).
+        página inicial e no Perfil do adm (aba "Divulgações", v0.8.3).
 
    SEGURANÇA: a apiKey abaixo PODE ficar pública (é assim no Firebase).
    Quem protege os dados são as REGRAS do banco: firebase/firestore.rules.
@@ -723,8 +723,9 @@ if (configurado) {
   // Ciclo 3: fotos + contatos/orçamentos/avisos (carregados depois, sem atrasar a página)
   import("./fotos.js").catch((e) => console.warn("[S.D] fotos.js:", e));
   import("./pedidos.js").catch((e) => console.warn("[S.D] pedidos.js:", e));
-  // v0.8.2: divulgações da Home do prestador (só na página inicial, só para quem está logado)
-  if (document.body && document.body.dataset.pagina === "inicio" && document.body.dataset.logado === "sim") {
+  // v0.8.2: divulgações da Home do prestador (página inicial) e aba "Divulgações" do adm (v0.8.3)
+  const corpo = document.body;
+  if (corpo && corpo.dataset.logado === "sim" && (corpo.dataset.pagina === "inicio" || corpo.dataset.recurso === "perfil-adm")) {
     import("./divulgacoes.js").catch((e) => console.warn("[S.D] divulgacoes.js:", e));
   }
 }

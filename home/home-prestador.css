@@ -93,7 +93,7 @@
 .home-prestador .hp-comunicado h3 { font-size: .9375rem; }
 .home-prestador .hp-comunicado .btn { margin-top: auto; align-self: flex-start; }
 .home-prestador .hp-linha-topo time { white-space: nowrap; }
-.home-prestador .hp-linha-topo { display: flex; justify-content: space-between; gap: .5rem; margin: 0; font-size: .75rem; color: var(--cor-texto-secundario); }
+.home-prestador .hp-linha-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .25rem .5rem; margin: 0; font-size: .75rem; color: var(--cor-texto-secundario); }
 .home-prestador .hp-nivel { display: inline-flex; align-items: center; gap: .3rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 .home-prestador .hp-nivel svg { width: .9rem; height: .9rem; }
 .home-prestador .hp-atencao { border-left: 4px solid var(--cor-atencao); }
@@ -123,3 +123,4 @@
 /* Toque: hover não fica "preso" (padrão da v0.8.1) */
 @media (hover: none) { .home-prestador .btn:not(:active):hover { background: var(--cor-branco); color: #1F1A17; } }
 .home-prestador .hp-modal-titulo:focus { outline: none; }   /* foco inicial do pop-up (não é botão) */
+.home-prestador .hp-tag-exemplo { color: var(--cor-info); background: var(--cor-info-fundo); border-color: transparent; }   /* v0.8.3 */

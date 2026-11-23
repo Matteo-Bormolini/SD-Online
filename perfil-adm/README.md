@@ -8,7 +8,8 @@ Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das conta
 ## O que tem
 - **Aba Perfil:** nome, cargo, CPF/CNPJ (não muda), e-mail, telefones, endereço e avaliações.
 - Editar perfil, foto, galeria (até 12 fotos) e excluir perfil.
-- **Aba Administração:** "em desenvolvimento" + link para a página dos **botões liga/desliga**.
+- **Aba Administração:** botão Conferir CPF e CNPJ + link para a página dos **botões liga/desliga**.
+- **Aba Divulgações (v0.8.3):** eventos, grupos e comunicados da Home do prestador, um bloco embaixo do outro: exemplos ilustrativos (criar/apagar), formulário (novo/editar, imagem reduzida no navegador) e lista (editar, publicar/suspender, encerrar, excluir — tudo com confirmação).
 - **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
 - A senha nunca aparece, só "••••••••".
 
@@ -16,6 +17,7 @@ Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das conta
 | Arquivo | Para que serve |
 |---|---|
 | `index.html` / `perfil-adm.css` / `perfil-adm.js` | Página, visual e regras (dados reais da conta). |
+| `divulgacoes-adm.js` | **v0.8.3** Aba Divulgações (usa `firebase/divulgacoes.js`). |
 
 ## Situação
 ✅ pronto · 🟡 só na demonstração · ⬜ a fazer

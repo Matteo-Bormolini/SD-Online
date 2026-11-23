@@ -95,6 +95,10 @@ Chromium (Playwright) + Firebase FALSO em memória que imita a área 80 das regr
 - ✅ 58 verificações: prestador com atividade principal, só secundária e outra área; clientes CPF/CNPJ e visitante (Home igual, nada consultado); suspenso, encerrado, evento passado e outra área não aparecem; grupos com 3 tipos de rede; sem conteúdo; sem conexão + "Tentar de novo"; falha só na consulta por área (gerais continuam); e-mail não confirmado; HTML/script no título (não executa); imagem de outro site, link `javascript:`/`http:` e campos fora do modelo (CPF, telefone) descartados; pop-up (abre, Esc fecha, foco volta); teclado nas faixas; 10 telas (iPhone SE ao 4K) × tema claro/escuro sem rolagem lateral; movimento reduzido; 0 erros no console.
 - ❌ Não testado aqui: **regras reais** (área 80) e os **índices** no Firebase de verdade; Safari/Samsung reais. Fazer no teste do Marco (passo a passo no chat da entrega).
 
+## 3d. Aba Divulgações do adm (23/11/2026, v0.8.3)
+- No site real (navegador do Claude, conta de prestador do Marco, e-mail confirmado): as 2 consultas da Home deram **permission-denied**; o sino da mesma conta leu normalmente → regras da área 80 ainda não publicadas (ou com defeito, a confirmar depois de publicar).
+- Firebase FALSO (Chromium): ✅ 22 verificações com prints — aba aparece para o adm; criar 9 exemplos; validação (link http, evento sem data); salvar com imagem enviada (vira data:image); editar com confirmação; suspender/publicar; prestador (Elétrica) vê gerais + Elétrica e não vê Marcenaria; etiqueta "Exemplo ilustrativo"; apagar exemplos deixa só o real; excluir; prestador não consegue gravar; celular sem rolagem lateral; 0 erros. Home: 58/58 de novo.
+
 ## 4. Piores cenários e como contornar
 
 | Cenário | Risco | Como contornar | Quando |

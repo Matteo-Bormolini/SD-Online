@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.2 (organizadas por ÁREA · 19/11/2026 · área 80 nova)
+// S.D — REGRAS DO BANCO v0.8.3 (organizadas por ÁREA · 23/11/2026 · área 80: campo exemplo)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -460,7 +460,8 @@ service cloud.firestore {
     }
 
     // ===== 80 · Divulgacoes_Home: Home do prestador (v0.8.2) =====
-    // Eventos, grupos/comunidades e comunicados da S.D. Só o ADM cadastra, edita, publica e apaga.
+    // Eventos, grupos/comunidades e comunicados da S.D. Só o ADM cadastra, edita, publica e apaga
+    // (aba "Divulgações" do Perfil do adm, v0.8.3). exemplo: true = exemplo ilustrativo (apagar antes do lançamento).
     // Lê: o adm (tudo) e o PRESTADOR (só "publicado" e só o que é do público dele):
     //   publico == 'geral'      → todos os prestadores
     //   publico == 'atividades' → só quem tem uma das "atividades" como área de atuação ou atividade secundária
@@ -504,14 +505,14 @@ service cloud.firestore {
           && k.hasOnly(['tipo', 'titulo', 'situacao', 'publico', 'atividades', 'ordem', 'imagem', 'descricao', 'link', 'linkTexto',
                         'subtitulo', 'data', 'dataFim', 'horaInicio', 'horaFim', 'modalidade', 'localNome', 'cidade', 'uf', 'endereco',
                         'buffet', 'buffetEmpresa', 'estacionamento', 'estacionamentoObs', 'organizador', 'regiao', 'redes', 'nivel',
-                        'criadoEm', 'atualizadoEm'])
+                        'exemplo', 'criadoEm', 'atualizadoEm'])
           && d.tipo in ['evento', 'grupo', 'comunicado'] && d.situacao in ['publicado', 'suspenso', 'encerrado']
           && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 120
           && (d.publico == 'geral' || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
           && lista(d, k, 'atividades', 10, 60) && (!('ordem' in k) || d.ordem is int)
           && texto(d, k, 'descricao', 1500) && texto(d, k, 'linkTexto', 40) && texto(d, k, 'subtitulo', 160)
           && texto(d, k, 'localNome', 120) && texto(d, k, 'cidade', 80) && digitos(d, k, 'uf', '([A-Z]{2})?') && texto(d, k, 'endereco', 200)
-          && booleano(d, k, 'buffet') && texto(d, k, 'buffetEmpresa', 120) && texto(d, k, 'estacionamentoObs', 120)
+          && booleano(d, k, 'buffet') && booleano(d, k, 'exemplo') && texto(d, k, 'buffetEmpresa', 120) && texto(d, k, 'estacionamentoObs', 120)
           && texto(d, k, 'organizador', 120) && texto(d, k, 'regiao', 80)
           && (!('modalidade' in k) || d.modalidade in ['presencial', 'online', 'hibrido'])
           && (!('estacionamento' in k) || d.estacionamento in ['gratuito', 'pago', 'nao'])

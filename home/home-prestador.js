@@ -77,6 +77,10 @@
 
   // Etiqueta do público: geral ou da área do prestador
   function etiquetaPublico(i) {
+    const ex = i.exemplo ? `<span class="hp-tag hp-tag-exemplo">Exemplo ilustrativo</span>` : "";   // v0.8.3: criado pelo adm só para visualizar
+    return ex + etiquetaPublicoSo(i);
+  }
+  function etiquetaPublicoSo(i) {
     if (i.publico === "atividades") {
       // Mostra a 1ª atividade que combina; as outras viram "+N" (lista completa no title e no leitor de tela)
       const lista = i.paraMim && i.paraMim.length ? i.paraMim : i.atividades;
@@ -95,7 +99,7 @@
     return `
       <li><article class="hp-cartao hp-comunicado${c.nivel === "atencao" ? " hp-atencao" : ""}" aria-labelledby="hp-t-${esc(c.id)}">
         <p class="hp-linha-topo">
-          <span class="hp-nivel">${icone(c.nivel === "atencao" ? "aviso" : "info")}${c.nivel === "atencao" ? "Importante" : "Comunicado"}</span>
+          <span class="hp-nivel">${icone(c.nivel === "atencao" ? "aviso" : "info")}${c.nivel === "atencao" ? "Importante" : "Comunicado"}</span>${c.exemplo ? ' <span class="hp-tag hp-tag-exemplo">Exemplo</span>' : ""}
           ${c.data ? `<time datetime="${esc(c.data)}">${esc(fmt(c.data, { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, ""))}</time>` : ""}
         </p>
         <h3 id="hp-t-${esc(c.id)}">${esc(c.titulo)}</h3>

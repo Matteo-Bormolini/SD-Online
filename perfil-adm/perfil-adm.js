@@ -4,7 +4,7 @@
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do adm:
      - "Cargo" = "Administrador - <cargo definido pelo líder>"
      - Foto de perfil (sem foto → iniciais do nome) + galeria de até 12 fotos
-     - Aba "Administração" (em desenvolvimento)
+     - Aba "Administração" (botões do site) e aba "Divulgações" (v0.8.3, divulgacoes-adm.js)
    O adm vê dados sigilosos dos usuários, mas NUNCA a senha (hash no servidor).
    DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
    Galeria de fotos: ainda só na tela (próximo ciclo).
@@ -150,7 +150,7 @@
     });
     iniciarFotos();
     P.iniciarExclusao();
-    P.iniciarAbas({ abas: ["#aba-perfil", "#aba-admin"] });
+    P.iniciarAbas({ abas: ["#aba-perfil", "#aba-admin", "#aba-divulgacoes"] });
     iniciarConfigSite();
   });
 })();
