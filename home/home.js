@@ -139,9 +139,9 @@
     carregarPrestadores(alvo);
   }
 
-  /* ---------- 7a. AVISOS DA S.D + ANÚNCIOS (Home do cliente, v0.8.5) ----------
-     Dados: firebase/divulgacoes.js (coleção "divulgacoes", publico "clientes").
-     Cada seção só aparece se tiver conteúdo. Anúncio SEMPRE com a etiqueta "Anúncio". */
+  /* ---------- 7a. COMUNICADOS DA S.D + ANÚNCIOS (Home do cliente, v0.8.5) ----------
+     Dados: firebase/divulgacoes.js (publico "clientes" ou "todos").
+     Visual: o mesmo da Home do prestador (home-prestador.js). Anúncio SEMPRE com a etiqueta "Anúncio". */
   const ESPERA_MODULO_MS = 15000;
   function esperarDivulgacoes() {
     return new Promise((ok, falha) => {
@@ -150,75 +150,17 @@
       document.addEventListener("sd:divulgacoes-pronto", () => { clearTimeout(t); ok(window.SDDivulgacoes); }, { once: true });
     });
   }
-  const srcImagem = (v) => (!v ? "" : v.startsWith("data:") ? v : SD.caminho(v));
-  const dominio = (url) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch (_) { return ""; } };
-  const linkExterno = (url, rotulo) =>
-    `<a class="btn btn-pequeno" href="${esc(url)}" target="_blank" rel="noopener noreferrer external sponsored">${esc(rotulo)}<span class="visualmente-oculto"> (abre outro site: ${esc(dominio(url))})</span></a>`;
-  const paragrafos = (t) => t.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
-
-  function cartaoAviso(a) {
-    const data = a.data ? a.data.split("-").reverse().join("/") : "";
-    return `<li><article class="hc-aviso${a.nivel === "atencao" ? " hc-atencao" : ""}" aria-labelledby="hc-t-${esc(a.id)}">
-      <p class="hc-linha-topo"><span class="hc-nivel">${a.nivel === "atencao" ? "Importante" : "Comunicado"}</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}${data ? ` <time datetime="${esc(a.data)}">${esc(data)}</time>` : ""}</p>
-      <h3 id="hc-t-${esc(a.id)}">${esc(a.titulo)}</h3>
-      ${a.descricao ? `<div class="hc-texto">${paragrafos(a.descricao)}</div>` : ""}
-      ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais") : ""}
-    </article></li>`;
-  }
-  function cartaoAnuncio(a) {
-    return `<li><article class="hc-anuncio" aria-labelledby="hc-t-${esc(a.id)}">
-      ${a.imagem ? `<img class="hc-anuncio-img" src="${esc(srcImagem(a.imagem))}" alt="" loading="lazy" decoding="async">` : ""}
-      <div class="hc-anuncio-corpo">
-        <p class="hc-linha-topo"><span class="hc-tag hc-tag-anuncio">Anúncio</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}</p>
-        <h3 id="hc-t-${esc(a.id)}">${esc(a.titulo)}</h3>
-        ${a.organizador ? `<p class="hc-anunciante">Anunciante: ${esc(a.organizador)}</p>` : ""}
-        ${a.descricao ? `<div class="hc-texto">${paragrafos(a.descricao)}</div>` : ""}
-        ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais") : ""}
-      </div>
-    </article></li>`;
+  // v0.8.5: Comunicados da S.D + Anúncios no MESMO padrão da Home do prestador
+  // (home-prestador.js → visão "cliente": blocos, faixas rolantes, pop-up, cores e cache).
+  // A área de comunicados sempre aparece; "Anúncios" só quando houver.
+  function carregarDivulgacoesCliente(caixa, previa) {
+    if (!caixa || !window.SDHomePrestador) return;
+    window.SDHomePrestador.montar(caixa, "", {
+      semBoasVindas: true, visao: "cliente", prefixo: "hc", cache: previa ? "adm-cliente" : "cliente",
+      carregar: async () => { const M = await esperarDivulgacoes(); return previa ? M.listarPrevia("cliente") : M.listarParaMim(); }
+    });
   }
 
-  // A área "Comunicados da S.D" SEMPRE aparece (vazia: mensagem). "Anúncios" só aparece quando houver.
-  // v0.8.5: mostra na hora a última leitura guardada e depois atualiza (SDHomePrestador.cache).
-  async function carregarDivulgacoesCliente(caixa, previa) {
-    if (!caixa) return;
-    const C = window.SDHomePrestador && window.SDHomePrestador.cache;
-    const chave = previa ? "adm-cliente" : "cliente";
-    let mostrado = "";
-    const desenhar = (dados, aviso) => {
-      const assinatura = JSON.stringify(dados) + (aviso || "");
-      if (assinatura === mostrado) return;
-      mostrado = assinatura;
-      const { avisos = [], anuncios = [] } = dados || {};
-      const corpoAvisos = avisos.length
-        ? `<ul class="hc-avisos">${avisos.map(cartaoAviso).join("")}</ul>`
-        : `<p class="hc-vazio">${aviso ? esc(aviso) + ' <button type="button" class="btn btn-pequeno" data-recarregar-avisos>Tentar de novo</button>' : "Nenhum comunicado no momento."}</p>`;
-      caixa.innerHTML =
-        `<section class="secao hc-secao" aria-labelledby="hc-avisos-titulo">
-          <h2 id="hc-avisos-titulo" class="secao-titulo">Comunicados da S.D</h2>${corpoAvisos}</section>` +
-        (anuncios.length ? `<section class="secao hc-secao" aria-labelledby="hc-anuncios-titulo">
-          <h2 id="hc-anuncios-titulo" class="secao-titulo">Anúncios</h2>
-          <ul class="hc-anuncios">${anuncios.map(cartaoAnuncio).join("")}</ul></section>` : "");
-      caixa.querySelectorAll("img").forEach((img) => img.addEventListener("error", () => img.remove(), { once: true }));
-      const tentar = caixa.querySelector("[data-recarregar-avisos]");
-      if (tentar) tentar.addEventListener("click", () => { mostrado = ""; carregarDivulgacoesCliente(caixa, previa); });
-    };
-    const salvo = C ? C.ler(chave) : null;
-    desenhar(salvo || {}, salvo ? "" : null);
-    if (!salvo) caixa.querySelector(".hc-vazio").textContent = "Carregando comunicados…";
-    let dados = null;
-    try {
-      const M = await esperarDivulgacoes();
-      dados = previa ? await M.listarPrevia("cliente") : await M.listarParaMim();
-    } catch (e) {
-      console.warn("[S.D] Avisos e anúncios:", e && (e.code || e.message || e));
-      if (!salvo) { mostrado = ""; desenhar({}, "Não foi possível carregar os comunicados agora."); }
-      return;
-    }
-    if (!dados) return;
-    if (C) C.gravar(chave, dados);
-    desenhar(dados, "");
-  }
 
   // Faixa com prestadores REAIS (vitrine). Sem nenhum → a seção não aparece.
   async function carregarPrestadores(alvo) {

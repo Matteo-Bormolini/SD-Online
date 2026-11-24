@@ -285,7 +285,7 @@ function exemplos() {
   return [
     ex({ tipo: "comunicado", publico: "todos", nivel: "atencao", data: diaMais(0), ordem: 0, titulo: "Exemplo: manutenção programada",
       descricao: "Exemplo ilustrativo. Na madrugada de sábado, das 2h às 4h, o site pode ficar fora do ar por alguns minutos." }),
-    ex({ tipo: "comunicado", nivel: "info", data: diaMais(-1), ordem: 1, titulo: "Exemplo: nova página inicial para prestadores",
+    ex({ tipo: "comunicado", publico: "todos", nivel: "info", data: diaMais(-1), ordem: 1, titulo: "Exemplo: nova página inicial para prestadores",
       descricao: "Exemplo ilustrativo. Aqui aparecem eventos, grupos e comunidades da sua área. Contatos e orçamentos continuam no seu perfil." }),
     ex({ tipo: "evento", titulo: "Exemplo: Encontro de Empreendedores da Zona Sul", subtitulo: "Networking entre prestadores de serviço e pequenas empresas",
       data: diaMais(10), horaInicio: "19:00", horaFim: "22:00", modalidade: "presencial", localNome: "Centro de Convenções Exemplo",

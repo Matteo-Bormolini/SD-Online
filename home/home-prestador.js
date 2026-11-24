@@ -20,13 +20,20 @@
   if (!window.SD) { console.error("[S.D] home-prestador.js: carregue configuracoes/config.js antes."); return; }
   const SD = window.SD;
 
+  // Prefixo dos ids do bloco que está sendo desenhado (a Home do adm tem 2 blocos: "hp" e "hc")
+  let PREF = "hp";
+
   /* ---------- 1. TEXTOS E AJUSTES ← MUDE AQUI ---------- */
   const TEXTO = {
     subtitulo: "Eventos, grupos e novidades para o seu trabalho.",
     carregando: "Carregando eventos e comunidades…",
     vazio: "Ainda não há eventos, grupos ou comunicados para a sua área. Quando a S.D publicar, eles aparecem aqui.",
     erro: "Não foi possível carregar os eventos e comunidades agora.",
-    externo: "abre outro site"
+    externo: "abre outro site",
+    // v0.8.5: Home dos clientes (mesmo visual da Home do prestador)
+    carregandoCliente: "Carregando comunicados…",
+    vazioCliente: "Nenhum comunicado no momento.",
+    erroCliente: "Não foi possível carregar os comunicados agora."
   };
   const ESPERA_MAX_MS = 15000;   // tempo máximo esperando o módulo do banco
   const LIMITE_RESUMO = 160;     // caracteres do resumo nos cartões
@@ -99,12 +106,12 @@
   function cartaoComunicado(c) {
     const longo = c.descricao.length > LIMITE_RESUMO || c.link;
     return `
-      <li><article class="hp-cartao hp-comunicado${c.nivel === "atencao" ? " hp-atencao" : ""}" aria-labelledby="hp-t-${esc(c.id)}">
+      <li><article class="hp-cartao hp-comunicado${c.nivel === "atencao" ? " hp-atencao" : ""}" aria-labelledby="${PREF}-t-${esc(c.id)}">
         <p class="hp-linha-topo">
           <span class="hp-nivel">${icone(c.nivel === "atencao" ? "aviso" : "info")}${c.nivel === "atencao" ? "Importante" : "Comunicado"}</span>${c.exemplo ? ' <span class="hp-tag hp-tag-exemplo">Exemplo</span>' : ""}
           ${c.data ? `<time datetime="${esc(c.data)}">${esc(fmt(c.data, { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, ""))}</time>` : ""}
         </p>
-        <h3 id="hp-t-${esc(c.id)}">${esc(c.titulo)}</h3>
+        <h3 id="${PREF}-t-${esc(c.id)}">${esc(c.titulo)}</h3>
         ${c.descricao ? `<p class="hp-texto">${esc(resumo(c.descricao))}</p>` : ""}
         ${longo ? `<button type="button" class="btn btn-pequeno" data-detalhe="${esc(c.id)}">Ler mais<span class="visualmente-oculto">: ${esc(c.titulo)}</span></button>` : ""}
       </article></li>`;
@@ -116,11 +123,11 @@
       : `<div class="hp-capa hp-capa-data" aria-hidden="true"><strong>${esc(fmt(e.data, { day: "2-digit" }))}</strong><span>${esc(fmt(e.data, { month: "short" }).replace(".", ""))}</span></div>`;
     const ondeTxt = e.modalidade === "online" ? "Online" : [e.localNome, lugar(e)].filter(Boolean).join(" · ");
     return `
-      <li><article class="hp-cartao hp-evento" aria-labelledby="hp-t-${esc(e.id)}">
+      <li><article class="hp-cartao hp-evento" aria-labelledby="${PREF}-t-${esc(e.id)}">
         ${capa}
         <div class="hp-corpo">
           <p class="hp-etiquetas">${etiquetaPublico(e)}</p>
-          <h3 id="hp-t-${esc(e.id)}">${esc(e.titulo)}</h3>
+          <h3 id="${PREF}-t-${esc(e.id)}">${esc(e.titulo)}</h3>
           ${e.subtitulo ? `<p class="hp-sub">${esc(e.subtitulo)}</p>` : ""}
           <ul class="hp-meta">
             <li>${icone("calendario")}<span><time datetime="${esc(e.data)}">${esc(textoData(e))}</time>${textoHora(e) ? ` · ${esc(textoHora(e))}` : ""}</span></li>
@@ -139,9 +146,9 @@
       `<li>${linkExterno(url, NOME_REDE[r] || r, "btn btn-pequeno hp-rede", r)}</li>`).join("");
     const regiao = g.regiao || lugar(g);
     return `
-      <li><article class="hp-cartao hp-grupo" aria-labelledby="hp-t-${esc(g.id)}">
+      <li><article class="hp-cartao hp-grupo" aria-labelledby="${PREF}-t-${esc(g.id)}">
         <div class="hp-corpo">
-          <div class="hp-grupo-topo">${logo}<div><h3 id="hp-t-${esc(g.id)}">${esc(g.titulo)}</h3>${regiao ? `<p class="hp-sub">${icone("local")}${esc(regiao)}</p>` : ""}</div></div>
+          <div class="hp-grupo-topo">${logo}<div><h3 id="${PREF}-t-${esc(g.id)}">${esc(g.titulo)}</h3>${regiao ? `<p class="hp-sub">${icone("local")}${esc(regiao)}</p>` : ""}</div></div>
           <p class="hp-etiquetas">${etiquetaPublico(g)}</p>
           ${g.descricao ? `<p class="hp-texto">${esc(resumo(g.descricao, 140))}</p>` : ""}
           ${redes ? `<ul class="hp-redes" aria-label="Canais de ${esc(g.titulo)} (links externos)">${redes}</ul>` : ""}
@@ -150,9 +157,26 @@
       </article></li>`;
   }
 
+  // v0.8.5: anúncio (Home dos clientes) — sempre com a etiqueta "Anúncio"
+  function cartaoAnuncio(a) {
+    const capa = a.imagem ? `<img class="hp-capa" src="${esc(srcImagem(a.imagem))}" alt="" loading="lazy" decoding="async">` : "";
+    return `
+      <li><article class="hp-cartao hp-anuncio" aria-labelledby="${PREF}-t-${esc(a.id)}">
+        ${capa}
+        <div class="hp-corpo">
+          <p class="hp-etiquetas"><span class="hp-tag hp-tag-anuncio">Anúncio</span>${a.exemplo ? '<span class="hp-tag hp-tag-exemplo">Exemplo ilustrativo</span>' : ""}</p>
+          <h3 id="${PREF}-t-${esc(a.id)}">${esc(a.titulo)}</h3>
+          ${a.organizador ? `<p class="hp-sub">Anunciante: ${esc(a.organizador)}</p>` : ""}
+          ${a.descricao ? `<p class="hp-texto">${esc(resumo(a.descricao, 140))}</p>` : ""}
+          ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais", "btn btn-pequeno hp-acao") : ""}
+        </div>
+      </article></li>`;
+  }
+
   /* ---------- 5. SEÇÃO COM FAIXA ROLANTE (toque, setas e teclado) ---------- */
   function secao(id, titulo, classe, itens, montarCartao, rotuloLista) {
     if (!itens.length) return "";
+    id = id.replace(/^hp-/, PREF + "-");
     return `
       <section class="hp-secao ${classe}" aria-labelledby="${id}-titulo">
         <div class="hp-secao-topo">
@@ -219,6 +243,8 @@
       dados = `<dl class="hp-dados">${linhaDet("Região", esc(i.regiao || lugar(i)))}</dl>`;
       const redes = Object.entries(i.redes).map(([r, url]) => `<li>${linkExterno(url, NOME_REDE[r] || r, "btn btn-pequeno hp-rede", r)}</li>`).join("");
       if (redes) dados += `<ul class="hp-redes" aria-label="Canais (links externos)">${redes}</ul>`;
+    } else if (i.tipo === "anuncio") {
+      dados = i.organizador ? `<dl class="hp-dados">${linhaDet("Anunciante", esc(i.organizador))}</dl>` : "";
     } else if (i.data) {
       dados = `<dl class="hp-dados">${linhaDet("Data", esc(fmt(i.data, { day: "2-digit", month: "long", year: "numeric" })))}</dl>`;
     }
@@ -228,8 +254,8 @@
       : "";
     return `
       ${capa}
-      <p class="hp-etiquetas">${i.tipo === "comunicado" ? `<span class="hp-tag">Comunicado da S.D</span>` : etiquetaPublico(i)}</p>
-      <h2 id="hp-modal-titulo" class="hp-modal-titulo" tabindex="-1" autofocus>${esc(i.titulo)}</h2>
+      <p class="hp-etiquetas">${i.tipo === "comunicado" ? `<span class="hp-tag">Comunicado da S.D</span>` : i.tipo === "anuncio" ? `<span class="hp-tag hp-tag-anuncio">Anúncio</span>` : etiquetaPublico(i)}</p>
+      <h2 id="${PREF}-modal-titulo" class="hp-modal-titulo" tabindex="-1" autofocus>${esc(i.titulo)}</h2>
       ${i.subtitulo ? `<p class="hp-sub">${esc(i.subtitulo)}</p>` : ""}
       ${dados}
       ${desc}
@@ -286,9 +312,14 @@
   /* ---------- 8. MONTAGEM ----------
      opcoes.carregar      → função que traz os dados (prévia do adm)
      opcoes.semBoasVindas → true = só as seções (Home do adm junta tudo, v0.8.5)
-     opcoes.cache         → nome do cache (padrão "prestador") */
+     opcoes.cache         → nome do cache (padrão "prestador")
+     opcoes.visao         → "cliente" = Comunicados da S.D + Anúncios (Home dos clientes, v0.8.5)
+     opcoes.prefixo       → prefixo dos ids (padrão "hp"; cliente "hc") */
   function montar(alvo, nome, opcoes = {}) {
     const chaveCache = opcoes.cache || "prestador";
+    const cliente = opcoes.visao === "cliente";
+    const prefixo = opcoes.prefixo || (cliente ? "hc" : "hp");
+    const txt = cliente ? { carregando: TEXTO.carregandoCliente, vazio: TEXTO.vazioCliente, erro: TEXTO.erroCliente } : TEXTO;
     alvo.innerHTML = `
       <div class="home-prestador">
         ${opcoes.semBoasVindas ? "" : `<section class="boas-vindas hp-boas-vindas" aria-labelledby="ola-titulo">
@@ -299,9 +330,9 @@
             <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
           </div>
         </section>`}
-        <div class="hp-estado" role="status" aria-live="polite"><p>${esc(TEXTO.carregando)}</p></div>
+        <div class="hp-estado" role="status" aria-live="polite"><p>${esc(txt.carregando)}</p></div>
         <div class="hp-secoes"></div>
-        <dialog class="modal modal-largo hp-modal" aria-labelledby="hp-modal-titulo"><div class="hp-modal-corpo"></div></dialog>
+        <dialog class="modal modal-largo hp-modal" aria-labelledby="${prefixo}-modal-titulo"><div class="hp-modal-corpo"></div></dialog>
       </div>`;
     alvo.hidden = false;
     const raiz = alvo.querySelector(".home-prestador");
@@ -314,6 +345,7 @@
       if (det) {
         const item = itensPorId.get(det.dataset.detalhe);
         if (!item) return;
+        PREF = prefixo;
         modal.querySelector(".hp-modal-corpo").innerHTML = conteudoDetalhe(item);
         modal.abrir ? modal.abrir() : modal.showModal();
         return;
@@ -327,12 +359,12 @@
       // 1) Na hora: a última leitura guardada (se houver)
       const salvo = cache.ler(chaveCache);
       if (salvo && !mostrado) mostrar(salvo);
-      else if (!mostrado) { raiz.querySelector(".hp-secoes").innerHTML = ""; estado(raiz, TEXTO.carregando, false); }
+      else if (!mostrado) { raiz.querySelector(".hp-secoes").innerHTML = ""; estado(raiz, txt.carregando, false); }
       // 2) Do banco: o que há de novo
       let dados = null;
       try { dados = opcoes.carregar ? await opcoes.carregar() : await (await esperarModulo()).listarParaMim(); }
-      catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); if (!mostrado) estado(raiz, TEXTO.erro, true); return; }
-      if (!dados) { if (!mostrado) estado(raiz, TEXTO.erro, true); return; }
+      catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); if (!mostrado) estado(raiz, txt.erro, true); return; }
+      if (!dados) { if (!mostrado) estado(raiz, txt.erro, true); return; }
       cache.gravar(chaveCache, dados);
       mostrar(dados);
     }
@@ -341,14 +373,25 @@
       const assinatura = JSON.stringify(dados);
       if (assinatura === mostrado) return;          // nada mudou desde a última leitura
       mostrado = assinatura;
-      itensPorId = new Map([...dados.comunicados, ...dados.eventos, ...dados.grupos].map((i) => [i.id, i]));
-      const html =
-        secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", dados.comunicados, cartaoComunicado, "Comunicados") +
-        secao("hp-eventos", "Agenda de eventos", "hp-secao-eventos", dados.eventos, cartaoEvento, "Eventos") +
-        secao("hp-grupos", "Grupos e comunidades", "hp-secao-grupos", dados.grupos, cartaoGrupo, "Grupos e comunidades");
+      PREF = prefixo;
+      let html;
+      if (cliente) {                                  // Home dos clientes: Comunicados da S.D + Anúncios
+        const avisos = dados.avisos || [], anuncios = dados.anuncios || [];
+        itensPorId = new Map([...avisos, ...anuncios].map((i) => [i.id, i]));
+        // A área de comunicados SEMPRE aparece para o cliente (vazia: mensagem)
+        html = (avisos.length ? secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", avisos, cartaoComunicado, "Comunicados")
+                : `<section class="hp-secao hp-secao-comunicados" aria-labelledby="${prefixo}-comunicados-titulo"><div class="hp-secao-topo"><h2 id="${prefixo}-comunicados-titulo" class="hp-secao-titulo">Comunicados da S.D</h2></div><p class="hp-vazio">${esc(txt.vazio)}</p></section>`) +
+               secao("hp-anuncios", "Anúncios", "hp-secao-anuncios", anuncios, cartaoAnuncio, "Anúncios");
+      } else {
+        itensPorId = new Map([...dados.comunicados, ...dados.eventos, ...dados.grupos].map((i) => [i.id, i]));
+        html =
+          secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", dados.comunicados, cartaoComunicado, "Comunicados") +
+          secao("hp-eventos", "Agenda de eventos", "hp-secao-eventos", dados.eventos, cartaoEvento, "Eventos") +
+          secao("hp-grupos", "Grupos e comunidades", "hp-secao-grupos", dados.grupos, cartaoGrupo, "Grupos e comunidades");
+      }
       const caixa = raiz.querySelector(".hp-secoes");
       caixa.innerHTML = html;
-      if (!html) { estado(raiz, TEXTO.vazio, false); return; }
+      if (!html) { estado(raiz, txt.vazio, false); return; }
       raiz.querySelector(".hp-estado").hidden = true;
       caixa.querySelectorAll(".hp-secao").forEach(ligarFaixa);
       // Imagem que não abriu: some (o cartão continua)

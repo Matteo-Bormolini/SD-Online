@@ -124,3 +124,10 @@
 @media (hover: none) { .home-prestador .btn:not(:active):hover { background: var(--cor-branco); color: #1F1A17; } }
 .home-prestador .hp-modal-titulo:focus { outline: none; }   /* foco inicial do pop-up (não é botão) */
 .home-prestador .hp-tag-exemplo { color: var(--cor-info); background: var(--cor-info-fundo); border-color: transparent; }   /* v0.8.3 */
+
+/* ---------- v0.8.5: HOME DOS CLIENTES no mesmo padrão (Comunicados da S.D + Anúncios) ---------- */
+.home-prestador .hp-comunicado:not(.hp-atencao) .hp-nivel { color: var(--cor-info); }   /* comunicado normal: azul · importante: amarelo */
+.home-prestador .hp-vazio { margin: 0; padding: 1rem 1.125rem; color: var(--cor-texto-secundario); background: var(--cor-superficie-2);
+  border: 1px dashed var(--cor-divisoria); border-radius: var(--raio-cartao); font-size: .9375rem; }
+.home-prestador .hp-tag-anuncio { color: var(--cor-atencao); background: var(--cor-atencao-fundo); border-color: var(--cor-atencao); text-transform: uppercase; letter-spacing: .04em; }
+.home-prestador .hp-anuncio .hp-acao { margin-top: auto; align-self: flex-start; }
