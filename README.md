@@ -43,7 +43,7 @@ Você encontra, pede orçamento, compara e combina tudo **direto com o prestador
 
 ## Sobre o projeto
 
-- Projeto **individual** de **Marco** (GitHub [Matteo-Bormolini](https://github.com/Matteo-Bormolini/SD-Online)).
+- Projeto **individual** de **Matteo Bormolini** (GitHub [Matteo-Bormolini](https://github.com/Matteo-Bormolini/SD-Online)).
 - Sem equipe e sem reuniões: **uma lista**, **uma coisa por vez**.
 - **Objetivo do MVP (primeira versão de verdade):**
   um cliente real e um prestador real conseguem **cadastrar → encontrar → pedir orçamento → receber → aceitar → liberar contato**,
