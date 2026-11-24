@@ -4,7 +4,7 @@
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do adm:
      - "Cargo" = "Administrador - <cargo definido pelo líder>"
      - Foto de perfil (sem foto → iniciais do nome) + galeria de até 12 fotos
-     - Aba "Administração" (v0.8.5: todos os botões liga/desliga juntos) e aba "Divulgações" (divulgacoes-adm.js)
+     - Aba "Administração" (v0.8.5: botões de comando do site, por grupo) e aba "Divulgações" (divulgacoes-adm.js)
    O adm vê dados sigilosos dos usuários, mas NUNCA a senha (hash no servidor).
    DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
    Galeria de fotos: ainda só na tela (próximo ciclo).
@@ -108,30 +108,54 @@
     });
   }
 
-  /* ---------- 5. ABA ADMINISTRAÇÃO (v0.8.5: todos os botões juntos) ----------
-     a) Botões do SITE TODO: funcionam de verdade. Começam no estado real do banco,
-        salvam na hora e confirmam "Salvo". Se o banco recusar, o botão VOLTA
-        sozinho (sem tentar salvar de novo) e aparece o erro.
-     b) Botões de CADA CONTA: só consulta (texto), sem botão falso. */
-  // id do botão → campo em configuracoes/site ← MUDE AQUI (igual a firebase.js → INTERRUPTORES_DO_SITE)
-  const BOTOES_DO_SITE = { "conferir-documentos": "conferirDocumentos" };
+  /* ---------- 5. ABA ADMINISTRAÇÃO: BOTÕES DE COMANDO (v0.8.5) ----------
+     Comandos do SITE TODO (configuracoes/interruptores.js → comando: true).
+     Ligado = faz a regra · Desligado = pula a etapa. Cada um salva na hora,
+     confirma "Salvo" e, se o banco recusar, o botão VOLTA sozinho.
+     Separados por quem é afetado: Todos · Clientes · Prestadores.
+     Os botões individuais (Localização, Mostrar contatos, Tema…) ficam só no perfil de cada pessoa. */
+  const GRUPOS = { todos: "Todos", clientes: "Clientes", prestadores: "Prestadores" };   // ← MUDE AQUI
 
-  async function iniciarConfigSite() {
-    const caixa = $("#adm-config-site"), msg = $("#msg-config-site");
+  async function iniciarComandos() {
+    const caixa = $("#adm-comandos"), msg = $("#msg-config-site");
     const F = window.SDFirebase, R = window.SD_INTERRUPTORES;
     if (!caixa || !R) return;
     if (!F || !F.ativo) { caixa.textContent = "Disponível só com o Firebase ligado."; return; }
     let cfg;
     try { cfg = await F.configSite(true); }
-    catch (_) { caixa.textContent = "Não foi possível ler as configurações agora."; return; }
+    catch (_) { caixa.textContent = "Não foi possível ler os comandos agora."; return; }
+    const comandos = Object.entries(R.LISTA).filter(([, b]) => b.comando && b.campo);
     caixa.innerHTML = "";
-    for (const [id, campo] of Object.entries(BOTOES_DO_SITE)) {
-      R.gravar(id, cfg[campo] !== false);                // começa no estado REAL do banco
-      const b = document.createElement("button");
-      b.className = "interruptor";
-      b.dataset.interruptor = id;
-      caixa.append(b);
-    }
+    Object.entries(GRUPOS).forEach(([g, titulo]) => {
+      const sec = document.createElement("section");
+      sec.className = "adm-grupo";
+      const h4 = document.createElement("h4");
+      h4.textContent = titulo;
+      sec.append(h4);
+      const doGrupo = comandos.filter(([, b]) => (b.grupo || "todos") === g);
+      if (!doGrupo.length) {
+        const p = document.createElement("p"); p.className = "adm-grupo-vazio"; p.textContent = "Nenhum comando ainda.";
+        sec.append(p);
+      } else {
+        const ul = document.createElement("ul");
+        ul.className = "adm-grupo-lista";
+        doGrupo.forEach(([id, b]) => {
+          R.gravar(id, cfg[b.campo] !== false);           // começa no estado REAL do banco
+          const li = document.createElement("li");
+          li.className = "adm-comando";
+          const botao = document.createElement("button");
+          botao.className = "interruptor";
+          botao.dataset.interruptor = id;
+          const desc = document.createElement("p");
+          desc.className = "adm-comando-desc";
+          desc.textContent = b.oQueFaz.replace(/\s*Vale para o SITE TODO\.?/, "");
+          li.append(botao, desc);
+          ul.append(li);
+        });
+        sec.append(ul);
+      }
+      caixa.append(sec);
+    });
     window.SD_INTERRUPTORES_LIGAR(caixa);
 
     // Mostra o estado do botão sem disparar o salvamento de novo
@@ -142,10 +166,9 @@
       if (aviso && aviso.classList.contains("interruptor-aviso")) aviso.hidden = ligado;
     };
     const botaoDe = (id) => caixa.querySelector(`[data-interruptor="${id}"]`);
-    // Clique: trava o botão enquanto salva
-    document.addEventListener("sd:interruptor", (ev) => {
+    document.addEventListener("sd:interruptor", (ev) => {        // clique: trava enquanto salva
       const b = botaoDe(ev.detail.id);
-      if (!b || !BOTOES_DO_SITE[ev.detail.id]) return;
+      if (!b) return;
       b.disabled = true;
       U.mostrarMensagem(msg, "info", "Salvando…");
     });
@@ -165,31 +188,6 @@
       U.mostrarMensagem(msg, "erro", "Não foi possível salvar (o botão voltou como estava): " + ev.detail.erro);
     });
     P.atualizarAltura();
-  }
-
-  // Botões de cada conta: cartões só de consulta
-  function montarBotoesContas() {
-    const ul = $("#adm-botoes-contas"), R = window.SD_INTERRUPTORES, A = window.SD_ACESSO;
-    if (!ul || !R) return;
-    const nomeTipo = (t) => (A ? A.nomePerfil(t) : t);
-    ul.innerHTML = "";
-    Object.entries(R.LISTA).filter(([id]) => !BOTOES_DO_SITE[id]).forEach(([id, b]) => {
-      const li = document.createElement("li");
-      li.className = "adm-botao-info";
-      const h4 = document.createElement("h4");
-      h4.textContent = b.nome;
-      if (b.situacao === "planejado") { const t = document.createElement("span"); t.className = "dv-tag"; t.textContent = "Planejado"; h4.append(t); }
-      const p = document.createElement("p"); p.className = "nota"; p.textContent = b.oQueFaz;
-      const dl = document.createElement("dl");
-      [["Começa", b.padrao ? "Ligado" : "Desligado"], ["Ligado", b.ligado], ["Desligado", b.desligado],
-       ["Quem tem", b.quem.map(nomeTipo).join(", ")], ["Onde fica", b.onde]].forEach(([t, d]) => {
-        const dt = document.createElement("dt"); dt.textContent = t;
-        const dd = document.createElement("dd"); dd.textContent = d;
-        dl.append(dt, dd);
-      });
-      li.append(h4, p, dl);
-      ul.append(li);
-    });
   }
 
   /* ---------- 6. INÍCIO ---------- */
@@ -212,7 +210,6 @@
     iniciarFotos();
     P.iniciarExclusao();
     P.iniciarAbas({ abas: ["#aba-perfil", "#aba-admin", "#aba-divulgacoes"] });
-    montarBotoesContas();
-    iniciarConfigSite();
+    iniciarComandos();
   });
 })();

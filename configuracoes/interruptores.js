@@ -18,6 +18,12 @@
      situacao → "ativo" (já na tela) ou "planejado" (ainda não criado)
      avisoDesligado → (opcional) aviso que aparece embaixo do botão quando ele está DESLIGADO
      avisoDesligadoPorTipo → (opcional) o mesmo, só para um tipo de conta: { prestador: "texto" }
+   BOTÕES DE COMANDO (v0.8.5) — valem para o SITE TODO, só o adm muda (Perfil do adm → aba Administração):
+     comando  → true = botão de comando do site (ligado = faz a regra · desligado = pula a etapa)
+     campo    → nome do campo salvo no banco (configuracoes/site) ← igual a firebase/firestore.rules área 40
+     grupo    → onde aparece na aba Administração: "todos" | "clientes" | "prestadores"
+   Para criar um comando novo: copie um bloco com comando: true, troque id/nome/campo/grupo e
+   acrescente o campo na área 40 das regras do banco.
    ===================================================================== */
 (function () {
   "use strict";
@@ -75,7 +81,20 @@
       quem: ["adm"],
       onde: "Perfil do adm — aba Administração",
       situacao: "ativo",
+      comando: true, campo: "conferirDocumentos", grupo: "todos",
       avisoDesligado: "Modo teste ligado: CPF e CNPJ não estão sendo conferidos. Ligue de novo antes de abrir o site ao público."
+    },
+    // v0.8.5: comando do site — mostra ou esconde TODOS os destaques pagos
+    "mostrar-destaques": {
+      nome: "Mostrar destaques",
+      oQueFaz: "Mostra os prestadores marcados como destaque pelos administradores (contorno vermelho e etiqueta). Vale para o SITE TODO.",
+      ligado: "Prestadores em destaque aparecem com contorno vermelho e a etiqueta \"Destaque pago\".",
+      desligado: "Nenhum destaque aparece: todos os prestadores aparecem normais.",
+      padrao: true,
+      quem: ["adm"],
+      onde: "Perfil do adm — aba Administração",
+      situacao: "ativo",
+      comando: true, campo: "mostrarDestaques", grupo: "clientes"
     },
     "destaque": {
       nome: "Destaque",
@@ -84,7 +103,7 @@
       desligado: "Prestador aparece normal.",
       padrao: false,
       quem: ["adm"],
-      onde: "Página do administrador (US44)",
+      onde: "Página do administrador (US44) — marcar cada prestador (o comando \"Mostrar destaques\" liga/desliga todos)",
       situacao: "planejado"
     }
   };

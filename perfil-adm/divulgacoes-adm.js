@@ -23,7 +23,8 @@
   const PUBLICO = { geral: "Todos os prestadores", atividades: "Prestadores de algumas atividades", clientes: "Clientes (CPF e CNPJ)" };
   const SITUACAO = { publicado: "Publicado", suspenso: "Suspenso", encerrado: "Encerrado" };
   const REDES = { whatsapp: "WhatsApp", telegram: "Telegram", instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", linkedin: "LinkedIn", site: "Site" };
-  const IMAGEM = { largura: 1280, maxCaracteres: 290000 };   // limite do banco: 300.000
+  // v0.8.5: imagem menor = Home mais leve (cartão usa ~400 px; pop-up até 960 px). Limite do banco: 300.000
+  const IMAGEM = { largura: 960, maxCaracteres: 150000 };
   const ATIVIDADES = SD.config.servicos.map((s) => s.nome);  // lista única (configuracoes/config.js)
 
   const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

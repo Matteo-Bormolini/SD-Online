@@ -81,7 +81,8 @@
         servicos: [p.areaAtuacao, ...(p.especialidades || [])].filter(Boolean),
         secundarias: (p.especialidades || []).length > 0,
         bairro: [p.bairro, p.cidade].filter(Boolean).join(", "),
-        lat: p.semPonto ? null : p.lat, lng: p.semPonto ? null : p.lng, tags: [],
+        lat: p.semPonto ? null : p.lat, lng: p.semPonto ? null : p.lng,
+        tags: Array.isArray(p.tags) ? p.tags : [],                              // destaque (firebase.js tira se o comando "Mostrar destaques" estiver desligado)
         whatsapp: p.whatsapp || null,                                           // só vem de quem liberou
         distancia: comLocal && !p.semPonto ? distanciaKm(cliente, p) : null,
         // v0.8.0: dados dos filtros e do aviso de cobrança

@@ -8,8 +8,10 @@
      • Cliente (v0.8.5): logo depois do "Olá" vêm os "Avisos da S.D" e,
        embaixo, os "Anúncios" (etiqueta "Anúncio" sempre). Ordem:
        Olá → Avisos → Anúncios → Serviços → Prestadores perto de você.
-     • Adm (v0.8.5): barra "Ver como" no topo (componentes/ver-como) mostra
-       a página como Visitante, Cliente CPF, Cliente CNPJ ou Prestador.
+     • Adm (v0.8.5): vê TUDO — o que os clientes veem (avisos e anúncios) e o
+       que os prestadores veem (comunicados, eventos e grupos). Barra "Ver como"
+       no topo (componentes/ver-como) mostra a página como Visitante, Cliente
+       CPF, Cliente CNPJ ou Prestador.
    ATENÇÃO: esconder na tela não é segurança. Em produção, os dados da
    vitrine devem vir do SERVIDOR e só para quem tem sessão válida.
    ===================================================================== */
@@ -81,6 +83,7 @@
     const tipo = tipoVisto || corpo.dataset.tipo || "";                        // cliente-cpf | cliente-cnpj | prestador | adm
     const ehPrestador = tipo === "prestador";
     const ehCliente = tipo.startsWith("cliente");
+    const ehAdm = tipo === "adm" && !previa;
 
     // PRESTADOR: não vê a vitrine (outros prestadores, avaliações e trabalhos são
     // dados da concorrência). Tem Home própria (v0.8.2): home/home-prestador.js.
@@ -103,7 +106,9 @@
         <div class="atalhos">${atalhos}</div>
       </section>
 
-      ${ehCliente ? '<div class="hc-divulgacoes" id="hc-divulgacoes" role="region" aria-label="Avisos e anúncios"></div>' : ""}
+      ${ehAdm ? '<h2 class="hc-grupo-titulo">O que os clientes veem</h2>' : ""}
+      ${ehCliente || ehAdm ? '<div class="hc-divulgacoes" id="hc-divulgacoes" role="region" aria-label="Avisos e anúncios"></div>' : ""}
+      ${ehAdm ? '<h2 class="hc-grupo-titulo">O que os prestadores veem</h2><div id="hc-prestadores-veem"></div>' : ""}
 
       <section class="secao" id="servicos" aria-labelledby="servicos-titulo">
         <h2 id="servicos-titulo" class="secao-titulo">Serviços</h2>
@@ -127,7 +132,10 @@
       </section>`;
 
     alvo.hidden = false;
-    if (ehCliente) carregarDivulgacoesCliente(alvo.querySelector("#hc-divulgacoes"), previa);
+    if (ehCliente || ehAdm) carregarDivulgacoesCliente(alvo.querySelector("#hc-divulgacoes"), previa || ehAdm);
+    // Adm: seções da Home do prestador (comunicados, eventos e grupos), lidas como adm
+    if (ehAdm && window.SDHomePrestador) window.SDHomePrestador.montar(alvo.querySelector("#hc-prestadores-veem"), "",
+      { semBoasVindas: true, cache: "adm-prestador", carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") });
     carregarPrestadores(alvo);
   }
 
@@ -170,23 +178,46 @@
     </article></li>`;
   }
 
+  // A área "Avisos da S.D" SEMPRE aparece (vazia: mensagem). "Anúncios" só aparece quando houver.
+  // v0.8.5: mostra na hora a última leitura guardada e depois atualiza (SDHomePrestador.cache).
   async function carregarDivulgacoesCliente(caixa, previa) {
     if (!caixa) return;
+    const C = window.SDHomePrestador && window.SDHomePrestador.cache;
+    const chave = previa ? "adm-cliente" : "cliente";
+    let mostrado = "";
+    const desenhar = (dados, aviso) => {
+      const assinatura = JSON.stringify(dados) + (aviso || "");
+      if (assinatura === mostrado) return;
+      mostrado = assinatura;
+      const { avisos = [], anuncios = [] } = dados || {};
+      const corpoAvisos = avisos.length
+        ? `<ul class="hc-avisos">${avisos.map(cartaoAviso).join("")}</ul>`
+        : `<p class="hc-vazio">${aviso ? esc(aviso) + ' <button type="button" class="btn btn-pequeno" data-recarregar-avisos>Tentar de novo</button>' : "Nenhum aviso no momento."}</p>`;
+      caixa.innerHTML =
+        `<section class="secao hc-secao" aria-labelledby="hc-avisos-titulo">
+          <h2 id="hc-avisos-titulo" class="secao-titulo">Avisos da S.D</h2>${corpoAvisos}</section>` +
+        (anuncios.length ? `<section class="secao hc-secao" aria-labelledby="hc-anuncios-titulo">
+          <h2 id="hc-anuncios-titulo" class="secao-titulo">Anúncios</h2>
+          <ul class="hc-anuncios">${anuncios.map(cartaoAnuncio).join("")}</ul></section>` : "");
+      caixa.querySelectorAll("img").forEach((img) => img.addEventListener("error", () => img.remove(), { once: true }));
+      const tentar = caixa.querySelector("[data-recarregar-avisos]");
+      if (tentar) tentar.addEventListener("click", () => { mostrado = ""; carregarDivulgacoesCliente(caixa, previa); });
+    };
+    const salvo = C ? C.ler(chave) : null;
+    desenhar(salvo || {}, salvo ? "" : null);
+    if (!salvo) caixa.querySelector(".hc-vazio").textContent = "Carregando avisos…";
     let dados = null;
     try {
       const M = await esperarDivulgacoes();
       dados = previa ? await M.listarPrevia("cliente") : await M.listarParaMim();
-    } catch (e) { console.warn("[S.D] Avisos e anúncios:", e && (e.code || e.message || e)); return; }   // sem avisos: a Home segue normal
+    } catch (e) {
+      console.warn("[S.D] Avisos e anúncios:", e && (e.code || e.message || e));
+      if (!salvo) { mostrado = ""; desenhar({}, "Não foi possível carregar os avisos agora."); }
+      return;
+    }
     if (!dados) return;
-    const { avisos = [], anuncios = [] } = dados;
-    caixa.innerHTML =
-      (avisos.length ? `<section class="secao hc-secao" aria-labelledby="hc-avisos-titulo">
-          <h2 id="hc-avisos-titulo" class="secao-titulo">Avisos da S.D</h2>
-          <ul class="hc-avisos">${avisos.map(cartaoAviso).join("")}</ul></section>` : "") +
-      (anuncios.length ? `<section class="secao hc-secao" aria-labelledby="hc-anuncios-titulo">
-          <h2 id="hc-anuncios-titulo" class="secao-titulo">Anúncios</h2>
-          <ul class="hc-anuncios">${anuncios.map(cartaoAnuncio).join("")}</ul></section>` : "");
-    caixa.querySelectorAll("img").forEach((img) => img.addEventListener("error", () => img.remove(), { once: true }));
+    if (C) C.gravar(chave, dados);
+    desenhar(dados, "");
   }
 
   // Faixa com prestadores REAIS (vitrine). Sem nenhum → a seção não aparece.

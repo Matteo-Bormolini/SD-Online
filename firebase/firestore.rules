@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: avisos e anúncios para clientes)
+// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: avisos e anúncios para clientes · área 40: comando Mostrar destaques)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -10,7 +10,7 @@ rules_version = '2';
 //   03 Geral: CPF e CNPJ (dígitos)   13 Cadastro_Prestador: Criar    23 Perfil_Prestador: Editar
 //   04 Geral: Horário da semana                                      24 Perfil_Adm: Editar
 //   25 Vitrine_Prestador: Ler e Publicar    30 Reserva_Documento: Criar e Excluir
-//   40 Config_Site: Ler e Alterar (adm)     50 Contatos_Orçamentos (v0.8.0)
+//   40 Config_Site: comandos do adm         50 Contatos_Orçamentos (v0.8.0)
 //   60 Avisos: sino (v0.8.0)                70 Fotos: compactadas, sem Storage (v0.8.0)
 //   80 Divulgacoes_Home: Home do prestador (v0.8.2) + avisos e anúncios da Home dos clientes (v0.8.5)
 service cloud.firestore {
@@ -350,8 +350,9 @@ service cloud.firestore {
     // ===== 40 · Config_Site: Ler e Alterar (todos leem; só o adm muda) =====
     match /configuracoes/{id} {
       allow read: if true;
-      allow write: if ehAdm() && id == 'site' && novo().keys().hasOnly(['conferirDocumentos', 'atualizadoEm'])
-        && novo().get('conferirDocumentos', true) is bool;
+      // Comandos do site ← MUDE AQUI ao criar um comando novo (configuracoes/interruptores.js → comando: true)
+      allow write: if ehAdm() && id == 'site' && novo().keys().hasOnly(['conferirDocumentos', 'mostrarDestaques', 'atualizadoEm'])
+        && novo().get('conferirDocumentos', true) is bool && novo().get('mostrarDestaques', true) is bool;
     }
 
     // ===== 50 · Contatos_Orçamentos (v0.8.0 · fluxo "Contato registrado") =====

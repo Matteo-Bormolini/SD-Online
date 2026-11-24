@@ -60,7 +60,8 @@ const COLECAO = { usuarios: "usuarios", documentos: "documentos", configuracoes:
 // Configurações gerais do site (configuracoes/site no banco; só o adm muda)
 // conferirDocumentos: true = confere CPF/CNPJ (dígitos + consulta do CNPJ do prestador)
 //                     false = MODO TESTE: aceita qualquer CPF/CNPJ com o tamanho certo
-const CONFIG_SITE_PADRAO = { conferirDocumentos: true };
+// mostrarDestaques:   true = mostra os destaques pagos · false = ninguém aparece como destaque (v0.8.5)
+const CONFIG_SITE_PADRAO = { conferirDocumentos: true, mostrarDestaques: true };
 // Tipos que a própria pessoa pode criar (adm só é marcado pelo console)
 const TIPOS_CADASTRO = ["cliente-cpf", "cliente-cnpj", "prestador"];
 // Campos que a pessoa NÃO pode mudar sozinha (as regras do banco também bloqueiam)
@@ -70,7 +71,8 @@ const MAX_VALOR_VISITA = 100000;
 // Botões liga/desliga que NÃO são salvos pela própria pessoa
 const INTERRUPTORES_SO_ADM = ["destaque"];
 // Botões do adm que valem para o SITE TODO (salvos em configuracoes/site)
-const INTERRUPTORES_DO_SITE = { "conferir-documentos": "conferirDocumentos" };
+// ← MUDE AQUI junto com configuracoes/interruptores.js (comando: true) e a área 40 das regras
+const INTERRUPTORES_DO_SITE = { "conferir-documentos": "conferirDocumentos", "mostrar-destaques": "mostrarDestaques" };
 // Chave da "sessão da tela" (mesma de configuracoes/config.js)
 const CHAVE_SESSAO = "sd-sessao";
 
@@ -498,13 +500,18 @@ async function listarPrestadores(categoria) {
   const q = categoria
     ? query(collection(db, COLECAO.vitrine), where("categorias", "array-contains", categoria))
     : query(collection(db, COLECAO.vitrine), limit(50));
-  const r = await getDocs(q);
-  return r.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const [r, cfg] = await Promise.all([getDocs(q), configSite()]);
+  return r.docs.map((d) => semDestaque({ id: d.id, ...d.data() }, cfg));
 }
 async function lerVitrine(uid) {
   await pronto;
-  const s = await getDoc(doc(db, COLECAO.vitrine, uid));
-  return s.exists() ? { id: s.id, ...s.data() } : null;
+  const [s, cfg] = await Promise.all([getDoc(doc(db, COLECAO.vitrine, uid)), configSite()]);
+  return s.exists() ? semDestaque({ id: s.id, ...s.data() }, cfg) : null;
+}
+// v0.8.5: comando "Mostrar destaques" desligado → tira a marca de destaque de todos (só na tela)
+function semDestaque(p, cfg) {
+  if (cfg && cfg.mostrarDestaques === false && Array.isArray(p.tags)) p.tags = p.tags.filter((t) => t !== "destaque");
+  return p;
 }
 
 /* ---------- 8. ESQUECI A SENHA (pop-up do site) ---------- */

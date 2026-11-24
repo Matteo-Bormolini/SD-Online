@@ -8,7 +8,8 @@ Espaço da equipe S.D. O adm cuida do site e dá suporte. Vê os dados das conta
 ## O que tem
 - **Aba Perfil:** nome, cargo, CPF/CNPJ (não muda), e-mail, telefones, endereço e avaliações.
 - Editar perfil, foto, galeria (até 12 fotos) e excluir perfil.
-- **Aba Administração (v0.8.5):** todos os botões liga/desliga juntos. Os do **site todo** funcionam (confirma "Salvo"; se o banco recusar, o botão volta). Os de **cada conta** aparecem só para consulta.
+- **Aba Administração (v0.8.5):** **Botões de comando** do site todo, separados em **Todos · Clientes · Prestadores** (deslizante em cima, nome embaixo). Ligado = faz a regra; desligado = pula a etapa. Hoje: **Conferir CPF e CNPJ** (Todos) e **Mostrar destaques** (Clientes). Salva na hora e confirma "Salvo"; se o banco recusar, o botão volta. Botões individuais (Localização, Mostrar contatos, Tema…) ficam só no perfil de cada pessoa.
+- **Comando novo:** `configuracoes/interruptores.js` (bloco com `comando: true`, `campo`, `grupo`) + `firebase/firebase.js` (`INTERRUPTORES_DO_SITE`) + área 40 das regras.
 - **Aba Divulgações (v0.8.3):** eventos, grupos e comunicados da Home do prestador; **v0.8.5:** avisos (comunicado para "Clientes") e anúncios da Home dos clientes, um bloco embaixo do outro: exemplos ilustrativos (criar/apagar), formulário (novo/editar, imagem reduzida no navegador) e lista (editar, publicar/suspender, encerrar, excluir — tudo com confirmação).
 - **Botões de excluir e editar pedem confirmação** ("Tem certeza?") antes de agir.
 - A senha nunca aparece, só "••••••••".

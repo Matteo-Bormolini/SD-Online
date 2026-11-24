@@ -5,7 +5,8 @@ A primeira página do site e a página "Sobre nós".
 ## Quem vê
 - **Visitante:** apresentação da S.D e a lista de serviços (só os nomes).
 - **Cliente (CPF ou CNPJ):** Olá → **Avisos da S.D** → **Anúncios** (etiqueta "Anúncio" sempre, v0.8.5) → Serviços → Prestadores perto de você.
-- **Adm (v0.8.5):** barra **Ver como** no topo (Visitante · Cliente CPF · Cliente CNPJ · Prestador). Lembra a escolha nesta aba.
+- **Adm (v0.8.5):** vê **tudo**: "O que os clientes veem" (avisos e anúncios) e "O que os prestadores veem" (comunicados, eventos e grupos), depois Serviços e Prestadores. Barra **Ver como** no topo (Visitante · Cliente CPF · Cliente CNPJ · Prestador). Lembra a escolha nesta aba.
+- **Mais leve (v0.8.5):** a Home mostra na hora a última leitura guardada neste navegador (até 24 h, só divulgações, sem dados pessoais) e atualiza em seguida com o banco.
 - **Prestador:** Home própria (v0.8.2) — eventos, grupos e comunicados. **Nunca** vê dados de outros prestadores.
 
 ## Arquivos

@@ -217,19 +217,15 @@
       <!-- ===================== PAINEL ADMINISTRAÇÃO ===================== -->
       <div class="painel painel-admin" role="tabpanel" id="painel-admin" aria-labelledby="aba-admin" tabindex="0">
         <h2>Administração</h2>
-        <!-- v0.8.5: todos os botões liga/desliga juntos (lista única: configuracoes/interruptores.js) -->
-        <section class="adm-bloco" aria-labelledby="adm-site-titulo">
-          <h3 id="adm-site-titulo">Botões do site todo</h3>
-          <p class="nota">Valem para todas as contas. Salvos no banco na hora (configuracoes/site).</p>
-          <div id="adm-config-site" class="adm-config-site">
-            <p class="nota" id="adm-config-carregando">Carregando configurações…</p>
+        <!-- v0.8.5: BOTÕES DE COMANDO do site (lista: configuracoes/interruptores.js → comando: true).
+             Ligado = faz a regra · Desligado = pula a etapa. Separados por quem é afetado. -->
+        <section class="adm-bloco" aria-labelledby="adm-comandos-titulo">
+          <h3 id="adm-comandos-titulo">Botões de comando</h3>
+          <p class="nota">Valem para o site todo e são salvos no banco na hora. Ligado: faz a regra. Desligado: pula a etapa.</p>
+          <div id="adm-comandos" class="adm-comandos">
+            <p class="nota" id="adm-config-carregando">Carregando comandos…</p>
           </div>
           <div class="mensagem" id="msg-config-site" role="status" aria-live="polite"></div>
-        </section>
-        <section class="adm-bloco" aria-labelledby="adm-contas-titulo">
-          <h3 id="adm-contas-titulo">Botões de cada conta (consulta)</h3>
-          <p class="nota">Cada pessoa liga ou desliga no próprio perfil. Aqui é só para consultar o que cada um faz e como começa numa conta nova.</p>
-          <ul class="adm-botoes-lista" id="adm-botoes-contas"></ul>
         </section>
         <p class="nota">Selo de prestador verificado: por enquanto pelo console do Firebase (campo <code>verificado</code> = true no perfil). Fila de aprovação no site: pós-MVP.</p>
       </div>

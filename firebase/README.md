@@ -95,6 +95,8 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 ## Configurações do site (`configuracoes/site`)
 - Criado sozinho na 1ª vez que o adm mexe no botão **Conferir CPF e CNPJ** (Perfil do adm → aba Administração).
 - `conferirDocumentos`: `true` = confere CPF/CNPJ (na tela **e nas regras do banco**: dígitos verificadores) e consulta o CNPJ do prestador · `false` = **modo teste**.
+- `mostrarDestaques` (**v0.8.5**): `true` = mostra os destaques pagos · `false` = ninguém aparece como destaque (a marca é tirada na leitura da vitrine).
+- Cada campo é um **botão de comando** da aba Administração. Comando novo = campo novo aqui + área 40 das regras.
 - Todos leem; só o adm muda (regras).
 
 ## Selo de prestador verificado (pelo console, até existir a fila no site)

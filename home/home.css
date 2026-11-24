@@ -241,6 +241,10 @@ img.prestador-logo { object-fit: cover; }
 
 /* ---------- v0.8.5: AVISOS DA S.D + ANÚNCIOS (Home do cliente, classes hc-) ---------- */
 .hc-secao { margin-top: 2.5rem; }
+.hc-vazio { margin: 0; color: var(--cor-texto-secundario); font-size: .9375rem; }
+/* Home do adm: separa o que os clientes e os prestadores veem */
+.hc-grupo-titulo { margin: 3rem 0 0; padding-top: 1rem; border-top: 2px solid var(--cor-vinho); font-size: .875rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--cor-texto-secundario); }
 .hc-avisos, .hc-anuncios { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
 .hc-avisos { grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
 .hc-anuncios { grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; }

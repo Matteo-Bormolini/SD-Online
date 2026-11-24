@@ -251,18 +251,53 @@
     });
   }
 
-  /* ---------- 8. MONTAGEM ---------- */
+  /* ---------- 7b. CACHE DA ÚLTIMA LEITURA (v0.8.5 — página mais leve) ----------
+     A Home mostra NA HORA o que foi lido na última visita (guardado neste
+     navegador) e, ao mesmo tempo, busca no banco o que há de novo.
+     Só guarda divulgações (conteúdo público, sem dados pessoais), ligado à conta.
+     Validade ← MUDE AQUI. Sem armazenamento: funciona igual, só sem o atalho. */
+  const CACHE_HORAS = 24;
+  const uidSessao = () => {
+    for (const area of [sessionStorage, localStorage]) {
+      try { const s = JSON.parse(area.getItem("sd-sessao") || "null"); if (s && s.uid) return s.uid; } catch (_) { /* sem armazenamento */ }
+    }
+    return "";
+  };
+  const cache = {
+    ler(chave) {
+      try {
+        const c = JSON.parse(localStorage.getItem("sd-div-" + chave) || "null");
+        return c && c.uid === uidSessao() && Date.now() - c.em < CACHE_HORAS * 3600000 ? c.dados : null;
+      } catch (_) { return null; }
+    },
+    gravar(chave, dados) {
+      const valor = (d) => JSON.stringify({ uid: uidSessao(), em: Date.now(), dados: d });
+      try { localStorage.setItem("sd-div-" + chave, valor(dados)); }
+      catch (_) {                                  // cheio (imagens grandes): guarda sem as imagens em texto
+        try {
+          const leve = JSON.parse(JSON.stringify(dados), (k, v) => (k === "imagem" && typeof v === "string" && v.startsWith("data:") ? "" : v));
+          localStorage.setItem("sd-div-" + chave, valor(leve));
+        } catch (_) { /* sem espaço: segue sem cache */ }
+      }
+    }
+  };
+
+  /* ---------- 8. MONTAGEM ----------
+     opcoes.carregar      → função que traz os dados (prévia do adm)
+     opcoes.semBoasVindas → true = só as seções (Home do adm junta tudo, v0.8.5)
+     opcoes.cache         → nome do cache (padrão "prestador") */
   function montar(alvo, nome, opcoes = {}) {
+    const chaveCache = opcoes.cache || "prestador";
     alvo.innerHTML = `
       <div class="home-prestador">
-        <section class="boas-vindas hp-boas-vindas" aria-labelledby="ola-titulo">
+        ${opcoes.semBoasVindas ? "" : `<section class="boas-vindas hp-boas-vindas" aria-labelledby="ola-titulo">
           <h1 id="ola-titulo">Olá${nome || ""}!</h1>
           <p>${esc(TEXTO.subtitulo)}</p>
           <div class="atalhos">
             <a class="btn" href="${esc(SD.caminho("localizar-condominios/index.html"))}">Seus Serviços</a>
             <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
           </div>
-        </section>
+        </section>`}
         <div class="hp-estado" role="status" aria-live="polite"><p>${esc(TEXTO.carregando)}</p></div>
         <div class="hp-secoes"></div>
         <dialog class="modal modal-largo hp-modal" aria-labelledby="hp-modal-titulo"><div class="hp-modal-corpo"></div></dialog>
@@ -286,17 +321,25 @@
       if (ev.target.closest("[data-recarregar]")) carregar();
     });
 
+    let mostrado = "";                               // o que está na tela (evita redesenhar igual)
     async function carregar() {
-      raiz.querySelector(".hp-secoes").innerHTML = "";
-      estado(raiz, TEXTO.carregando, false);
+      // 1) Na hora: a última leitura guardada (se houver)
+      const salvo = cache.ler(chaveCache);
+      if (salvo && !mostrado) mostrar(salvo);
+      else if (!mostrado) { raiz.querySelector(".hp-secoes").innerHTML = ""; estado(raiz, TEXTO.carregando, false); }
+      // 2) Do banco: o que há de novo
       let dados = null;
       try { dados = opcoes.carregar ? await opcoes.carregar() : await (await esperarModulo()).listarParaMim(); }
-      catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); estado(raiz, TEXTO.erro, true); return; }
-      if (!dados) { estado(raiz, TEXTO.erro, true); return; }
+      catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); if (!mostrado) estado(raiz, TEXTO.erro, true); return; }
+      if (!dados) { if (!mostrado) estado(raiz, TEXTO.erro, true); return; }
+      cache.gravar(chaveCache, dados);
       mostrar(dados);
     }
 
     function mostrar(dados) {
+      const assinatura = JSON.stringify(dados);
+      if (assinatura === mostrado) return;          // nada mudou desde a última leitura
+      mostrado = assinatura;
       itensPorId = new Map([...dados.comunicados, ...dados.eventos, ...dados.grupos].map((i) => [i.id, i]));
       const html =
         secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", dados.comunicados, cartaoComunicado, "Comunicados") +
@@ -315,5 +358,5 @@
     return { recarregar: carregar, mostrar };   // "mostrar" também serve para a prévia com dados de teste (fora do site)
   }
 
-  window.SDHomePrestador = Object.freeze({ montar });
+  window.SDHomePrestador = Object.freeze({ montar, cache });   // cache: também usado pelos avisos dos clientes (home.js)
 })();
