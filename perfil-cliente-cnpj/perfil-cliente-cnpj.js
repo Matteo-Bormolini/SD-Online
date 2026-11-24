@@ -3,7 +3,7 @@
    O comportamento comum (abas, telefones, edição, foto, exclusão) vem de
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do CNPJ:
      - Dados da empresa: razão social, nome fantasia, CNPJ (inalterável),
-       tipo de estabelecimento, responsável pela conta (cargo em lista),
+       tipo de estabelecimento, responsável pela conta (cargo em lista que segue o tipo, v0.8.5),
        contato no local (zelador/portaria/recepção) e horário para visitas
        (dias da semana + horas válidas; observação livre opcional).
      - Foto de perfil (logo) opcional → foto padrão do sistema.
@@ -129,19 +129,38 @@
     P.avisoCadastro(perfil, CAMPOS_CADASTRO);
   }
 
-  /* ---------- 3b. CARGO DO RESPONSÁVEL (lista + "Outro") ---------- */
+  /* ---------- 3b. CARGO DO RESPONSÁVEL (lista + "Outro") ----------
+     v0.8.5: a lista de cargos segue o TIPO DE ESTABELECIMENTO:
+       Condomínio (residencial, comercial, misto) → só cargos de condomínio
+       Empresa, Comércio, Indústria               → só cargos de empresa
+       Outro ou vazio                             → os dois grupos  ← MUDE AQUI (GRUPOS_POR_TIPO) */
+  const GRUPOS_POR_TIPO = (tipo) => {
+    const t = String(tipo || "");
+    if (t.startsWith("Condomínio")) return ["Condomínio"];
+    if (/^(Empresa|Comércio|Indústria)/.test(t)) return ["Empresa"];
+    return ["Condomínio", "Empresa"];
+  };
+  // Tipo que vale agora: o escolhido no formulário ou, se "Manter atual", o salvo
+  const tipoAtual = () => $("#f-tipo").value || perfil.tipoEstabelecimento || "";
+  // Grupo de um cargo da lista (null = cargo escrito em "Outro")
+  const grupoDoCargo = (cargo) => (CARGOS.find((g) => g.itens.includes(cargo)) || {}).grupo || null;
+
   function preencherCargos() {
     const sel = $("#f-resp-cargo");
+    const escolhido = sel.value;
+    const grupos = GRUPOS_POR_TIPO(tipoAtual());
     sel.innerHTML = "";
     sel.append(new Option(`Manter atual (${perfil.responsavelCargo || "não informado"})`, ""));
-    CARGOS.forEach((g) => {
+    CARGOS.filter((g) => grupos.includes(g.grupo)).forEach((g) => {
       const grupo = document.createElement("optgroup");
       grupo.label = g.grupo;
       g.itens.forEach((c) => grupo.append(new Option(c, c)));
       sel.append(grupo);
     });
     sel.append(new Option("Outro (escrever)", CARGO_OUTRO));
-    $("#campo-cargo-outro").hidden = true;
+    // Mantém a escolha se ela ainda existe na lista nova
+    if (escolhido && [...sel.options].some((o) => o.value === escolhido)) sel.value = escolhido;
+    $("#campo-cargo-outro").hidden = sel.value !== CARGO_OUTRO;
   }
   // Cargo escolhido: da lista ou o texto de "Outro"
   const cargoEscolhido = () => ($("#f-resp-cargo").value === CARGO_OUTRO ? $("#f-resp-cargo-outro").value.trim() : $("#f-resp-cargo").value);
@@ -326,6 +345,14 @@
         if (d.nomeFantasia && d.nomeFantasia.length < 2) marcar("f-fantasia", "Nome fantasia muito curto.");
         if (d.responsavelNome && d.responsavelNome.split(/\s+/).length < 2) marcar("f-resp-nome", "Informe nome e sobrenome.");
         if (d.cargoOutro && (!d.responsavelCargo || d.responsavelCargo.length < 2)) marcar("f-resp-cargo-outro", "Escreva o cargo.");
+        // v0.8.5: cargo da lista precisa combinar com o tipo (só confere quando o tipo ou o cargo muda)
+        if (d.tipoEstabelecimento || d.responsavelCargo) {
+          const tipo = d.tipoEstabelecimento || perfil.tipoEstabelecimento || "";
+          const cargo = d.responsavelCargo || perfil.responsavelCargo || "";
+          const grupo = d.cargoOutro ? null : grupoDoCargo(cargo);
+          if (grupo && !GRUPOS_POR_TIPO(tipo).includes(grupo))
+            marcar("f-resp-cargo", `O cargo "${cargo}" é de ${grupo.toLowerCase()} e não combina com "${tipo}". Escolha um cargo da lista.`);
+        }
         if (d.contatoNome && d.contatoNome.length < 2) marcar("f-local-nome", "Nome muito curto.");
         if (d.contatoTelefone && !U.telefoneValido(d.contatoTelefone)) marcar("f-local-telefone", "Informe DDD + número (10 ou 11 dígitos).");
         horarioEditor.validar(marcar);
@@ -376,6 +403,7 @@
     P.iniciarSanfona();
     iniciarHorario();
     if (real && !perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) window.SDFirebase.atualizarLocal(perfil);   // ponto no mapa (uma vez)
+    $("#f-tipo").addEventListener("change", () => { preencherCargos(); P.atualizarAltura(); });   // v0.8.5: cargos por tipo
     $("#f-resp-cargo").addEventListener("change", (e) => {
       const outro = e.target.value === CARGO_OUTRO;
       $("#campo-cargo-outro").hidden = !outro;

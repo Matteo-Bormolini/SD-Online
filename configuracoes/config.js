@@ -43,8 +43,7 @@
       responsabilidade: "politica-privacidade/responsabilidade.html",
       privacidade:      "politica-privacidade/privacidade.html",
       localizarPrestador: "localizar-prestador/index.html",
-      perfilPrestador:    "perfil-prestador/index.html",             // abre com ?visao=cliente&id=...
-      interruptores:      "interruptores/index.html"                 // lista dos botões liga/desliga (adm)
+      perfilPrestador:    "perfil-prestador/index.html"              // abre com ?visao=cliente&id=...
     },
 
     // "Meu perfil" abre a página do tipo de usuário (data-tipo no <body>)

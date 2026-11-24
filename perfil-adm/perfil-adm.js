@@ -4,7 +4,7 @@
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do adm:
      - "Cargo" = "Administrador - <cargo definido pelo líder>"
      - Foto de perfil (sem foto → iniciais do nome) + galeria de até 12 fotos
-     - Aba "Administração" (botões do site) e aba "Divulgações" (v0.8.3, divulgacoes-adm.js)
+     - Aba "Administração" (v0.8.5: todos os botões liga/desliga juntos) e aba "Divulgações" (divulgacoes-adm.js)
    O adm vê dados sigilosos dos usuários, mas NUNCA a senha (hash no servidor).
    DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
    Galeria de fotos: ainda só na tela (próximo ciclo).
@@ -108,27 +108,88 @@
     });
   }
 
-  /* ---------- 5. CONFIGURAÇÕES DO SITE (aba Administração) ----------
-     Monta os botões depois de ler o banco, para começarem no estado real. */
+  /* ---------- 5. ABA ADMINISTRAÇÃO (v0.8.5: todos os botões juntos) ----------
+     a) Botões do SITE TODO: funcionam de verdade. Começam no estado real do banco,
+        salvam na hora e confirmam "Salvo". Se o banco recusar, o botão VOLTA
+        sozinho (sem tentar salvar de novo) e aparece o erro.
+     b) Botões de CADA CONTA: só consulta (texto), sem botão falso. */
+  // id do botão → campo em configuracoes/site ← MUDE AQUI (igual a firebase.js → INTERRUPTORES_DO_SITE)
+  const BOTOES_DO_SITE = { "conferir-documentos": "conferirDocumentos" };
+
   async function iniciarConfigSite() {
     const caixa = $("#adm-config-site"), msg = $("#msg-config-site");
-    const F = window.SDFirebase;
-    if (!caixa) return;
+    const F = window.SDFirebase, R = window.SD_INTERRUPTORES;
+    if (!caixa || !R) return;
     if (!F || !F.ativo) { caixa.textContent = "Disponível só com o Firebase ligado."; return; }
-    const cfg = await F.configSite(true);
+    let cfg;
+    try { cfg = await F.configSite(true); }
+    catch (_) { caixa.textContent = "Não foi possível ler as configurações agora."; return; }
     caixa.innerHTML = "";
-    // id do botão → campo em configuracoes/site
-    const BOTOES = { "conferir-documentos": "conferirDocumentos" };
-    for (const [id, campo] of Object.entries(BOTOES)) {
-      window.SD_INTERRUPTORES.gravar(id, cfg[campo] !== false);
+    for (const [id, campo] of Object.entries(BOTOES_DO_SITE)) {
+      R.gravar(id, cfg[campo] !== false);                // começa no estado REAL do banco
       const b = document.createElement("button");
       b.className = "interruptor";
       b.dataset.interruptor = id;
       caixa.append(b);
     }
     window.SD_INTERRUPTORES_LIGAR(caixa);
-    document.addEventListener("sd:interruptor-erro", (ev) => U.mostrarMensagem(msg, "erro", "Não foi possível salvar: " + ev.detail.erro));
+
+    // Mostra o estado do botão sem disparar o salvamento de novo
+    const pintar = (botao, ligado) => {
+      botao.setAttribute("aria-checked", String(ligado));
+      botao.querySelector(".interruptor-estado").textContent = ligado ? "Ligado" : "Desligado";
+      const aviso = botao.nextElementSibling;
+      if (aviso && aviso.classList.contains("interruptor-aviso")) aviso.hidden = ligado;
+    };
+    const botaoDe = (id) => caixa.querySelector(`[data-interruptor="${id}"]`);
+    // Clique: trava o botão enquanto salva
+    document.addEventListener("sd:interruptor", (ev) => {
+      const b = botaoDe(ev.detail.id);
+      if (!b || !BOTOES_DO_SITE[ev.detail.id]) return;
+      b.disabled = true;
+      U.mostrarMensagem(msg, "info", "Salvando…");
+    });
+    document.addEventListener("sd:interruptor-salvo", (ev) => {
+      const b = botaoDe(ev.detail.id);
+      if (!b) return;
+      b.disabled = false;
+      U.mostrarMensagem(msg, "sucesso", `Salvo: "${R.LISTA[ev.detail.id].nome}" ${ev.detail.ligado ? "ligado" : "desligado"}.`);
+    });
+    document.addEventListener("sd:interruptor-erro", (ev) => {
+      const b = botaoDe(ev.detail.id);
+      if (!b) return;
+      const voltar = b.getAttribute("aria-checked") !== "true";   // estado de antes do clique
+      pintar(b, voltar);
+      R.gravar(ev.detail.id, voltar);
+      b.disabled = false;
+      U.mostrarMensagem(msg, "erro", "Não foi possível salvar (o botão voltou como estava): " + ev.detail.erro);
+    });
     P.atualizarAltura();
+  }
+
+  // Botões de cada conta: cartões só de consulta
+  function montarBotoesContas() {
+    const ul = $("#adm-botoes-contas"), R = window.SD_INTERRUPTORES, A = window.SD_ACESSO;
+    if (!ul || !R) return;
+    const nomeTipo = (t) => (A ? A.nomePerfil(t) : t);
+    ul.innerHTML = "";
+    Object.entries(R.LISTA).filter(([id]) => !BOTOES_DO_SITE[id]).forEach(([id, b]) => {
+      const li = document.createElement("li");
+      li.className = "adm-botao-info";
+      const h4 = document.createElement("h4");
+      h4.textContent = b.nome;
+      if (b.situacao === "planejado") { const t = document.createElement("span"); t.className = "dv-tag"; t.textContent = "Planejado"; h4.append(t); }
+      const p = document.createElement("p"); p.className = "nota"; p.textContent = b.oQueFaz;
+      const dl = document.createElement("dl");
+      [["Começa", b.padrao ? "Ligado" : "Desligado"], ["Ligado", b.ligado], ["Desligado", b.desligado],
+       ["Quem tem", b.quem.map(nomeTipo).join(", ")], ["Onde fica", b.onde]].forEach(([t, d]) => {
+        const dt = document.createElement("dt"); dt.textContent = t;
+        const dd = document.createElement("dd"); dd.textContent = d;
+        dl.append(dt, dd);
+      });
+      li.append(h4, p, dl);
+      ul.append(li);
+    });
   }
 
   /* ---------- 6. INÍCIO ---------- */
@@ -151,6 +212,7 @@
     iniciarFotos();
     P.iniciarExclusao();
     P.iniciarAbas({ abas: ["#aba-perfil", "#aba-admin", "#aba-divulgacoes"] });
+    montarBotoesContas();
     iniciarConfigSite();
   });
 })();

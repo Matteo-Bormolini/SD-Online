@@ -51,6 +51,11 @@
   <!-- 3. Tipos de serviço (caixas, mesma lista da Home) -->
   <section class="secao-setores" aria-labelledby="setores-titulo">
     <h2 id="setores-titulo" class="localizar-subtitulo">Tipos de serviço</h2>
+    <!-- v0.8.5: depois de escolher, a lista recolhe e fica só o tipo escolhido + "Trocar tipo de serviço" -->
+    <div class="setor-escolhido" id="setor-escolhido" hidden>
+      <span class="setor-chip" id="setor-chip"></span>
+      <button type="button" class="btn btn-pequeno" id="btn-trocar-setor" aria-expanded="false" aria-controls="setores">Trocar tipo de serviço</button>
+    </div>
     <ul class="setores" id="setores"></ul>
   </section>
 

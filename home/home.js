@@ -5,6 +5,11 @@
        prestadores, fotos ou avaliações.
      • Logado (data-logado="sim"): a parte de convite é REMOVIDA; aparecem
        os tipos de serviço e os prestadores reais perto do cliente.
+     • Cliente (v0.8.5): logo depois do "Olá" vêm os "Avisos da S.D" e,
+       embaixo, os "Anúncios" (etiqueta "Anúncio" sempre). Ordem:
+       Olá → Avisos → Anúncios → Serviços → Prestadores perto de você.
+     • Adm (v0.8.5): barra "Ver como" no topo (componentes/ver-como) mostra
+       a página como Visitante, Cliente CPF, Cliente CNPJ ou Prestador.
    ATENÇÃO: esconder na tela não é segurança. Em produção, os dados da
    vitrine devem vir do SERVIDOR e só para quem tem sessão válida.
    ===================================================================== */
@@ -67,17 +72,19 @@
     if (lista) lista.innerHTML = CATEGORIAS.map((c) => `<li>${esc(c.nome)}</li>`).join("");
   }
 
-  /* ---------- 7. LOGADO ---------- */
-  function montarLogado(alvo) {
+  /* ---------- 7. LOGADO ----------
+     tipoVisto: o tipo da conta OU, para o adm, a escolha do "Ver como" (v0.8.5).
+     previa = true → adm vendo como outro tipo (dados lidos como adm). */
+  function montarLogado(alvo, tipoVisto, previa = false) {
     const corpo = document.body;
     const nome = corpo.dataset.nome ? `, ${esc(corpo.dataset.nome)}` : "";   // servidor pode preencher data-nome
-    const tipo = corpo.dataset.tipo || "";                                     // cliente-cpf | cliente-cnpj | prestador | adm
+    const tipo = tipoVisto || corpo.dataset.tipo || "";                        // cliente-cpf | cliente-cnpj | prestador | adm
     const ehPrestador = tipo === "prestador";
     const ehCliente = tipo.startsWith("cliente");
 
     // PRESTADOR: não vê a vitrine (outros prestadores, avaliações e trabalhos são
     // dados da concorrência). Tem Home própria (v0.8.2): home/home-prestador.js.
-    if (ehPrestador) { montarPrestador(alvo, nome); return; }
+    if (ehPrestador) { montarPrestador(alvo, nome, previa); return; }
 
     const atalhos = [
       `<a class="btn" href="${CAMINHOS.buscarPrestador}">Pedir orçamento</a>`,
@@ -95,6 +102,8 @@
         </form>
         <div class="atalhos">${atalhos}</div>
       </section>
+
+      ${ehCliente ? '<div class="hc-divulgacoes" id="hc-divulgacoes" role="region" aria-label="Avisos e anúncios"></div>' : ""}
 
       <section class="secao" id="servicos" aria-labelledby="servicos-titulo">
         <h2 id="servicos-titulo" class="secao-titulo">Serviços</h2>
@@ -118,7 +127,66 @@
       </section>`;
 
     alvo.hidden = false;
+    if (ehCliente) carregarDivulgacoesCliente(alvo.querySelector("#hc-divulgacoes"), previa);
     carregarPrestadores(alvo);
+  }
+
+  /* ---------- 7a. AVISOS DA S.D + ANÚNCIOS (Home do cliente, v0.8.5) ----------
+     Dados: firebase/divulgacoes.js (coleção "divulgacoes", publico "clientes").
+     Cada seção só aparece se tiver conteúdo. Anúncio SEMPRE com a etiqueta "Anúncio". */
+  const ESPERA_MODULO_MS = 15000;
+  function esperarDivulgacoes() {
+    return new Promise((ok, falha) => {
+      if (window.SDDivulgacoes) return ok(window.SDDivulgacoes);
+      const t = setTimeout(() => falha(new Error("sem-modulo")), ESPERA_MODULO_MS);
+      document.addEventListener("sd:divulgacoes-pronto", () => { clearTimeout(t); ok(window.SDDivulgacoes); }, { once: true });
+    });
+  }
+  const srcImagem = (v) => (!v ? "" : v.startsWith("data:") ? v : SD.caminho(v));
+  const dominio = (url) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch (_) { return ""; } };
+  const linkExterno = (url, rotulo) =>
+    `<a class="btn btn-pequeno" href="${esc(url)}" target="_blank" rel="noopener noreferrer external sponsored">${esc(rotulo)}<span class="visualmente-oculto"> (abre outro site: ${esc(dominio(url))})</span></a>`;
+  const paragrafos = (t) => t.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+
+  function cartaoAviso(a) {
+    const data = a.data ? a.data.split("-").reverse().join("/") : "";
+    return `<li><article class="hc-aviso${a.nivel === "atencao" ? " hc-atencao" : ""}" aria-labelledby="hc-t-${esc(a.id)}">
+      <p class="hc-linha-topo"><span class="hc-nivel">${a.nivel === "atencao" ? "Importante" : "Aviso"}</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}${data ? ` <time datetime="${esc(a.data)}">${esc(data)}</time>` : ""}</p>
+      <h3 id="hc-t-${esc(a.id)}">${esc(a.titulo)}</h3>
+      ${a.descricao ? `<div class="hc-texto">${paragrafos(a.descricao)}</div>` : ""}
+      ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais") : ""}
+    </article></li>`;
+  }
+  function cartaoAnuncio(a) {
+    return `<li><article class="hc-anuncio" aria-labelledby="hc-t-${esc(a.id)}">
+      ${a.imagem ? `<img class="hc-anuncio-img" src="${esc(srcImagem(a.imagem))}" alt="" loading="lazy" decoding="async">` : ""}
+      <div class="hc-anuncio-corpo">
+        <p class="hc-linha-topo"><span class="hc-tag hc-tag-anuncio">Anúncio</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}</p>
+        <h3 id="hc-t-${esc(a.id)}">${esc(a.titulo)}</h3>
+        ${a.organizador ? `<p class="hc-anunciante">Anunciante: ${esc(a.organizador)}</p>` : ""}
+        ${a.descricao ? `<div class="hc-texto">${paragrafos(a.descricao)}</div>` : ""}
+        ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais") : ""}
+      </div>
+    </article></li>`;
+  }
+
+  async function carregarDivulgacoesCliente(caixa, previa) {
+    if (!caixa) return;
+    let dados = null;
+    try {
+      const M = await esperarDivulgacoes();
+      dados = previa ? await M.listarPrevia("cliente") : await M.listarParaMim();
+    } catch (e) { console.warn("[S.D] Avisos e anúncios:", e && (e.code || e.message || e)); return; }   // sem avisos: a Home segue normal
+    if (!dados) return;
+    const { avisos = [], anuncios = [] } = dados;
+    caixa.innerHTML =
+      (avisos.length ? `<section class="secao hc-secao" aria-labelledby="hc-avisos-titulo">
+          <h2 id="hc-avisos-titulo" class="secao-titulo">Avisos da S.D</h2>
+          <ul class="hc-avisos">${avisos.map(cartaoAviso).join("")}</ul></section>` : "") +
+      (anuncios.length ? `<section class="secao hc-secao" aria-labelledby="hc-anuncios-titulo">
+          <h2 id="hc-anuncios-titulo" class="secao-titulo">Anúncios</h2>
+          <ul class="hc-anuncios">${anuncios.map(cartaoAnuncio).join("")}</ul></section>` : "");
+    caixa.querySelectorAll("img").forEach((img) => img.addEventListener("error", () => img.remove(), { once: true }));
   }
 
   // Faixa com prestadores REAIS (vitrine). Sem nenhum → a seção não aparece.
@@ -155,8 +223,10 @@
      Home própria do prestador: home/home-prestador.js (eventos, grupos e
      comunicados). Nada de dados de outros prestadores. Se o arquivo não
      carregar, ficam só os atalhos (como antes). */
-  function montarPrestador(alvo, nome) {
-    if (window.SDHomePrestador) { window.SDHomePrestador.montar(alvo, nome); return; }
+  function montarPrestador(alvo, nome, previa = false) {
+    // Prévia do adm (v0.8.5): a Home do prestador lê pela prévia (dados lidos como adm)
+    const opcoes = previa ? { carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") } : {};
+    if (window.SDHomePrestador) { window.SDHomePrestador.montar(alvo, nome, opcoes); return; }
     alvo.innerHTML = `
       <section class="boas-vindas" aria-labelledby="ola-titulo">
         <h1 id="ola-titulo">Olá${nome}!</h1>
@@ -202,9 +272,20 @@
     const visitante = document.querySelector('[data-visivel="visitante"]');
     const areaLogado = document.querySelector('[data-visivel="logado"]');
 
-    if (logado) {
+    // v0.8.5: adm escolhe como ver a página ("Ver como")
+    const V = window.SDVerComo;
+    const verComo = logado && V ? V.visao() : null;          // null = não é adm
+    if (verComo) V.montar(document.getElementById("conteudo"));
+
+    if (verComo === "visitante") {                           // prévia do visitante (o adm continua logado)
+      document.getElementById("conteudo").classList.add("previa-adm");
+      if (areaLogado) areaLogado.remove();
+      if (visitante) montarVisitante(visitante);
+      aplicarLinks();
+    } else if (logado) {
       if (visitante) visitante.remove();          // toda a "atração" some
-      if (areaLogado) montarLogado(areaLogado);
+      const previa = !!verComo && verComo !== "adm";
+      if (areaLogado) montarLogado(areaLogado, previa ? verComo : null, previa);
     } else {
       if (areaLogado) areaLogado.remove();        // vitrine não existe para visitante
       if (visitante) montarVisitante(visitante);

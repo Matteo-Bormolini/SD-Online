@@ -200,6 +200,21 @@
       const botao = e.target.closest(".setor");
       if (botao) escolherCategoria(botao.dataset.categoria, { rolar: true });
     });
+    // v0.8.5: "Trocar tipo de serviço" abre/fecha a lista de novo
+    document.getElementById("btn-trocar-setor").addEventListener("click", () => recolherSetores(!el.setores.hidden));
+  }
+
+  // v0.8.5: recolhe a lista depois da escolha (fica o tipo escolhido + "Trocar tipo de serviço")
+  function recolherSetores(recolher) {
+    const caixa = document.getElementById("setor-escolhido"), botao = document.getElementById("btn-trocar-setor");
+    const categoria = C.categorias.find((c) => c.id === estado.categoria);
+    if (!categoria) { caixa.hidden = true; el.setores.hidden = false; return; }
+    document.getElementById("setor-chip").innerHTML = `${SD.iconeCategoria(categoria.icone)}<span><span class="visualmente-oculto">Tipo escolhido: </span>${esc(categoria.nome)}</span>`;
+    caixa.hidden = false;
+    el.setores.hidden = recolher;
+    botao.setAttribute("aria-expanded", String(!recolher));
+    botao.textContent = recolher ? "Trocar tipo de serviço" : "Fechar lista de tipos";
+    if (!recolher) { const atual = el.setores.querySelector('.setor[aria-pressed="true"]'); if (atual) atual.focus(); }
   }
 
   async function escolherCategoria(id, { rolar = false, prestador = null } = {}) {
@@ -208,6 +223,7 @@
     estado.categoria = id;
     estado.selecionado = null;
     el.setores.querySelectorAll(".setor").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.categoria === id)));
+    recolherSetores(true);
 
     try { estado.lista = await buscarPrestadores(id, estado.cliente); }
     catch (_) { estado.lista = []; el.vazia.textContent = "Não foi possível carregar a lista agora. Confira a internet e tente de novo."; }

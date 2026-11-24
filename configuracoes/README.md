@@ -14,7 +14,7 @@ O "painel de controle" do site. Tudo que vale para o site inteiro fica aqui, **u
 - Um link ou item do menu → `config.js`, parte `paginas` ou `menu`.
 - Se um botão começa ligado ou desligado → `interruptores.js`, campo `padrao` (`true` = ligado).
 - Aviso que aparece quando o botão está desligado → campo `avisoDesligado`.
-- Ver todos os botões em cartões → página `interruptores/` (entrar como adm).
+- Ver todos os botões → Perfil do adm → aba **Administração**.
 
 ## Padrão dos botões liga/desliga
 - Desligado = **cinza escuro**. Ligado = **vinho**.

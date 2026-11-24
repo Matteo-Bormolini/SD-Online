@@ -19,6 +19,7 @@ Peças prontas usadas por várias páginas. Mude aqui e todas as páginas mudam 
 | `datahora/` | Campo de data/hora: digitar, rodinhas (relógio) ou calendário; horários da semana. | Perfis CNPJ e Prestador |
 | `lista-escolha/` | Escolher vários itens de uma lista (sem repetir), com "×" para remover. | Perfil do prestador |
 | `mapa/` | Mapa grátis (MapLibre + OpenFreeMap). | Localizar prestador |
+| `ver-como/` | **v0.8.5** Barra do adm: ver a página como Visitante, Cliente CPF, Cliente CNPJ ou Prestador. | Início |
 
 ## Como usar uma peça
 1. Coloque o `.css` dela no `<head>`, depois do `base.css`.

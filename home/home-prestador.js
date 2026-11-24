@@ -13,6 +13,7 @@
    Este arquivo NÃO fala com o banco. Sem dados fictícios.
    Depende de: configuracoes/config.js (SD) e componentes/utilidades (SDUtil.ligarPopup).
    Uso (home/home.js): SDHomePrestador.montar(elemento, ", Nome")
+   Prévia do adm (v0.8.5, "Ver como"): montar(elemento, nome, { carregar: () => dados })
    ===================================================================== */
 (function () {
   "use strict";
@@ -251,7 +252,7 @@
   }
 
   /* ---------- 8. MONTAGEM ---------- */
-  function montar(alvo, nome) {
+  function montar(alvo, nome, opcoes = {}) {
     alvo.innerHTML = `
       <div class="home-prestador">
         <section class="boas-vindas hp-boas-vindas" aria-labelledby="ola-titulo">
@@ -289,7 +290,7 @@
       raiz.querySelector(".hp-secoes").innerHTML = "";
       estado(raiz, TEXTO.carregando, false);
       let dados = null;
-      try { dados = await (await esperarModulo()).listarParaMim(); }
+      try { dados = opcoes.carregar ? await opcoes.carregar() : await (await esperarModulo()).listarParaMim(); }
       catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); estado(raiz, TEXTO.erro, true); return; }
       if (!dados) { estado(raiz, TEXTO.erro, true); return; }
       mostrar(dados);

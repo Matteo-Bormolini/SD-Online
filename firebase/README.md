@@ -9,7 +9,7 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 | `firebase.js` | Conexão: entrar, sair, criar conta, nova senha, confirmar e-mail, ler/salvar/excluir perfil. **Bloco 1 = configuração do projeto.** |
 | `fotos.js` | **v0.8.0** Fotos compactadas no banco (coleção `fotos`), grátis. `window.SDFotos`. |
 | `pedidos.js` | **v0.8.0** Contatos/orçamentos (coleção `orcamentos`) e avisos (coleção `avisos`). Carrega as telas `componentes/pedidos` e `componentes/avisos`. `window.SDPedidosDados`. |
-| `divulgacoes.js` | **v0.8.2** Eventos, grupos e comunicados da **Home do prestador** (coleção `divulgacoes`). Só lê. Carregado só na página inicial. `window.SDDivulgacoes`. |
+| `divulgacoes.js` | **v0.8.2** Eventos, grupos e comunicados da **Home do prestador** e, desde a **v0.8.5**, avisos e anúncios da **Home dos clientes** (coleção `divulgacoes`). Carregado só no Início e no Perfil do adm. `window.SDDivulgacoes`. |
 | `firestore.indexes.json` | **v0.8.2** Índices da coleção `divulgacoes` (criar 1 vez no console: veja abaixo). |
 | `firestore.rules` | Regras de segurança do banco. Copiar e colar no console (não funciona sozinho aqui no GitHub). **Bloco 1 = limites de tamanho.** |
 
@@ -62,7 +62,7 @@ As telas usam só `window.SDFirebase`. Site continua no **GitHub Pages**.
 | 50 Contatos_Orçamentos | cliente cria o contato; cada lado só muda o que é seu (situações: contato → orcado/nao-orcou/expirado → escolhido/nao-escolhido/cancelado/encerrado → concluido → prestado) |
 | 60 Avisos | só quem participa do contato avisa o outro lado; só o dono lê, marca como lido e apaga |
 | 70 Fotos | 1 foto = 1 documento (até 900.000 caracteres, WebP/JPEG, até 1080 px); trabalho: clientes leem; pedido: só o prestador daquele contato |
-| 80 Divulgacoes_Home | **v0.8.2** só o adm grava; prestador lê só `publicado` e do público dele (geral ou uma das atividades dele); clientes e visitantes não leem. Interruptor `SEGMENTAR_PUBLICO()` (plano B) |
+| 80 Divulgacoes_Home | **v0.8.2** só o adm grava; prestador lê só `publicado` e do público dele (geral ou uma das atividades dele). **v0.8.5:** cliente CPF/CNPJ lê só `publicado` com `publico` = `clientes` (avisos e anúncios); anúncio sempre `clientes` e com imagem ou descrição; evento e grupo nunca `clientes`. Visitantes não leem. Interruptor `SEGMENTAR_PUBLICO()` (plano B) |
 
 Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que o banco aceita:
 
@@ -137,10 +137,10 @@ Firestore → `divulgacoes` → **Adicionar documento** → **ID automático** �
 **Campos de todos**
 | Campo | Tipo | Obrigatório | Valores |
 |---|---|---|---|
-| `tipo` | string | sim | `evento` · `grupo` · `comunicado` |
+| `tipo` | string | sim | `evento` · `grupo` · `comunicado` · `anuncio` (**v0.8.5**, só `publico` = `clientes`) |
 | `titulo` | string | sim | até 120 |
 | `situacao` | string | sim | `publicado` (aparece) · `suspenso` · `encerrado` (não aparecem) |
-| `publico` | string | sim | `geral` (todos os prestadores) · `atividades` (só as áreas da lista abaixo) |
+| `publico` | string | sim | `geral` (todos os prestadores) · `atividades` (só as áreas da lista abaixo) · `clientes` (**v0.8.5**: Home dos clientes; só `comunicado` e `anuncio`) |
 | `atividades` | array de string | se `publico` = `atividades` | até 10 nomes **iguais** aos de `configuracoes/config.js` → `servicos` (ex.: `Marcenaria`, `Elétrica`). Vale para a área de atuação **e** para as atividades secundárias |
 | `descricao` | string | não | até 1.500 (linha em branco = novo parágrafo) |
 | `imagem` | string | não | nome do arquivo em `fotos/divulgacoes/` (ex.: `feira-2026.webp`) **ou** imagem em texto `data:image/webp;base64,...` (até 300.000). Links de outros sites são **bloqueados** |
@@ -154,7 +154,9 @@ Evento cuja data (ou `dataFim`) já passou **some sozinho**. Para tirar antes: `
 
 **Só grupo:** `redes` (**map**) com os links que existirem: `whatsapp`, `telegram`, `instagram`, `facebook`, `youtube`, `linkedin`, `site` (todos `https://`) · `regiao` (80) ou `cidade` + `uf`. Grupo sem nenhum link válido não aparece.
 
-**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela).
+**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela). Com `publico` = `clientes` vira **Aviso da S.D** na Home dos clientes (v0.8.5).
+
+**Só anúncio (v0.8.5):** `publico` = `clientes` sempre · precisa de `imagem` **ou** `descricao` · `organizador` (120) = anunciante. Sempre aparece com a etiqueta "Anúncio".
 
 Campo não informado **não aparece** na tela (nada é inventado).
 
@@ -177,5 +179,6 @@ Campo não informado **não aparece** na tela (nada é inventado).
 - ✅ v0.8.0: contatos/orçamentos, avisos (sino), fotos compactadas, aviso de preço da visita.
 - ✅ v0.8.2: coleção `divulgacoes` (Home do prestador) + área 80 das regras + 2 índices.
 - ✅ v0.8.3: aba Divulgações do adm (cadastrar/editar/apagar pelo site) + exemplos ilustrativos (campo `exemplo`).
+- 🟠 v0.8.5: avisos e anúncios da Home dos clientes (tipo `anuncio`, público `clientes`; anunciante no campo `organizador`). Usa o índice `situacao` + `publico` que já existe. Falta teste com as regras reais.
 - ⬜ Avaliações reais (Ciclo 4) · login por CPF/CNPJ.
 - ⏸️ Pago (pós-MVP): fotos no Storage (+ AVIF), e-mail/celular de aviso, prazos automáticos sem abrir o site, cookie HttpOnly, selo automático, limpeza automática de contas e de cadastros pendentes, consulta do CNPJ no servidor.

@@ -16,13 +16,20 @@
 }
 .galeria-vazia { font-size: .8125rem; color: var(--cor-texto-secundario); margin: 0; }
 
-/* ---------- 2. PAINEL ADMINISTRAÇÃO (em desenvolvimento) ---------- */
-.painel-admin {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; min-height: 20rem; padding: 3rem 1.5rem;
-}
-.painel-admin h2 { font-size: 1.75rem; font-weight: 700; margin: 0; }
-.painel-admin p  { margin: .375rem 0 0; color: var(--cor-texto-secundario); font-size: 1rem; }
+/* ---------- 2. PAINEL ADMINISTRAÇÃO (v0.8.5: todos os botões juntos) ---------- */
+.painel-admin { padding: 1.5rem; }
+.painel-admin h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.painel-admin p  { margin: .375rem 0 0; color: var(--cor-texto-secundario); }
+.adm-bloco { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--cor-divisoria); }
+.adm-bloco h3 { margin: 0; font-size: 1.125rem; }
+.adm-config-site { display: grid; gap: .75rem; margin-top: 1rem; justify-items: start; }
+.adm-botoes-lista { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+.adm-botao-info { padding: .875rem 1rem; background: var(--cor-superficie); border: 1px solid var(--cor-divisoria); border-radius: var(--raio-cartao); }
+.adm-botao-info h4 { margin: 0 0 .25rem; font-size: 1rem; display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; }
+.adm-botao-info dl { margin: .5rem 0 0; display: grid; grid-template-columns: auto 1fr; gap: .125rem .625rem; font-size: .8125rem; }
+.adm-botao-info dt { font-weight: 700; }
+.adm-botao-info dd { margin: 0; color: var(--cor-texto-secundario); }
+@media (max-width: 47.99rem) { .painel-admin { padding: 1rem; } }
 
 /* ---------- 3. ABA DIVULGAÇÕES (v0.8.3) — um bloco embaixo do outro ---------- */
 .painel-divulgacoes { padding: 1.5rem; position: relative; }   /* prende o campo de arquivo oculto (sem rolagem lateral) */

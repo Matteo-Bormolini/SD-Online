@@ -3,13 +3,13 @@
    PADRÃO DO SITE (09/11/2026):
      - TODO botão liga/desliga do site está cadastrado AQUI.
      - Desligado = cinza escuro · Ligado = vinho (cor do site).
-     - Para ver a lista em forma de tabela: página interruptores/ (só adm).
+     - Para ver a lista: Perfil do adm → aba Administração (v0.8.5; a página interruptores/ foi apagada).
    Para mudar o PADRÃO de um botão (como ele começa numa conta nova),
    troque "padrao: true/false" abaixo. O servidor usará esta mesma lista.
 
    Campos:
      nome     → texto que aparece ao lado do botão
-     oQueFaz  → explicação simples (aparece na página interruptores/)
+     oQueFaz  → explicação simples (aparece na aba Administração do adm)
      ligado   → o que acontece quando está LIGADO
      desligado→ o que acontece quando está DESLIGADO
      padrao   → true = começa ligado · false = começa desligado

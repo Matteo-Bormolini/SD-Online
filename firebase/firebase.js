@@ -687,7 +687,10 @@ document.addEventListener("sd:interruptor", async (ev) => {
   await pronto;
   if (!auth.currentUser) return;
   if (INTERRUPTORES_DO_SITE[id]) {                   // botão do site todo (só o adm consegue salvar)
-    try { await salvarConfigSite({ [INTERRUPTORES_DO_SITE[id]]: !!ligado }); }
+    try {
+      await salvarConfigSite({ [INTERRUPTORES_DO_SITE[id]]: !!ligado });
+      document.dispatchEvent(new CustomEvent("sd:interruptor-salvo", { detail: { id, ligado: !!ligado } }));   // v0.8.5: a tela confirma "salvo"
+    }
     catch (e) { console.warn("[S.D] Não foi possível salvar", id, e.code || e); document.dispatchEvent(new CustomEvent("sd:interruptor-erro", { detail: { id, erro: mensagemErro(e) } })); }
     return;
   }

@@ -18,7 +18,7 @@ Tudo o que você precisa saber para mexer no código sem quebrar o padrão.
 | Cores, fontes, botões, links, mensagens | `configuracoes/base.css` |
 | Links das páginas, itens do menu e do rodapé, ícones | `configuracoes/config.js` |
 | Quem vê cada página e cada dado | `seguranca/acesso.js` **e** `seguranca/permissoes.json` |
-| Botões liga/desliga (lista, padrão ligado/desligado) | `configuracoes/interruptores.js` (consulta visual: página `interruptores/`) |
+| Botões liga/desliga (lista, padrão ligado/desligado) | `configuracoes/interruptores.js` (consulta: Perfil do adm → aba Administração) |
 | Pop-up "Tem certeza?" de excluir/editar | `componentes/confirmacao/confirmacao.js` |
 | Barra do topo | `navbar/` |
 | Rodapé | `rodape/` |
@@ -186,4 +186,4 @@ Uma ou duas frases: para que serve.
 - O estado também aparece escrito ("Ligado"/"Desligado").
 - Todo botão novo é cadastrado em `configuracoes/interruptores.js` (nome, o que faz, padrão, quem tem, onde fica).
 - No HTML basta: `<button class="interruptor" data-interruptor="id-do-botao"></button>`.
-- A página `interruptores/` (só adm) mostra todos em cartões.
+- Perfil do adm → aba **Administração** mostra todos (os do site com botão; os de cada conta só para consulta).

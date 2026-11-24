@@ -1,7 +1,9 @@
 /* =====================================================================
-   S.D — ABA "DIVULGAÇÕES" DO ADM (perfil-adm/divulgacoes-adm.js) · v0.8.3
+   S.D — ABA "DIVULGAÇÕES" DO ADM (perfil-adm/divulgacoes-adm.js) · v0.8.3 / v0.8.5
    Cadastra, edita, publica/suspende/encerra e apaga o que aparece na
-   Home do prestador (eventos, grupos e comunicados). Tudo numa aba só,
+   Home do prestador (eventos, grupos e comunicados) e, desde a v0.8.5,
+   na Home dos clientes (Avisos da S.D = comunicado para "Clientes";
+   Anúncios = tipo "Anúncio", sempre para "Clientes"). Tudo numa aba só,
    um bloco embaixo do outro:
      1. Exemplos ilustrativos (criar / apagar — apagar antes do lançamento)
      2. Formulário (nova divulgação ou edição)
@@ -17,7 +19,8 @@
   if (!raiz || !SD) return;
 
   /* ---------- 1. TEXTOS E OPÇÕES ← MUDE AQUI ---------- */
-  const TIPO = { evento: "Evento", grupo: "Grupo / comunidade", comunicado: "Comunicado" };
+  const TIPO = { evento: "Evento", grupo: "Grupo / comunidade", comunicado: "Comunicado / aviso", anuncio: "Anúncio (só clientes)" };
+  const PUBLICO = { geral: "Todos os prestadores", atividades: "Prestadores de algumas atividades", clientes: "Clientes (CPF e CNPJ)" };
   const SITUACAO = { publicado: "Publicado", suspenso: "Suspenso", encerrado: "Encerrado" };
   const REDES = { whatsapp: "WhatsApp", telegram: "Telegram", instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", linkedin: "LinkedIn", site: "Site" };
   const IMAGEM = { largura: 1280, maxCaracteres: 290000 };   // limite do banco: 300.000
@@ -41,7 +44,7 @@
     raiz.innerHTML = `
       <section class="dv-bloco" aria-labelledby="dv-ex-titulo">
         <h3 id="dv-ex-titulo">Exemplos ilustrativos</h3>
-        <p class="nota">Cria 9 divulgações FICTÍCIAS (marcadas "Exemplo") para ver a Home do prestador cheia. <strong>Apague antes do lançamento.</strong></p>
+        <p class="nota">Cria 13 divulgações FICTÍCIAS (marcadas "Exemplo"): 9 para a Home do prestador e 4 para a Home dos clientes (avisos e anúncios). <strong>Apague antes do lançamento.</strong></p>
         <div class="dv-acoes">
           <button type="button" class="btn" id="dv-criar-exemplos">Criar exemplos ilustrativos</button>
           <button type="button" class="btn" id="dv-apagar-exemplos">Apagar exemplos</button>
@@ -60,6 +63,8 @@
               <legend>Quem vê</legend>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-geral" value="geral" checked><label for="dv-publico-geral">Todos os prestadores</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-ativ" value="atividades"><label for="dv-publico-ativ">Só algumas atividades (área de atuação ou atividade secundária)</label></div>
+              <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-clientes" value="clientes"><label for="dv-publico-clientes">Clientes CPF e CNPJ (Home dos clientes)</label></div>
+              <span class="campo-erro" id="e-dv-publico"></span>
               <div class="dv-atividades" id="dv-lista-atividades" hidden>
                 ${ATIVIDADES.map((a, i) => `<div class="campo campo-check"><input type="checkbox" id="dv-at-${i}" value="${esc(a)}"><label for="dv-at-${i}">${esc(a)}</label></div>`).join("")}
               </div>
@@ -117,8 +122,14 @@
             </fieldset>
 
             <fieldset class="grupo largura-total" data-so="comunicado">
-              <legend>Comunicado</legend>
+              <legend>Comunicado / aviso</legend>
               ${opcoes("nivel", "Destaque", { info: "Normal", atencao: "Importante (borda amarela)" })}
+            </fieldset>
+
+            <fieldset class="grupo largura-total" data-so="anuncio">
+              <legend>Anúncio (v0.8.5)</legend>
+              <p class="nota">Aparece só na Home dos clientes, sempre com a etiqueta "Anúncio". Precisa de imagem ou descrição.</p>
+              ${texto("anunciante", "Anunciante (empresa ou pessoa)", 120)}
             </fieldset>
           </div>
           <div class="dv-acoes">
@@ -150,13 +161,19 @@
     });
   }
   const erroTexto = (e) => (e && e.code === "permission-denied"
-    ? "Permissão negada pelo banco. Confira se as regras v0.8.3 foram publicadas e se esta conta é adm."
+    ? "Permissão negada pelo banco. Confira se as regras v0.8.5 foram publicadas e se esta conta é adm."
     : (window.SDFirebase && window.SDFirebase.mensagemErro ? window.SDFirebase.mensagemErro(e) : String(e && e.message || e)));
 
   /* ---------- 4. FORMULÁRIO: mostrar campos do tipo, ler e preencher ---------- */
   function mostrarPorTipo() {
     const tipo = $("#dv-tipo").value;
     raiz.querySelectorAll("[data-so]").forEach((f) => { f.hidden = f.dataset.so !== tipo; });
+    // v0.8.5: anúncio = só Clientes · evento e grupo = só prestadores · comunicado = qualquer público
+    const geral = $("#dv-publico-geral"), ativ = $("#dv-publico-ativ"), cli = $("#dv-publico-clientes");
+    geral.disabled = ativ.disabled = tipo === "anuncio";
+    cli.disabled = tipo === "evento" || tipo === "grupo";
+    if (tipo === "anuncio") cli.checked = true;
+    if (cli.disabled && cli.checked) geral.checked = true;
     $("#dv-lista-atividades").hidden = !$("#dv-publico-ativ").checked;
     atualizarAltura();
   }
@@ -166,7 +183,7 @@
     const tipo = val("tipo");
     const d = {
       tipo, situacao: val("situacao"), titulo: val("titulo"),
-      publico: $("#dv-publico-ativ").checked ? "atividades" : "geral",
+      publico: $("#dv-publico-clientes").checked ? "clientes" : $("#dv-publico-ativ").checked ? "atividades" : "geral",
       atividades: [...raiz.querySelectorAll("#dv-lista-atividades input:checked")].map((c) => c.value),
       descricao: val("descricao"), data: val("data"), link: val("link"), linkTexto: val("linkTexto"),
       imagem: imagemDados || val("imagemArquivo")
@@ -184,6 +201,7 @@
       d.redes = {}; Object.keys(REDES).forEach((k) => { d.redes[k] = val("rede-" + k); });
     }
     if (tipo === "comunicado") d.nivel = val("nivel");
+    if (tipo === "anuncio") d.organizador = val("anunciante");
     if (editando && editando.exemplo === true) d.exemplo = true;   // mantém a marca de exemplo
     return d;
   }
@@ -209,7 +227,9 @@
     if (item.tipo === "evento") { set("cidade", item.cidade); set("uf", item.uf); set("buffet", item.buffet === true ? "sim" : item.buffet === false ? "nao" : ""); }
     if (item.tipo === "grupo") { set("grupoCidade", item.cidade); set("grupoUf", item.uf); Object.keys(REDES).forEach((k) => set("rede-" + k, (item.redes || {})[k])); }
     $("#dv-publico-ativ").checked = item.publico === "atividades";
-    $("#dv-publico-geral").checked = item.publico !== "atividades";
+    $("#dv-publico-clientes").checked = item.publico === "clientes";
+    $("#dv-publico-geral").checked = item.publico !== "atividades" && item.publico !== "clientes";
+    if (item.tipo === "anuncio") set("anunciante", item.organizador);
     raiz.querySelectorAll("#dv-lista-atividades input").forEach((c) => { c.checked = (item.atividades || []).includes(c.value); });
     if (item.imagem && String(item.imagem).startsWith("data:")) { imagemDados = item.imagem; mostrarImagem(item.imagem); }
     else if (item.imagem) { set("imagemArquivo", item.imagem); mostrarImagem(SD.caminho("fotos/divulgacoes/" + item.imagem)); }
@@ -273,7 +293,7 @@
   const dataBR = (iso) => (iso ? iso.split("-").reverse().join("/") : "");
   function linha(i) {
     const passou = i.tipo === "evento" && (i.dataFim || i.data) && (i.dataFim || i.data) < hoje();
-    const publico = i.publico === "atividades" ? "Atividades: " + (i.atividades || []).join(", ") : "Todos os prestadores";
+    const publico = i.publico === "atividades" ? "Atividades: " + (i.atividades || []).join(", ") : PUBLICO[i.publico] || PUBLICO.geral;
     const botaoSituacao = i.situacao === "publicado"
       ? `<button type="button" class="btn btn-pequeno" data-acao="suspenso" data-id="${esc(i.id)}">Suspender</button>`
       : `<button type="button" class="btn btn-pequeno" data-acao="publicado" data-id="${esc(i.id)}">Publicar</button>`;
@@ -306,7 +326,7 @@
     $("#dv-apagar-exemplos").disabled = !qtdEx;
     if (!itens.length) { caixa.innerHTML = '<p class="nota">Nada cadastrado ainda.</p>'; atualizarAltura(); return; }
     const ordem = { publicado: 0, suspenso: 1, encerrado: 2 };
-    caixa.innerHTML = Object.entries({ evento: "Eventos", grupo: "Grupos e comunidades", comunicado: "Comunicados" }).map(([t, nome]) => {
+    caixa.innerHTML = Object.entries({ evento: "Eventos", grupo: "Grupos e comunidades", comunicado: "Comunicados e avisos", anuncio: "Anúncios (clientes)" }).map(([t, nome]) => {
       const lista = itens.filter((i) => i.tipo === t)
         .sort((a, b) => (ordem[a.situacao] ?? 3) - (ordem[b.situacao] ?? 3) || String(a.data || "").localeCompare(String(b.data || "")) || String(a.titulo).localeCompare(String(b.titulo), "pt-BR"));
       return lista.length ? `<h4>${nome} (${lista.length})</h4><ul class="dv-itens">${lista.map(linha).join("")}</ul>` : "";
@@ -347,7 +367,7 @@
       const dados = lerFormulario();
       const erros = modulo.adm.validar(dados);
       if (Object.keys(erros).length) { mostrarErros(erros); mensagem(msg, "erro", "Corrija os campos marcados."); return; }
-      if (editando && !(await confirmar({ titulo: "Salvar as alterações?", texto: `"${editando.titulo}" será atualizado na Home dos prestadores.`, sim: "Sim, salvar", tipo: "editar" }))) return;
+      if (editando && !(await confirmar({ titulo: "Salvar as alterações?", texto: `"${editando.titulo}" será atualizado na Home.`, sim: "Sim, salvar", tipo: "editar" }))) return;
       const parar = U && U.carregando ? U.carregando($("#dv-salvar"), "Salvando…") : () => {};
       try {
         await modulo.adm.salvar(editando ? editando.id : "", dados, editando ? editando.criadoEm : null);
@@ -373,7 +393,7 @@
         } else {
           const nome = SITUACAO[acao].toLowerCase();
           const efeito = acao === "publicado" ? "vai aparecer" : "deixa de aparecer";
-          if (!(await confirmar({ titulo: `Mudar para "${nome}"?`, texto: `"${item.titulo}" ${efeito} na Home dos prestadores.`, sim: "Sim, mudar", tipo: "editar" }))) return;
+          if (!(await confirmar({ titulo: `Mudar para "${nome}"?`, texto: `"${item.titulo}" ${efeito} na Home ${item.publico === "clientes" ? "dos clientes" : "dos prestadores"}.`, sim: "Sim, mudar", tipo: "editar" }))) return;
           await modulo.adm.mudarSituacao(item.id, acao);
         }
         await carregarLista();
@@ -383,9 +403,9 @@
     // Exemplos ilustrativos
     $("#dv-criar-exemplos").addEventListener("click", async () => {
       const msg = $("#dv-msg-exemplos");
-      if (itens.some((i) => i.exemplo === true) && !(await confirmar({ titulo: "Já existem exemplos.", texto: "Criar outro conjunto de 9 exemplos?", sim: "Sim, criar", tipo: "editar" }))) return;
+      if (itens.some((i) => i.exemplo === true) && !(await confirmar({ titulo: "Já existem exemplos.", texto: "Criar outro conjunto de 13 exemplos?", sim: "Sim, criar", tipo: "editar" }))) return;
       const parar = U && U.carregando ? U.carregando($("#dv-criar-exemplos"), "Criando…") : () => {};
-      try { await modulo.adm.criarExemplos(); parar(); mensagem(msg, "sucesso", "9 exemplos criados. Entre como prestador e abra o Início para ver."); await carregarLista(); }
+      try { await modulo.adm.criarExemplos(); parar(); mensagem(msg, "sucesso", "13 exemplos criados. Abra o Início e use \"Ver como\" (Prestador ou Cliente) para ver."); await carregarLista(); }
       catch (err) { parar(); mensagem(msg, "erro", erroTexto(err)); atualizarAltura(); }
     });
     $("#dv-apagar-exemplos").addEventListener("click", async () => {

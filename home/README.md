@@ -4,7 +4,8 @@ A primeira página do site e a página "Sobre nós".
 
 ## Quem vê
 - **Visitante:** apresentação da S.D e a lista de serviços (só os nomes).
-- **Cliente (CPF ou CNPJ):** atalhos para encontrar prestadores e o caminho do pedido.
+- **Cliente (CPF ou CNPJ):** Olá → **Avisos da S.D** → **Anúncios** (etiqueta "Anúncio" sempre, v0.8.5) → Serviços → Prestadores perto de você.
+- **Adm (v0.8.5):** barra **Ver como** no topo (Visitante · Cliente CPF · Cliente CNPJ · Prestador). Lembra a escolha nesta aba.
 - **Prestador:** Home própria (v0.8.2) — eventos, grupos e comunicados. **Nunca** vê dados de outros prestadores.
 
 ## Arquivos
@@ -37,5 +38,6 @@ Contatos, orçamentos e serviços **continuam no Perfil** (não são repetidos a
 
 - ✅ Home de visitante e de cliente (cliente vê prestadores reais perto dele; sem números fictícios — v0.7.9).
 - 🟠 Home do prestador (v0.8.2) — falta o teste com conta real e o 1º conteúdo cadastrado pelo adm.
+- 🟠 Avisos e anúncios da Home dos clientes + "Ver como" do adm (v0.8.5) — falta teste com as regras reais.
 - ⬜ Pós-MVP da Home do prestador (US64–US67): divulgação paga, capacitação, "Confirmar que vou". Ver `docs/backlog.md`.
 - ⬜ Sobre nós — **depois do MVP** (a história da empresa ainda será escrita).

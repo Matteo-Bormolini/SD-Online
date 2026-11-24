@@ -1,9 +1,14 @@
 /* =====================================================================
-   S.D — DIVULGAÇÕES DA HOME DO PRESTADOR (firebase/divulgacoes.js) · v0.8.2
-   Lê do banco (coleção "divulgacoes") o que aparece na Home do prestador:
+   S.D — DIVULGAÇÕES DA HOME (firebase/divulgacoes.js) · v0.8.2 / v0.8.5
+   Lê do banco (coleção "divulgacoes") o que aparece na Home:
+   PRESTADOR
      • comunicado → Comunicados da S.D
      • evento     → Agenda de eventos
      • grupo      → Grupos e comunidades
+   CLIENTE CPF/CNPJ (v0.8.5)
+     • comunicado com publico "clientes" → Avisos da S.D
+     • anuncio (sempre publico "clientes") → Anúncios (etiqueta "Anúncio" sempre;
+       quem anuncia fica no campo "organizador")
 
    Quem cadastra: SÓ o adm (por enquanto pelo Firebase Console; modelo dos
    campos em firebase/README.md). Nada de dados fictícios aqui.
@@ -13,6 +18,7 @@
      publico: "atividades" → só quem tem uma das "atividades" como área de
                              atuação ou atividade secundária (mesmos nomes da
                              lista única de serviços: configuracoes/config.js)
+     publico: "clientes"   → clientes CPF e CNPJ (v0.8.5; só comunicado e anúncio)
 
    Segurança: as REGRAS do banco (área 80) só deixam o prestador ler o que
    está "publicado" e é do público dele. Este arquivo ainda confere e limpa
@@ -35,7 +41,8 @@ const LIMITES = {
   buffetEmpresa: 120, estacionamentoObs: 120, organizador: 120, regiao: 80, link: 500, imagem: 300000,
   atividades: 10, porTipo: 30        // máximo de cartões por seção
 };
-const TIPOS = ["evento", "grupo", "comunicado"];
+const TIPOS = ["evento", "grupo", "comunicado", "anuncio"];   // v0.8.5: anuncio (só clientes)
+const PUBLICOS = ["geral", "atividades", "clientes"];
 const REDES = ["whatsapp", "telegram", "instagram", "facebook", "youtube", "linkedin", "site"];
 // Pasta das imagens enviadas ao GitHub (img-src 'self' na CSP). Outra opção: imagem em texto (data:image/...)
 const PASTA_IMAGENS = "fotos/divulgacoes/";
@@ -68,7 +75,7 @@ function limpar(id, d) {
   const item = {
     id: String(id), tipo: d.tipo, titulo,
     exemplo: d.exemplo === true,                                      // exemplo ilustrativo (etiqueta na tela)
-    publico: d.publico === "atividades" && atividades.length ? "atividades" : "geral",
+    publico: d.publico === "clientes" ? "clientes" : d.publico === "atividades" && atividades.length ? "atividades" : "geral",
     atividades,
     ordem: Number.isInteger(d.ordem) ? d.ordem : 999,   // sem "ordem" = vai para o fim
     descricao: texto(d.descricao, LIMITES.descricao),
@@ -107,6 +114,11 @@ function limpar(id, d) {
     if (!Object.keys(redes).length && !item.link) return null;        // grupo sem nenhum canal não serve
   }
   if (d.tipo === "comunicado") item.nivel = d.nivel === "atencao" ? "atencao" : "info";
+  if (d.tipo === "anuncio") {                                           // v0.8.5
+    if (item.publico !== "clientes") return null;
+    item.organizador = texto(d.organizador, LIMITES.organizador);       // quem anuncia
+    if (!item.imagem && !item.descricao) return null;                   // anúncio vazio não aparece
+  }
   return item;
 }
 
@@ -116,20 +128,51 @@ function hojeISO() {
   return `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, "0")}-${String(h.getDate()).padStart(2, "0")}`;
 }
 
-/* ---------- 4. LEITURA PARA O PRESTADOR LOGADO ----------
-   2 consultas (as regras exigem os mesmos filtros):
+/* ---------- 4. LEITURA PARA QUEM ESTÁ LOGADO ----------
+   PRESTADOR — 2 consultas (as regras exigem os mesmos filtros):
      A) situacao == "publicado" e publico == "geral"
      B) situacao == "publicado" e atividades contém uma das MINHAS atividades
-   Resultado: { comunicados, eventos, grupos, minhasAtividades, parcial } */
+     Resultado: { comunicados, eventos, grupos, minhasAtividades, parcial }
+   CLIENTE (v0.8.5) — 1 consulta: situacao == "publicado" e publico == "clientes"
+     Resultado: { avisos, anuncios } */
+function separarPrestador(todos, minhas, parcial) {
+  const hoje = hojeISO();
+  // Atividades do prestador que combinam com cada item (para a etiqueta "Para a sua área")
+  todos.forEach((i) => { i.paraMim = i.publico === "atividades" ? i.atividades.filter((a) => minhas.includes(a)) : []; });
+  const eventos = todos.filter((i) => i.tipo === "evento" && (i.dataFim || i.data) >= hoje)   // já passou = não aparece
+    .sort((a, b) => a.data.localeCompare(b.data) || (a.horaInicio || "").localeCompare(b.horaInicio || "") || a.ordem - b.ordem)
+    .slice(0, LIMITES.porTipo);
+  const grupos = todos.filter((i) => i.tipo === "grupo")
+    .sort((a, b) => a.ordem - b.ordem || a.titulo.localeCompare(b.titulo, "pt-BR")).slice(0, LIMITES.porTipo);
+  const comunicados = todos.filter((i) => i.tipo === "comunicado" && i.publico !== "clientes")
+    .sort((a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "")).slice(0, LIMITES.porTipo);
+  return { comunicados, eventos, grupos, minhasAtividades: minhas, parcial };
+}
+function separarCliente(todos) {
+  const doCliente = todos.filter((i) => i.publico === "clientes");
+  const porOrdem = (a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "");
+  return {
+    avisos: doCliente.filter((i) => i.tipo === "comunicado").sort(porOrdem).slice(0, LIMITES.porTipo),
+    anuncios: doCliente.filter((i) => i.tipo === "anuncio").sort(porOrdem).slice(0, LIMITES.porTipo)
+  };
+}
+
 async function listarParaMim() {
   await pronto;
   if (!auth || !auth.currentUser) return null;
   const eu = await meusDados();
-  if (!eu || eu.tipo !== "prestador") return null;                     // cliente, adm e visitante não usam esta Home
+  if (!eu) return null;
+  const col = collection(db, COLECAO.divulgacoes);
+
+  // Cliente CPF/CNPJ (v0.8.5): avisos e anúncios
+  if (eu.tipo === "cliente-cpf" || eu.tipo === "cliente-cnpj") {
+    const r = await getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", "clientes")));
+    return separarCliente(r.docs.map((d) => limpar(d.id, d.data())).filter(Boolean));
+  }
+  if (eu.tipo !== "prestador") return null;                            // adm e visitante usam a prévia (listarPrevia)
 
   const minhas = [eu.areaAtuacao, ...(eu.especialidades || [])]
     .filter((a) => typeof a === "string" && a.trim()).slice(0, 9);
-  const col = collection(db, COLECAO.divulgacoes);
   const consultas = [getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", "geral")))];
   if (minhas.length) consultas.push(getDocs(query(col, where("situacao", "==", "publicado"), where("atividades", "array-contains-any", minhas))));
 
@@ -141,21 +184,19 @@ async function listarParaMim() {
     if (r.status === "rejected") { parcial = true; console.warn("[S.D] Divulgações: uma consulta falhou:", r.reason && (r.reason.code || r.reason)); return; }
     r.value.docs.forEach((s) => { const item = limpar(s.id, s.data()); if (item) porId.set(item.id, item); });
   });
+  return separarPrestador([...porId.values()], minhas, parcial);
+}
 
-  const hoje = hojeISO();
-  const todos = [...porId.values()];
-  // Atividades do prestador que combinam com cada item (para a etiqueta "Para a sua área")
-  todos.forEach((i) => { i.paraMim = i.publico === "atividades" ? i.atividades.filter((a) => minhas.includes(a)) : []; });
-
-  const eventos = todos.filter((i) => i.tipo === "evento" && (i.dataFim || i.data) >= hoje)   // já passou = não aparece
-    .sort((a, b) => a.data.localeCompare(b.data) || (a.horaInicio || "").localeCompare(b.horaInicio || "") || a.ordem - b.ordem)
-    .slice(0, LIMITES.porTipo);
-  const grupos = todos.filter((i) => i.tipo === "grupo")
-    .sort((a, b) => a.ordem - b.ordem || a.titulo.localeCompare(b.titulo, "pt-BR")).slice(0, LIMITES.porTipo);
-  const comunicados = todos.filter((i) => i.tipo === "comunicado")
-    .sort((a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "")).slice(0, LIMITES.porTipo);
-
-  return { comunicados, eventos, grupos, minhasAtividades: minhas, parcial };
+/* ---------- 4b. PRÉVIA DO ADM ("Ver como", v0.8.5) ----------
+   O adm lê TUDO (regras: ehAdm) e a tela filtra como cada tipo veria.
+   visao: "cliente" → { avisos, anuncios } · "prestador" → igual à Home do prestador
+   (sem área de atuação: mostra o geral e também o de todas as atividades). */
+async function listarPrevia(visao) {
+  await souAdm();
+  const r = await getDocs(query(collection(db, COLECAO.divulgacoes), where("situacao", "==", "publicado")));
+  const todos = r.docs.map((d) => limpar(d.id, d.data())).filter(Boolean);
+  if (visao === "cliente") return separarCliente(todos);
+  return separarPrestador(todos.filter((i) => i.publico !== "clientes"), [], false);
 }
 
 /* ---------- 5. ADM: CONFERIR, SALVAR, MUDAR SITUAÇÃO E APAGAR (v0.8.3) ----------
@@ -166,6 +207,11 @@ function validar(d) {
   const erros = {};
   const e = (campo, msg) => { if (!erros[campo]) erros[campo] = msg; };
   if (!TIPOS.includes(d.tipo)) e("tipo", "Escolha o tipo.");
+  if (!PUBLICOS.includes(d.publico)) e("publico", "Escolha quem vê.");
+  // v0.8.5: anúncio só para clientes; evento e grupo nunca para clientes
+  if (d.tipo === "anuncio" && d.publico !== "clientes") e("publico", "Anúncio aparece só para Clientes.");
+  if ((d.tipo === "evento" || d.tipo === "grupo") && d.publico === "clientes") e("publico", "Evento e grupo são só para prestadores.");
+  if (d.tipo === "anuncio" && !d.imagem && !(d.descricao && String(d.descricao).trim())) e("descricao", "Anúncio precisa de imagem ou texto.");
   if (!["publicado", "suspenso", "encerrado"].includes(d.situacao)) e("situacao", "Escolha a situação.");
   if (!d.titulo || !String(d.titulo).trim()) e("titulo", "Informe o título.");
   CAMPOS_TEXTO.forEach((c) => { if (d[c] && String(d[c]).length > LIMITES[c]) e(c, `Máximo de ${LIMITES[c]} caracteres.`); });
@@ -184,13 +230,15 @@ function validar(d) {
 }
 // Monta o documento só com os campos preenchidos (vazio = não grava o campo)
 function montarDocumento(d) {
-  const r = { tipo: d.tipo, titulo: String(d.titulo).trim(), situacao: d.situacao, publico: d.publico === "atividades" ? "atividades" : "geral" };
+  const r = { tipo: d.tipo, titulo: String(d.titulo).trim(), situacao: d.situacao,
+    publico: d.publico === "clientes" ? "clientes" : d.publico === "atividades" ? "atividades" : "geral" };
   if (r.publico === "atividades") r.atividades = d.atividades.slice(0, LIMITES.atividades);
   const copiar = ["descricao", "imagem", "link", "linkTexto", "data"];
   if (d.tipo === "evento") copiar.push("subtitulo", "dataFim", "horaInicio", "horaFim", "modalidade", "localNome", "cidade", "uf", "endereco",
     "buffetEmpresa", "estacionamento", "estacionamentoObs", "organizador");
   if (d.tipo === "grupo") copiar.push("regiao", "cidade", "uf");
   if (d.tipo === "comunicado") copiar.push("nivel");
+  if (d.tipo === "anuncio") copiar.push("organizador");                 // v0.8.5: quem anuncia
   copiar.forEach((c) => { if (d[c] !== undefined && d[c] !== null && String(d[c]).trim() !== "") r[c] = String(d[c]).trim(); });
   if (d.tipo === "evento" && typeof d.buffet === "boolean") r.buffet = d.buffet;
   if (d.tipo === "evento" && r.buffet !== true) delete r.buffetEmpresa;
@@ -260,7 +308,18 @@ function exemplos() {
     ex({ tipo: "grupo", ordem: 2, publico: "atividades", atividades: ["Elétrica"], titulo: "Exemplo: Comunidade de Eletricistas", cidade: "São Paulo", uf: "SP",
       descricao: "Grupo fictício: dúvidas técnicas, normas e materiais.", redes: { telegram: "https://example.com/telegram", site: "https://example.com/" } }),
     ex({ tipo: "grupo", ordem: 3, publico: "atividades", atividades: ["Marcenaria"], titulo: "Exemplo: Marceneiros e Moveleiros", imagem: "exemplo-grupo-marcenaria.webp",
-      descricao: "Grupo fictício: projetos, ferramentas e fornecedores.", redes: { instagram: "https://example.com/instagram", whatsapp: "https://example.com/whatsapp" } })
+      descricao: "Grupo fictício: projetos, ferramentas e fornecedores.", redes: { instagram: "https://example.com/instagram", whatsapp: "https://example.com/whatsapp" } }),
+    // v0.8.5: Home dos CLIENTES (Avisos da S.D + Anúncios)
+    ex({ tipo: "comunicado", publico: "clientes", nivel: "info", data: diaMais(0), ordem: 0, titulo: "Exemplo: como pedir orçamento",
+      descricao: "Exemplo ilustrativo. Escolha o tipo de serviço, veja os prestadores mais perto e chame pelo WhatsApp. Os orçamentos ficam no seu perfil, em Serviços." }),
+    ex({ tipo: "comunicado", publico: "clientes", nivel: "atencao", data: diaMais(-2), ordem: 1, titulo: "Exemplo: cuidado com pagamentos adiantados",
+      descricao: "Exemplo ilustrativo. A S.D não cobra nem recebe pagamentos. Combine preço e forma de pagamento direto com o prestador." }),
+    ex({ tipo: "anuncio", publico: "clientes", ordem: 0, titulo: "Exemplo: Loja de Materiais Exemplo", organizador: "Loja Exemplo",
+      imagem: "exemplo-marcenaria.webp", link: "https://example.com/", linkTexto: "Ver ofertas",
+      descricao: "Anúncio fictício. 10% de desconto em tintas e ferragens nesta semana." }),
+    ex({ tipo: "anuncio", publico: "clientes", ordem: 1, titulo: "Exemplo: Seguro residencial Exemplo", organizador: "Corretora Exemplo",
+      link: "https://example.com/", linkTexto: "Saiba mais",
+      descricao: "Anúncio fictício. Proteja sua casa ou condomínio com assistência 24 horas." })
   ];
 }
 async function criarExemplos() {
@@ -279,9 +338,9 @@ async function apagarExemplos() {
   return r.size;
 }
 
-/* ---------- 7. EXPORTA PARA AS TELAS (home/home-prestador.js e perfil-adm/divulgacoes-adm.js) ---------- */
+/* ---------- 7. EXPORTA PARA AS TELAS (home/home-prestador.js, home/home.js e perfil-adm/divulgacoes-adm.js) ---------- */
 window.SDDivulgacoes = Object.freeze({
-  listarParaMim, PASTA_IMAGENS, LIMITES,
+  listarParaMim, listarPrevia, PASTA_IMAGENS, LIMITES,
   adm: Object.freeze({ validar, listarTodas, salvar, mudarSituacao, apagar, criarExemplos, apagarExemplos })
 });
 document.dispatchEvent(new CustomEvent("sd:divulgacoes-pronto"));

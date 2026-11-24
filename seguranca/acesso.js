@@ -45,11 +45,8 @@
     "perfil-prestador":    ["prestador", "adm"],
     // Perfil do prestador visto pelo CLIENTE (só dados públicos, ?visao=cliente)
     "perfil-prestador-publico": ["cliente-cpf", "cliente-cnpj", "adm"],
-    // Pedir orçamento e avaliações
-    "solicitacao": ["cliente-cpf", "cliente-cnpj", "adm"],
-    "avaliacoes":  LOGADOS,
-    // Lista de todos os botões liga/desliga (consulta) — só adm
-    "interruptores": ["adm"]
+    // Avaliações (v0.8.5: páginas solicitacao/ e interruptores/ apagadas)
+    "avaliacoes":  LOGADOS
   };
 
   /* ---------- 3. FUNÇÕES ---------- */

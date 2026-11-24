@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.4 (organizadas por ÁREA · 23/11/2026 · listas em 1 cálculo · vitrine = cópia do perfil salvo)
+// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: avisos e anúncios para clientes)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -12,7 +12,7 @@ rules_version = '2';
 //   25 Vitrine_Prestador: Ler e Publicar    30 Reserva_Documento: Criar e Excluir
 //   40 Config_Site: Ler e Alterar (adm)     50 Contatos_Orçamentos (v0.8.0)
 //   60 Avisos: sino (v0.8.0)                70 Fotos: compactadas, sem Storage (v0.8.0)
-//   80 Divulgacoes_Home: eventos, grupos e comunicados da Home do prestador (v0.8.2)
+//   80 Divulgacoes_Home: Home do prestador (v0.8.2) + avisos e anúncios da Home dos clientes (v0.8.5)
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -481,14 +481,16 @@ service cloud.firestore {
       }
     }
 
-    // ===== 80 · Divulgacoes_Home: Home do prestador (v0.8.2) =====
+    // ===== 80 · Divulgacoes_Home: Home do prestador (v0.8.2) e dos clientes (v0.8.5) =====
     // Eventos, grupos/comunidades e comunicados da S.D. Só o ADM cadastra, edita, publica e apaga
     // (aba "Divulgações" do Perfil do adm, v0.8.3). exemplo: true = exemplo ilustrativo (apagar antes do lançamento).
     // Lê: o adm (tudo) e o PRESTADOR (só "publicado" e só o que é do público dele):
     //   publico == 'geral'      → todos os prestadores
     //   publico == 'atividades' → só quem tem uma das "atividades" como área de atuação ou atividade secundária
     //                             (nomes iguais aos da lista única de serviços: configuracoes/config.js → servicos)
-    // Clientes e visitantes NÃO leem. Não guarda nada do prestador (nem quem viu).
+    // CLIENTE CPF/CNPJ (v0.8.5) lê só "publicado" com publico == 'clientes':
+    //   tipo 'comunicado' → Avisos da S.D · tipo 'anuncio' → Anúncios (sempre 'clientes'; anunciante em "organizador")
+    // Evento e grupo NUNCA são 'clientes'. Visitantes NÃO leem. Não guarda quem viu.
     // ATENÇÃO: o Firebase Console ignora estas regras (é acesso de dono). Ao cadastrar pelo console,
     // siga o modelo de firebase/README.md; a tela (firebase/divulgacoes.js) também confere cada campo.
     match /divulgacoes/{id} {
@@ -496,7 +498,7 @@ service cloud.firestore {
       // false = PLANO B, só se a Agenda der "permissão negada" no teste real: qualquer prestador lê o que
       // está publicado e a tela filtra pela área (conteúdo é divulgação, não é dado pessoal).
       function SEGMENTAR_PUBLICO() { return true; }
-      allow read: if emailOk() && (leituraPrestador(resource.data) || ehAdm());
+      allow read: if emailOk() && (leituraPrestador(resource.data) || leituraCliente(resource.data) || ehAdm());
       allow create, update: if ehAdm() && divulgacaoOk(novo());
       allow delete: if ehAdm();
       function minhasAtividades() {
@@ -506,6 +508,9 @@ service cloud.firestore {
       function leituraPrestador(d) {
         return tipoLogado() == 'prestador' && d.situacao == 'publicado'
           && (d.publico == 'geral' || (d.publico == 'atividades' && (!SEGMENTAR_PUBLICO() || d.atividades.hasAny(minhasAtividades()))));
+      }
+      function leituraCliente(d) {
+        return d.situacao == 'publicado' && d.publico == 'clientes' && tipoLogado() in ['cliente-cpf', 'cliente-cnpj'];
       }
       // Campos e limites ← MUDE AQUI (iguais a firebase/divulgacoes.js → LIMITES)
       function linkOk(d, k, c) { return !(c in k) || (d[c] is string && d[c].size() <= 500 && d[c].matches('https://[^\\s<>"]+')); }
@@ -528,9 +533,11 @@ service cloud.firestore {
                         'subtitulo', 'data', 'dataFim', 'horaInicio', 'horaFim', 'modalidade', 'localNome', 'cidade', 'uf', 'endereco',
                         'buffet', 'buffetEmpresa', 'estacionamento', 'estacionamentoObs', 'organizador', 'regiao', 'redes', 'nivel',
                         'exemplo', 'criadoEm', 'atualizadoEm'])
-          && d.tipo in ['evento', 'grupo', 'comunicado'] && d.situacao in ['publicado', 'suspenso', 'encerrado']
+          && d.tipo in ['evento', 'grupo', 'comunicado', 'anuncio'] && d.situacao in ['publicado', 'suspenso', 'encerrado']
           && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 120
-          && (d.publico == 'geral' || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
+          && (d.publico == 'geral' || d.publico == 'clientes' || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
+          && (d.tipo != 'anuncio' || (d.publico == 'clientes' && ('imagem' in k || 'descricao' in k)))
+          && (!(d.tipo in ['evento', 'grupo']) || d.publico != 'clientes')
           && lista(d, k, 'atividades', 10, 60) && (!('ordem' in k) || d.ordem is int)
           && texto(d, k, 'descricao', 1500) && texto(d, k, 'linkTexto', 40) && texto(d, k, 'subtitulo', 160)
           && texto(d, k, 'localNome', 120) && texto(d, k, 'cidade', 80) && digitos(d, k, 'uf', '([A-Z]{2})?') && texto(d, k, 'endereco', 200)

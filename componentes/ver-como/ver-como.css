@@ -1,0 +1,18 @@
+/* =====================================================================
+   S.D — "VER COMO" DO ADM (componentes/ver-como/ver-como.css) · v0.8.5
+   Barra discreta no topo da página. Só o adm vê.
+   ===================================================================== */
+.ver-como {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem;
+  margin: 0 0 1.25rem; padding: .625rem .875rem;
+  background: var(--cor-info-fundo); color: var(--cor-info);
+  border: 1px dashed var(--cor-info); border-radius: var(--raio-cartao);
+}
+.ver-como-rotulo { font-weight: 700; font-size: .875rem; }
+.ver-como-opcoes { display: flex; flex-wrap: wrap; gap: .375rem; }
+.ver-como-opcao[aria-pressed="true"] { background: var(--cor-vinho); color: #FFFFFF; border-color: var(--cor-vinho); }
+.ver-como-nota { flex-basis: 100%; font-size: .8125rem; }
+@media (max-width: 47.99rem) {
+  .ver-como { padding: .5rem; }
+  .ver-como-opcao { padding: .375rem .5rem; font-size: .8125rem; }
+}

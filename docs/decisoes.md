@@ -96,7 +96,7 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 - **E-mail do Suporte:** matteo.bormolini228@al.unieduk.com.br (um só para tudo, por enquanto).
 - **Quadro do prestador:** nova etapa **A orçar**; no celular as etapas abrem/fecham (sanfona); nova área **Encerrados** (sem serviço), apagada 1 ano depois, com lixeira. Substitui "Arquivados após 30 dias".
 - **Padrão:** todo botão de **excluir ou editar** pede confirmação ("Tem certeza?").
-- **Padrão:** botões liga/desliga **cinza escuro = desligado**, **vinho = ligado**; todos cadastrados em `configuracoes/interruptores.js` e visíveis na página `interruptores/` (adm).
+- **Padrão:** botões liga/desliga **cinza escuro = desligado**, **vinho = ligado**; todos cadastrados em `configuracoes/interruptores.js` e visíveis na aba Administração do Perfil do adm (v0.8.5).
 - **Botão Localização** na linha das abas do perfil, à direita (CPF, CNPJ e prestador).
 - **Botão Mostrar meus contatos** (padrão **ligado**) no perfil do prestador: controla WhatsApp, Ligar, telefone e e-mail na visão do cliente e na busca. Clientes CPF/CNPJ **não** têm este botão (o contato deles nunca é mostrado; quem libera contato é o prestador).
 - **Home do prestador:** decidir no fim do Ciclo 3.

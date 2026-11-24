@@ -1,6 +1,6 @@
 {
   "descricao": "Regras de acesso da S.D para o SERVIDOR. Manter igual a seguranca/acesso.js (versão da tela).",
-  "versao": 3,
+  "versao": 4,
   "regra_padrao": "negar",
   "perfis": [
     "visitante",
@@ -69,18 +69,10 @@
       "cliente-cnpj",
       "adm"
     ],
-    "solicitacao": [
-      "cliente-cpf",
-      "cliente-cnpj",
-      "adm"
-    ],
     "avaliacoes": [
       "cliente-cpf",
       "cliente-cnpj",
       "prestador",
-      "adm"
-    ],
-    "interruptores": [
       "adm"
     ]
   },

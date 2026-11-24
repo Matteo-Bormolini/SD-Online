@@ -95,9 +95,7 @@ Duas semanas por Ciclo é a meta, não uma obrigação.
 | [`home/`](home/) | Início e Sobre nós |
 | [`login-cadastro/`](login-cadastro/) | Entrar e criar conta |
 | [`perfil-cliente-cpf/`](perfil-cliente-cpf/) · [`perfil-cliente-cnpj/`](perfil-cliente-cnpj/) · [`perfil-prestador/`](perfil-prestador/) · [`perfil-adm/`](perfil-adm/) | Perfis |
-| [`interruptores/`](interruptores/) | Consulta de todos os botões liga/desliga (adm) |
 | [`localizar-prestador/`](localizar-prestador/) | Cliente encontra prestadores |
-| [`solicitacao/`](solicitacao/) | Pedido de orçamento |
 | [`localizar-condominios/`](localizar-condominios/) | "Seus Serviços" do prestador |
 | [`avaliacoes/`](avaliacoes/) | Avaliações |
 | [`suporte/`](suporte/) | Dúvidas, sugestões e assistente |

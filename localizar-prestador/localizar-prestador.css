@@ -13,10 +13,21 @@
 .localizar-subtitulo:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 4px; border-radius: 4px; }
 
 /* ---------- 2. CAIXAS DOS TIPOS DE SERVIÇO ---------- */
+/* v0.8.5: 3 colunas; no computador, mais espaço entre as caixas */
 .setores {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .75rem;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem 1.25rem;
   list-style: none; margin: 0; padding: 0;
 }
+.setores[hidden] { display: none; }
+/* Tipo escolhido (lista recolhida) */
+.setor-escolhido { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+.setor-escolhido[hidden] { display: none; }
+.setor-chip {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .875rem; font-weight: 700;
+  color: #FFFFFF; background: var(--cor-vinho); border-radius: 999px;
+}
+.setor-chip svg { width: 1.25rem; height: 1.25rem; }
+.setor-escolhido + .setores:not([hidden]) { margin-top: .75rem; }
 .setor {
   display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: .75rem; align-items: center;
   width: 100%; height: 100%; min-height: 4.5rem; padding: .875rem 1rem; text-align: left;
@@ -114,9 +125,12 @@
 /* ---------- 6. CELULAR ---------- */
 @media (max-width: 35.99rem) {
   .localizar-topo h1 { font-size: 1.5rem; }
-  .setores { grid-template-columns: 1fr 1fr; gap: .5rem; }
-  .setor { grid-template-columns: 1fr; grid-template-rows: auto; row-gap: .25rem; padding: .75rem; }
-  .setor svg { grid-row: auto; width: 1.5rem; height: 1.5rem; }
+  /* v0.8.5: celular compacto — 3 colunas, só o nome, palavra longa quebra com hífen */
+  .setores { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .375rem; }
+  .setor { grid-template-columns: 1fr; grid-template-rows: auto; row-gap: .25rem; min-height: 0; padding: .5rem .375rem;
+           justify-items: center; text-align: center; }
+  .setor svg { grid-row: auto; width: 1.375rem; height: 1.375rem; }
+  .setor strong { font-size: .8125rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
   .setor span { display: none; }                      /* só o nome no celular */
 }
 
