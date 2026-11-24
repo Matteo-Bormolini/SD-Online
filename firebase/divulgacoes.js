@@ -168,8 +168,11 @@ async function listarParaMim() {
 
   // Cliente CPF/CNPJ (v0.8.5): avisos e anúncios
   if (eu.tipo === "cliente-cpf" || eu.tipo === "cliente-cnpj") {
-    const rs = await Promise.all(["clientes", "todos"].map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p)))));
-    return separarCliente(rs.flatMap((r) => r.docs.map((d) => limpar(d.id, d.data()))).filter(Boolean));
+    // Uma consulta que falhar não esconde a outra (igual à Home do prestador)
+    const rs = await Promise.allSettled(["clientes", "todos"].map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p)))));
+    if (rs.every((r) => r.status === "rejected")) throw rs[0].reason;
+    rs.filter((r) => r.status === "rejected").forEach((r) => console.warn("[S.D] Comunicados: uma consulta falhou:", r.reason && (r.reason.code || r.reason)));
+    return separarCliente(rs.filter((r) => r.status === "fulfilled").flatMap((r) => r.value.docs.map((d) => limpar(d.id, d.data()))).filter(Boolean));
   }
   if (eu.tipo !== "prestador") return null;                            // adm e visitante usam a prévia (listarPrevia)
 

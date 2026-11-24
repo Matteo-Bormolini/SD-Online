@@ -21,14 +21,16 @@
 .home-prestador .hp-setas { display: flex; gap: .5rem; flex: none; }
 /* Comunicados: discretos (não competem com a Agenda) */
 .home-prestador .hp-secao-comunicados { margin-top: 2rem; }
-.home-prestador .hp-secao-comunicados .hp-secao-titulo { font-size: 1.0625rem; color: var(--cor-texto-secundario); }
+/* v0.8.5: todos os títulos de seção no mesmo tamanho (padrão único nas Homes) */
 
 /* ---------- 2. FAIXA ROLANTE (só os cartões rolam para o lado) ---------- */
 .home-prestador .hp-faixa {
   display: grid; grid-auto-flow: column; grid-auto-columns: 85%;
   gap: 1rem; list-style: none; margin: 0; padding: .25rem .25rem 1rem;
-  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+  scrollbar-width: none;                                  /* v0.8.5: sem barra — rola pelas setas, toque ou teclado */
 }
+.home-prestador .hp-faixa::-webkit-scrollbar { display: none; }
 .home-prestador .hp-faixa > li { scroll-snap-align: start; min-width: 0; position: relative; }
 .home-prestador .hp-faixa:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: var(--raio-cartao); }
 [data-tema="escuro"] .home-prestador .hp-faixa:focus-visible { outline-color: #FFFFFF; }
@@ -131,3 +133,9 @@
   border: 1px dashed var(--cor-divisoria); border-radius: var(--raio-cartao); font-size: .9375rem; }
 .home-prestador .hp-tag-anuncio { color: var(--cor-atencao); background: var(--cor-atencao-fundo); border-color: var(--cor-atencao); text-transform: uppercase; letter-spacing: .04em; }
 .home-prestador .hp-anuncio .hp-acao { margin-top: auto; align-self: flex-start; }
+.home-prestador .hp-data { margin: -.125rem 0 0; font-size: .75rem; color: var(--cor-texto-secundario); }
+.home-prestador .hp-capa-anuncio {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem;
+  background: var(--cor-superficie-2); color: var(--cor-atencao); font-weight: 700; text-align: center; padding: 1rem;
+}
+.home-prestador .hp-capa-anuncio svg { width: 2.5rem; height: 2.5rem; }

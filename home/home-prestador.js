@@ -50,6 +50,7 @@
     pessoas:    '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 20a6.5 6.5 0 0 0-2.5-5.1"/>',
     aviso:      '<path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5M12 18h.01"/>',
     info:       '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    megafone:   '<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1Z"/><path d="M15 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
     // Redes: ícones simples e genéricos (o nome da rede sempre aparece escrito ao lado)
     whatsapp:   '<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.4A8.4 8.4 0 1 1 21 11.5Z"/>',
     telegram:   '<path d="m21 4-18 7 6 2 2 6 3-4 5 4 2-15Z"/><path d="m9 13 8-6"/>',
@@ -109,8 +110,8 @@
       <li><article class="hp-cartao hp-comunicado${c.nivel === "atencao" ? " hp-atencao" : ""}" aria-labelledby="${PREF}-t-${esc(c.id)}">
         <p class="hp-linha-topo">
           <span class="hp-nivel">${icone(c.nivel === "atencao" ? "aviso" : "info")}${c.nivel === "atencao" ? "Importante" : "Comunicado"}</span>${c.exemplo ? ' <span class="hp-tag hp-tag-exemplo">Exemplo</span>' : ""}
-          ${c.data ? `<time datetime="${esc(c.data)}">${esc(fmt(c.data, { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, ""))}</time>` : ""}
         </p>
+        ${c.data ? `<p class="hp-data"><time datetime="${esc(c.data)}">${esc(fmt(c.data, { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, ""))}</time></p>` : ""}
         <h3 id="${PREF}-t-${esc(c.id)}">${esc(c.titulo)}</h3>
         ${c.descricao ? `<p class="hp-texto">${esc(resumo(c.descricao))}</p>` : ""}
         ${longo ? `<button type="button" class="btn btn-pequeno" data-detalhe="${esc(c.id)}">Ler mais<span class="visualmente-oculto">: ${esc(c.titulo)}</span></button>` : ""}
@@ -159,7 +160,9 @@
 
   // v0.8.5: anúncio (Home dos clientes) — sempre com a etiqueta "Anúncio"
   function cartaoAnuncio(a) {
-    const capa = a.imagem ? `<img class="hp-capa" src="${esc(srcImagem(a.imagem))}" alt="" loading="lazy" decoding="async">` : "";
+    // Sem imagem: capa padrão do mesmo tamanho (cartões iguais lado a lado)
+    const capa = a.imagem ? `<img class="hp-capa" src="${esc(srcImagem(a.imagem))}" alt="" loading="lazy" decoding="async">`
+      : `<div class="hp-capa hp-capa-anuncio" aria-hidden="true">${icone("megafone")}<span>${esc(a.organizador || "Anúncio")}</span></div>`;
     return `
       <li><article class="hp-cartao hp-anuncio" aria-labelledby="${PREF}-t-${esc(a.id)}">
         ${capa}
