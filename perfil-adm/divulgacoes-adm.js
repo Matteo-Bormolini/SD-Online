@@ -2,7 +2,7 @@
    S.D — ABA "DIVULGAÇÕES" DO ADM (perfil-adm/divulgacoes-adm.js) · v0.8.3 / v0.8.5
    Cadastra, edita, publica/suspende/encerra e apaga o que aparece na
    Home do prestador (eventos, grupos e comunicados) e, desde a v0.8.5,
-   na Home dos clientes (Avisos da S.D = comunicado para "Clientes";
+   na Home dos clientes (Comunicados da S.D = comunicado para "Clientes" ou "Todos os usuários";
    Anúncios = tipo "Anúncio", sempre para "Clientes"). Tudo numa aba só,
    um bloco embaixo do outro:
      1. Exemplos ilustrativos (criar / apagar — apagar antes do lançamento)
@@ -19,8 +19,8 @@
   if (!raiz || !SD) return;
 
   /* ---------- 1. TEXTOS E OPÇÕES ← MUDE AQUI ---------- */
-  const TIPO = { evento: "Evento", grupo: "Grupo / comunidade", comunicado: "Comunicado / aviso", anuncio: "Anúncio (só clientes)" };
-  const PUBLICO = { geral: "Todos os prestadores", atividades: "Prestadores de algumas atividades", clientes: "Clientes (CPF e CNPJ)" };
+  const TIPO = { evento: "Evento", grupo: "Grupo / comunidade", comunicado: "Comunicado", anuncio: "Anúncio (só clientes)" };
+  const PUBLICO = { todos: "Todos os usuários (clientes e prestadores)", geral: "Todos os prestadores", atividades: "Prestadores de algumas atividades", clientes: "Clientes (CPF e CNPJ)" };
   const SITUACAO = { publicado: "Publicado", suspenso: "Suspenso", encerrado: "Encerrado" };
   const REDES = { whatsapp: "WhatsApp", telegram: "Telegram", instagram: "Instagram", facebook: "Facebook", youtube: "YouTube", linkedin: "LinkedIn", site: "Site" };
   // v0.8.5: imagem menor = Home mais leve (cartão usa ~400 px; pop-up até 960 px). Limite do banco: 300.000
@@ -45,7 +45,7 @@
     raiz.innerHTML = `
       <section class="dv-bloco" aria-labelledby="dv-ex-titulo">
         <h3 id="dv-ex-titulo">Exemplos ilustrativos</h3>
-        <p class="nota">Cria 13 divulgações FICTÍCIAS (marcadas "Exemplo"): 9 para a Home do prestador e 4 para a Home dos clientes (avisos e anúncios). <strong>Apague antes do lançamento.</strong></p>
+        <p class="nota">Cria 13 divulgações FICTÍCIAS (marcadas "Exemplo"): 9 para a Home do prestador e 4 para a Home dos clientes (comunicados e anúncios). <strong>Apague antes do lançamento.</strong></p>
         <div class="dv-acoes">
           <button type="button" class="btn" id="dv-criar-exemplos">Criar exemplos ilustrativos</button>
           <button type="button" class="btn" id="dv-apagar-exemplos">Apagar exemplos</button>
@@ -62,6 +62,7 @@
             ${texto("titulo", 'Título <span class="obrigatorio">*</span>', 120, "largura-total")}
             <fieldset class="grupo largura-total" id="dv-publico">
               <legend>Quem vê</legend>
+              <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-todos" value="todos"><label for="dv-publico-todos">Todos os usuários (clientes e prestadores) — só comunicado</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-geral" value="geral" checked><label for="dv-publico-geral">Todos os prestadores</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-ativ" value="atividades"><label for="dv-publico-ativ">Só algumas atividades (área de atuação ou atividade secundária)</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-clientes" value="clientes"><label for="dv-publico-clientes">Clientes CPF e CNPJ (Home dos clientes)</label></div>
@@ -170,7 +171,9 @@
     const tipo = $("#dv-tipo").value;
     raiz.querySelectorAll("[data-so]").forEach((f) => { f.hidden = f.dataset.so !== tipo; });
     // v0.8.5: anúncio = só Clientes · evento e grupo = só prestadores · comunicado = qualquer público
-    const geral = $("#dv-publico-geral"), ativ = $("#dv-publico-ativ"), cli = $("#dv-publico-clientes");
+    const geral = $("#dv-publico-geral"), ativ = $("#dv-publico-ativ"), cli = $("#dv-publico-clientes"), todos = $("#dv-publico-todos");
+    todos.disabled = tipo !== "comunicado";                  // "Todos os usuários" = só comunicado
+    if (todos.disabled && todos.checked) geral.checked = true;
     geral.disabled = ativ.disabled = tipo === "anuncio";
     cli.disabled = tipo === "evento" || tipo === "grupo";
     if (tipo === "anuncio") cli.checked = true;
@@ -184,7 +187,7 @@
     const tipo = val("tipo");
     const d = {
       tipo, situacao: val("situacao"), titulo: val("titulo"),
-      publico: $("#dv-publico-clientes").checked ? "clientes" : $("#dv-publico-ativ").checked ? "atividades" : "geral",
+      publico: $("#dv-publico-todos").checked ? "todos" : $("#dv-publico-clientes").checked ? "clientes" : $("#dv-publico-ativ").checked ? "atividades" : "geral",
       atividades: [...raiz.querySelectorAll("#dv-lista-atividades input:checked")].map((c) => c.value),
       descricao: val("descricao"), data: val("data"), link: val("link"), linkTexto: val("linkTexto"),
       imagem: imagemDados || val("imagemArquivo")
@@ -229,7 +232,8 @@
     if (item.tipo === "grupo") { set("grupoCidade", item.cidade); set("grupoUf", item.uf); Object.keys(REDES).forEach((k) => set("rede-" + k, (item.redes || {})[k])); }
     $("#dv-publico-ativ").checked = item.publico === "atividades";
     $("#dv-publico-clientes").checked = item.publico === "clientes";
-    $("#dv-publico-geral").checked = item.publico !== "atividades" && item.publico !== "clientes";
+    $("#dv-publico-todos").checked = item.publico === "todos";
+    $("#dv-publico-geral").checked = !["atividades", "clientes", "todos"].includes(item.publico);
     if (item.tipo === "anuncio") set("anunciante", item.organizador);
     raiz.querySelectorAll("#dv-lista-atividades input").forEach((c) => { c.checked = (item.atividades || []).includes(c.value); });
     if (item.imagem && String(item.imagem).startsWith("data:")) { imagemDados = item.imagem; mostrarImagem(item.imagem); }
@@ -327,7 +331,7 @@
     $("#dv-apagar-exemplos").disabled = !qtdEx;
     if (!itens.length) { caixa.innerHTML = '<p class="nota">Nada cadastrado ainda.</p>'; atualizarAltura(); return; }
     const ordem = { publicado: 0, suspenso: 1, encerrado: 2 };
-    caixa.innerHTML = Object.entries({ evento: "Eventos", grupo: "Grupos e comunidades", comunicado: "Comunicados e avisos", anuncio: "Anúncios (clientes)" }).map(([t, nome]) => {
+    caixa.innerHTML = Object.entries({ evento: "Eventos", grupo: "Grupos e comunidades", comunicado: "Comunicados", anuncio: "Anúncios (clientes)" }).map(([t, nome]) => {
       const lista = itens.filter((i) => i.tipo === t)
         .sort((a, b) => (ordem[a.situacao] ?? 3) - (ordem[b.situacao] ?? 3) || String(a.data || "").localeCompare(String(b.data || "")) || String(a.titulo).localeCompare(String(b.titulo), "pt-BR"));
       return lista.length ? `<h4>${nome} (${lista.length})</h4><ul class="dv-itens">${lista.map(linha).join("")}</ul>` : "";
@@ -394,7 +398,7 @@
         } else {
           const nome = SITUACAO[acao].toLowerCase();
           const efeito = acao === "publicado" ? "vai aparecer" : "deixa de aparecer";
-          if (!(await confirmar({ titulo: `Mudar para "${nome}"?`, texto: `"${item.titulo}" ${efeito} na Home ${item.publico === "clientes" ? "dos clientes" : "dos prestadores"}.`, sim: "Sim, mudar", tipo: "editar" }))) return;
+          if (!(await confirmar({ titulo: `Mudar para "${nome}"?`, texto: `"${item.titulo}" ${efeito} na Home ${item.publico === "clientes" ? "dos clientes" : item.publico === "todos" ? "de todos os usuários" : "dos prestadores"}.`, sim: "Sim, mudar", tipo: "editar" }))) return;
           await modulo.adm.mudarSituacao(item.id, acao);
         }
         await carregarLista();

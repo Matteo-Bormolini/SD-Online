@@ -5,10 +5,10 @@
        prestadores, fotos ou avaliações.
      • Logado (data-logado="sim"): a parte de convite é REMOVIDA; aparecem
        os tipos de serviço e os prestadores reais perto do cliente.
-     • Cliente (v0.8.5): logo depois do "Olá" vêm os "Avisos da S.D" e,
+     • Cliente (v0.8.5): logo depois do "Olá" vêm os "Comunicados da S.D" (para clientes ou para todos) e,
        embaixo, os "Anúncios" (etiqueta "Anúncio" sempre). Ordem:
        Olá → Avisos → Anúncios → Serviços → Prestadores perto de você.
-     • Adm (v0.8.5): vê TUDO — o que os clientes veem (avisos e anúncios) e o
+     • Adm (v0.8.5): vê TUDO — o que os clientes veem (comunicados e anúncios) e o
        que os prestadores veem (comunicados, eventos e grupos). Barra "Ver como"
        no topo (componentes/ver-como) mostra a página como Visitante, Cliente
        CPF, Cliente CNPJ ou Prestador.
@@ -107,7 +107,7 @@
       </section>
 
       ${ehAdm ? '<h2 class="hc-grupo-titulo">O que os clientes veem</h2>' : ""}
-      ${ehCliente || ehAdm ? '<div class="hc-divulgacoes" id="hc-divulgacoes" role="region" aria-label="Avisos e anúncios"></div>' : ""}
+      ${ehCliente || ehAdm ? '<div class="hc-divulgacoes" id="hc-divulgacoes" role="region" aria-label="Comunicados e anúncios"></div>' : ""}
       ${ehAdm ? '<h2 class="hc-grupo-titulo">O que os prestadores veem</h2><div id="hc-prestadores-veem"></div>' : ""}
 
       <section class="secao" id="servicos" aria-labelledby="servicos-titulo">
@@ -159,7 +159,7 @@
   function cartaoAviso(a) {
     const data = a.data ? a.data.split("-").reverse().join("/") : "";
     return `<li><article class="hc-aviso${a.nivel === "atencao" ? " hc-atencao" : ""}" aria-labelledby="hc-t-${esc(a.id)}">
-      <p class="hc-linha-topo"><span class="hc-nivel">${a.nivel === "atencao" ? "Importante" : "Aviso"}</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}${data ? ` <time datetime="${esc(a.data)}">${esc(data)}</time>` : ""}</p>
+      <p class="hc-linha-topo"><span class="hc-nivel">${a.nivel === "atencao" ? "Importante" : "Comunicado"}</span>${a.exemplo ? ' <span class="hc-tag hc-tag-exemplo">Exemplo</span>' : ""}${data ? ` <time datetime="${esc(a.data)}">${esc(data)}</time>` : ""}</p>
       <h3 id="hc-t-${esc(a.id)}">${esc(a.titulo)}</h3>
       ${a.descricao ? `<div class="hc-texto">${paragrafos(a.descricao)}</div>` : ""}
       ${a.link ? linkExterno(a.link, a.linkTexto || "Saiba mais") : ""}
@@ -178,7 +178,7 @@
     </article></li>`;
   }
 
-  // A área "Avisos da S.D" SEMPRE aparece (vazia: mensagem). "Anúncios" só aparece quando houver.
+  // A área "Comunicados da S.D" SEMPRE aparece (vazia: mensagem). "Anúncios" só aparece quando houver.
   // v0.8.5: mostra na hora a última leitura guardada e depois atualiza (SDHomePrestador.cache).
   async function carregarDivulgacoesCliente(caixa, previa) {
     if (!caixa) return;
@@ -192,10 +192,10 @@
       const { avisos = [], anuncios = [] } = dados || {};
       const corpoAvisos = avisos.length
         ? `<ul class="hc-avisos">${avisos.map(cartaoAviso).join("")}</ul>`
-        : `<p class="hc-vazio">${aviso ? esc(aviso) + ' <button type="button" class="btn btn-pequeno" data-recarregar-avisos>Tentar de novo</button>' : "Nenhum aviso no momento."}</p>`;
+        : `<p class="hc-vazio">${aviso ? esc(aviso) + ' <button type="button" class="btn btn-pequeno" data-recarregar-avisos>Tentar de novo</button>' : "Nenhum comunicado no momento."}</p>`;
       caixa.innerHTML =
         `<section class="secao hc-secao" aria-labelledby="hc-avisos-titulo">
-          <h2 id="hc-avisos-titulo" class="secao-titulo">Avisos da S.D</h2>${corpoAvisos}</section>` +
+          <h2 id="hc-avisos-titulo" class="secao-titulo">Comunicados da S.D</h2>${corpoAvisos}</section>` +
         (anuncios.length ? `<section class="secao hc-secao" aria-labelledby="hc-anuncios-titulo">
           <h2 id="hc-anuncios-titulo" class="secao-titulo">Anúncios</h2>
           <ul class="hc-anuncios">${anuncios.map(cartaoAnuncio).join("")}</ul></section>` : "");
@@ -205,14 +205,14 @@
     };
     const salvo = C ? C.ler(chave) : null;
     desenhar(salvo || {}, salvo ? "" : null);
-    if (!salvo) caixa.querySelector(".hc-vazio").textContent = "Carregando avisos…";
+    if (!salvo) caixa.querySelector(".hc-vazio").textContent = "Carregando comunicados…";
     let dados = null;
     try {
       const M = await esperarDivulgacoes();
       dados = previa ? await M.listarPrevia("cliente") : await M.listarParaMim();
     } catch (e) {
       console.warn("[S.D] Avisos e anúncios:", e && (e.code || e.message || e));
-      if (!salvo) { mostrado = ""; desenhar({}, "Não foi possível carregar os avisos agora."); }
+      if (!salvo) { mostrado = ""; desenhar({}, "Não foi possível carregar os comunicados agora."); }
       return;
     }
     if (!dados) return;

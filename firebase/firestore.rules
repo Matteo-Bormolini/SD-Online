@@ -1,5 +1,5 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: avisos e anúncios para clientes · área 40: comando Mostrar destaques)
+// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: comunicados para todos, avisos e anúncios para clientes · área 40: comando Mostrar destaques)
 // Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
 // Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
 // e, ao editar, SÓ os campos que mudaram.
@@ -489,8 +489,9 @@ service cloud.firestore {
     //   publico == 'geral'      → todos os prestadores
     //   publico == 'atividades' → só quem tem uma das "atividades" como área de atuação ou atividade secundária
     //                             (nomes iguais aos da lista única de serviços: configuracoes/config.js → servicos)
-    // CLIENTE CPF/CNPJ (v0.8.5) lê só "publicado" com publico == 'clientes':
-    //   tipo 'comunicado' → Avisos da S.D · tipo 'anuncio' → Anúncios (sempre 'clientes'; anunciante em "organizador")
+    // CLIENTE CPF/CNPJ (v0.8.5) lê só "publicado" com publico == 'clientes' ou 'todos':
+    //   tipo 'comunicado' → Comunicados da S.D · tipo 'anuncio' → Anúncios (sempre 'clientes'; anunciante em "organizador")
+    // publico == 'todos' (v0.8.5) → clientes E prestadores; só para comunicado (ex.: site fora do ar).
     // Evento e grupo NUNCA são 'clientes'. Visitantes NÃO leem. Não guarda quem viu.
     // ATENÇÃO: o Firebase Console ignora estas regras (é acesso de dono). Ao cadastrar pelo console,
     // siga o modelo de firebase/README.md; a tela (firebase/divulgacoes.js) também confere cada campo.
@@ -508,10 +509,10 @@ service cloud.firestore {
       }
       function leituraPrestador(d) {
         return tipoLogado() == 'prestador' && d.situacao == 'publicado'
-          && (d.publico == 'geral' || (d.publico == 'atividades' && (!SEGMENTAR_PUBLICO() || d.atividades.hasAny(minhasAtividades()))));
+          && (d.publico == 'geral' || d.publico == 'todos' || (d.publico == 'atividades' && (!SEGMENTAR_PUBLICO() || d.atividades.hasAny(minhasAtividades()))));
       }
       function leituraCliente(d) {
-        return d.situacao == 'publicado' && d.publico == 'clientes' && tipoLogado() in ['cliente-cpf', 'cliente-cnpj'];
+        return d.situacao == 'publicado' && (d.publico == 'clientes' || d.publico == 'todos') && tipoLogado() in ['cliente-cpf', 'cliente-cnpj'];
       }
       // Campos e limites ← MUDE AQUI (iguais a firebase/divulgacoes.js → LIMITES)
       function linkOk(d, k, c) { return !(c in k) || (d[c] is string && d[c].size() <= 500 && d[c].matches('https://[^\\s<>"]+')); }
@@ -536,7 +537,8 @@ service cloud.firestore {
                         'exemplo', 'criadoEm', 'atualizadoEm'])
           && d.tipo in ['evento', 'grupo', 'comunicado', 'anuncio'] && d.situacao in ['publicado', 'suspenso', 'encerrado']
           && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 120
-          && (d.publico == 'geral' || d.publico == 'clientes' || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
+          && (d.publico in ['geral', 'clientes', 'todos'] || (d.publico == 'atividades' && d.atividades is list && d.atividades.size() > 0))
+          && (d.publico != 'todos' || d.tipo == 'comunicado')
           && (d.tipo != 'anuncio' || (d.publico == 'clientes' && ('imagem' in k || 'descricao' in k)))
           && (!(d.tipo in ['evento', 'grupo']) || d.publico != 'clientes')
           && lista(d, k, 'atividades', 10, 60) && (!('ordem' in k) || d.ordem is int)

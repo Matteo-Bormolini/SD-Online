@@ -88,6 +88,7 @@
       const extra = lista.length > 1 ? ` +${lista.length - 1}` : "";
       return `<span class="hp-tag hp-tag-area" title="${esc(lista.join(", "))}"><span class="visualmente-oculto">Público: </span>Para a sua área · ${esc(lista[0])}<span aria-hidden="true">${extra}</span>${extra ? `<span class="visualmente-oculto"> e também ${esc(lista.slice(1).join(", "))}</span>` : ""}</span>`;
     }
+    if (i.publico === "todos") return `<span class="hp-tag"><span class="visualmente-oculto">Público: </span>Todos os usuários</span>`;
     return `<span class="hp-tag"><span class="visualmente-oculto">Público: </span>Todos os prestadores</span>`;
   }
   // Link externo seguro (nova aba, sem acesso à página da S.D)

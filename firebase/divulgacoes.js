@@ -6,7 +6,7 @@
      • evento     → Agenda de eventos
      • grupo      → Grupos e comunidades
    CLIENTE CPF/CNPJ (v0.8.5)
-     • comunicado com publico "clientes" → Avisos da S.D
+     • comunicado com publico "clientes" ou "todos" → Comunicados da S.D
      • anuncio (sempre publico "clientes") → Anúncios (etiqueta "Anúncio" sempre;
        quem anuncia fica no campo "organizador")
 
@@ -19,6 +19,8 @@
                              atuação ou atividade secundária (mesmos nomes da
                              lista única de serviços: configuracoes/config.js)
      publico: "clientes"   → clientes CPF e CNPJ (v0.8.5; só comunicado e anúncio)
+     publico: "todos"      → TODOS os usuários logados: clientes e prestadores (v0.8.5; só comunicado,
+                             ex.: "o site ficará fora do ar dia 25/12")
 
    Segurança: as REGRAS do banco (área 80) só deixam o prestador ler o que
    está "publicado" e é do público dele. Este arquivo ainda confere e limpa
@@ -42,7 +44,7 @@ const LIMITES = {
   atividades: 10, porTipo: 30        // máximo de cartões por seção
 };
 const TIPOS = ["evento", "grupo", "comunicado", "anuncio"];   // v0.8.5: anuncio (só clientes)
-const PUBLICOS = ["geral", "atividades", "clientes"];
+const PUBLICOS = ["todos", "geral", "atividades", "clientes"];
 const REDES = ["whatsapp", "telegram", "instagram", "facebook", "youtube", "linkedin", "site"];
 // Pasta das imagens enviadas ao GitHub (img-src 'self' na CSP). Outra opção: imagem em texto (data:image/...)
 const PASTA_IMAGENS = "fotos/divulgacoes/";
@@ -75,7 +77,7 @@ function limpar(id, d) {
   const item = {
     id: String(id), tipo: d.tipo, titulo,
     exemplo: d.exemplo === true,                                      // exemplo ilustrativo (etiqueta na tela)
-    publico: d.publico === "clientes" ? "clientes" : d.publico === "atividades" && atividades.length ? "atividades" : "geral",
+    publico: ["clientes", "todos"].includes(d.publico) ? d.publico : d.publico === "atividades" && atividades.length ? "atividades" : "geral",
     atividades,
     ordem: Number.isInteger(d.ordem) ? d.ordem : 999,   // sem "ordem" = vai para o fim
     descricao: texto(d.descricao, LIMITES.descricao),
@@ -130,10 +132,10 @@ function hojeISO() {
 
 /* ---------- 4. LEITURA PARA QUEM ESTÁ LOGADO ----------
    PRESTADOR — 2 consultas (as regras exigem os mesmos filtros):
-     A) situacao == "publicado" e publico == "geral"
+     A) situacao == "publicado" e publico == "geral"   (+ "todos": comunicados para todos os usuários)
      B) situacao == "publicado" e atividades contém uma das MINHAS atividades
      Resultado: { comunicados, eventos, grupos, minhasAtividades, parcial }
-   CLIENTE (v0.8.5) — 1 consulta: situacao == "publicado" e publico == "clientes"
+   CLIENTE (v0.8.5) — 2 consultas: situacao == "publicado" e publico == "clientes" / "todos"
      Resultado: { avisos, anuncios } */
 function separarPrestador(todos, minhas, parcial) {
   const hoje = hojeISO();
@@ -149,7 +151,7 @@ function separarPrestador(todos, minhas, parcial) {
   return { comunicados, eventos, grupos, minhasAtividades: minhas, parcial };
 }
 function separarCliente(todos) {
-  const doCliente = todos.filter((i) => i.publico === "clientes");
+  const doCliente = todos.filter((i) => i.publico === "clientes" || i.publico === "todos");
   const porOrdem = (a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "");
   return {
     avisos: doCliente.filter((i) => i.tipo === "comunicado").sort(porOrdem).slice(0, LIMITES.porTipo),
@@ -166,14 +168,14 @@ async function listarParaMim() {
 
   // Cliente CPF/CNPJ (v0.8.5): avisos e anúncios
   if (eu.tipo === "cliente-cpf" || eu.tipo === "cliente-cnpj") {
-    const r = await getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", "clientes")));
-    return separarCliente(r.docs.map((d) => limpar(d.id, d.data())).filter(Boolean));
+    const rs = await Promise.all(["clientes", "todos"].map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p)))));
+    return separarCliente(rs.flatMap((r) => r.docs.map((d) => limpar(d.id, d.data()))).filter(Boolean));
   }
   if (eu.tipo !== "prestador") return null;                            // adm e visitante usam a prévia (listarPrevia)
 
   const minhas = [eu.areaAtuacao, ...(eu.especialidades || [])]
     .filter((a) => typeof a === "string" && a.trim()).slice(0, 9);
-  const consultas = [getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", "geral")))];
+  const consultas = ["geral", "todos"].map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p))));
   if (minhas.length) consultas.push(getDocs(query(col, where("situacao", "==", "publicado"), where("atividades", "array-contains-any", minhas))));
 
   const respostas = await Promise.allSettled(consultas);
@@ -211,6 +213,7 @@ function validar(d) {
   // v0.8.5: anúncio só para clientes; evento e grupo nunca para clientes
   if (d.tipo === "anuncio" && d.publico !== "clientes") e("publico", "Anúncio aparece só para Clientes.");
   if ((d.tipo === "evento" || d.tipo === "grupo") && d.publico === "clientes") e("publico", "Evento e grupo são só para prestadores.");
+  if (d.publico === "todos" && d.tipo !== "comunicado") e("publico", "\"Todos os usuários\" é só para comunicados.");
   if (d.tipo === "anuncio" && !d.imagem && !(d.descricao && String(d.descricao).trim())) e("descricao", "Anúncio precisa de imagem ou texto.");
   if (!["publicado", "suspenso", "encerrado"].includes(d.situacao)) e("situacao", "Escolha a situação.");
   if (!d.titulo || !String(d.titulo).trim()) e("titulo", "Informe o título.");
@@ -231,7 +234,7 @@ function validar(d) {
 // Monta o documento só com os campos preenchidos (vazio = não grava o campo)
 function montarDocumento(d) {
   const r = { tipo: d.tipo, titulo: String(d.titulo).trim(), situacao: d.situacao,
-    publico: d.publico === "clientes" ? "clientes" : d.publico === "atividades" ? "atividades" : "geral" };
+    publico: ["clientes", "todos"].includes(d.publico) ? d.publico : d.publico === "atividades" ? "atividades" : "geral" };
   if (r.publico === "atividades") r.atividades = d.atividades.slice(0, LIMITES.atividades);
   const copiar = ["descricao", "imagem", "link", "linkTexto", "data"];
   if (d.tipo === "evento") copiar.push("subtitulo", "dataFim", "horaInicio", "horaFim", "modalidade", "localNome", "cidade", "uf", "endereco",
@@ -280,7 +283,7 @@ function diaMais(n) { const h = new Date(); h.setDate(h.getDate() + n); return `
 function exemplos() {
   const ex = (o) => ({ situacao: "publicado", publico: "geral", exemplo: true, ...o });
   return [
-    ex({ tipo: "comunicado", nivel: "atencao", data: diaMais(0), ordem: 0, titulo: "Exemplo: manutenção programada",
+    ex({ tipo: "comunicado", publico: "todos", nivel: "atencao", data: diaMais(0), ordem: 0, titulo: "Exemplo: manutenção programada",
       descricao: "Exemplo ilustrativo. Na madrugada de sábado, das 2h às 4h, o site pode ficar fora do ar por alguns minutos." }),
     ex({ tipo: "comunicado", nivel: "info", data: diaMais(-1), ordem: 1, titulo: "Exemplo: nova página inicial para prestadores",
       descricao: "Exemplo ilustrativo. Aqui aparecem eventos, grupos e comunidades da sua área. Contatos e orçamentos continuam no seu perfil." }),
@@ -309,7 +312,7 @@ function exemplos() {
       descricao: "Grupo fictício: dúvidas técnicas, normas e materiais.", redes: { telegram: "https://example.com/telegram", site: "https://example.com/" } }),
     ex({ tipo: "grupo", ordem: 3, publico: "atividades", atividades: ["Marcenaria"], titulo: "Exemplo: Marceneiros e Moveleiros", imagem: "exemplo-grupo-marcenaria.webp",
       descricao: "Grupo fictício: projetos, ferramentas e fornecedores.", redes: { instagram: "https://example.com/instagram", whatsapp: "https://example.com/whatsapp" } }),
-    // v0.8.5: Home dos CLIENTES (Avisos da S.D + Anúncios)
+    // v0.8.5: Home dos CLIENTES (Comunicados da S.D + Anúncios)
     ex({ tipo: "comunicado", publico: "clientes", nivel: "info", data: diaMais(0), ordem: 0, titulo: "Exemplo: como pedir orçamento",
       descricao: "Exemplo ilustrativo. Escolha o tipo de serviço, veja os prestadores mais perto e chame pelo WhatsApp. Os orçamentos ficam no seu perfil, em Serviços." }),
     ex({ tipo: "comunicado", publico: "clientes", nivel: "atencao", data: diaMais(-2), ordem: 1, titulo: "Exemplo: cuidado com pagamentos adiantados",

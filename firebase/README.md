@@ -142,7 +142,7 @@ Firestore → `divulgacoes` → **Adicionar documento** → **ID automático** �
 | `tipo` | string | sim | `evento` · `grupo` · `comunicado` · `anuncio` (**v0.8.5**, só `publico` = `clientes`) |
 | `titulo` | string | sim | até 120 |
 | `situacao` | string | sim | `publicado` (aparece) · `suspenso` · `encerrado` (não aparecem) |
-| `publico` | string | sim | `geral` (todos os prestadores) · `atividades` (só as áreas da lista abaixo) · `clientes` (**v0.8.5**: Home dos clientes; só `comunicado` e `anuncio`) |
+| `publico` | string | sim | `geral` (todos os prestadores) · `atividades` (só as áreas da lista abaixo) · `clientes` (**v0.8.5**: Home dos clientes; só `comunicado` e `anuncio`) · `todos` (**v0.8.5**: clientes **e** prestadores; só `comunicado`, ex.: site fora do ar) |
 | `atividades` | array de string | se `publico` = `atividades` | até 10 nomes **iguais** aos de `configuracoes/config.js` → `servicos` (ex.: `Marcenaria`, `Elétrica`). Vale para a área de atuação **e** para as atividades secundárias |
 | `descricao` | string | não | até 1.500 (linha em branco = novo parágrafo) |
 | `imagem` | string | não | nome do arquivo em `fotos/divulgacoes/` (ex.: `feira-2026.webp`) **ou** imagem em texto `data:image/webp;base64,...` (até 300.000). Links de outros sites são **bloqueados** |
@@ -156,7 +156,7 @@ Evento cuja data (ou `dataFim`) já passou **some sozinho**. Para tirar antes: `
 
 **Só grupo:** `redes` (**map**) com os links que existirem: `whatsapp`, `telegram`, `instagram`, `facebook`, `youtube`, `linkedin`, `site` (todos `https://`) · `regiao` (80) ou `cidade` + `uf`. Grupo sem nenhum link válido não aparece.
 
-**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela). Com `publico` = `clientes` vira **Aviso da S.D** na Home dos clientes (v0.8.5).
+**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela). O nome é **Comunicados da S.D** para todos. `publico` = `todos` aparece para clientes e prestadores; `clientes` só para clientes (v0.8.5).
 
 **Só anúncio (v0.8.5):** `publico` = `clientes` sempre · precisa de `imagem` **ou** `descricao` · `organizador` (120) = anunciante. Sempre aparece com a etiqueta "Anúncio".
 
