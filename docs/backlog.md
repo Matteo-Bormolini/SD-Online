@@ -65,13 +65,13 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [x] Prestador marca **concluído** → cliente **confirma** → Serviços realizados / Prestados (parte da US54, v0.8.0).
 - [x] **Sino de avisos** (coleção "avisos", apagados em 30 dias) (US62, v0.8.0).
 - [x] **Fotos salvas de graça** no banco, compactadas (WebP 0,80, até 1080 px; iPhone: JPEG): trabalhos do prestador, local do CNPJ e Pedir contato (US63, v0.8.0).
-- [ ] Matteo: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
-- [ ] Release **v0.7.9** (pendente) e **v0.8.0**.
+- [x] Matteo: publicar as regras v0.8.0, enviar os arquivos e testar com contas reais (cliente + prestador).
+- [x] Release **v0.7.9** (pendente) e **v0.8.0**.
 - [x] **Home do prestador** (US46, v0.8.2, 19/11): comunicados, agenda de eventos (gerais e por atividade) e grupos/comunidades. Conteúdo cadastrado pelo adm no console (coleção `divulgacoes`).
 - [x] Aba **Divulgações** no Perfil do adm + exemplos ilustrativos (v0.8.3, 23/11).
-- [ ] Matteo: publicar as regras **v0.8.3**, criar os 2 índices e testar com conta real (no teste de 23/11 o banco negou a leitura: regras da área 80 ainda não estavam valendo).
+- [x] Matteo: publicar as regras **v0.8.3**, criar os 2 índices e testar com conta real (no teste de 23/11 o banco negou a leitura: regras da área 80 ainda não estavam valendo).
 - [ ] **Antes do lançamento:** apagar os exemplos ilustrativos (aba Divulgações) e as imagens `fotos/divulgacoes/exemplo-*.webp`.
-- [ ] Revisão dos Ciclos 1, 2 e 3.
+- [x] Revisão dos Ciclos 1, 2 e 3.
 
 ### ⬜ Depois (na ordem)
 - **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
