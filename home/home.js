@@ -9,9 +9,11 @@
        embaixo, os "Anúncios" (etiqueta "Anúncio" sempre). Ordem:
        Olá → Avisos → Anúncios → Serviços → Prestadores perto de você.
      • Adm (v0.8.5): vê TUDO — o que os clientes veem (comunicados e anúncios) e o
-       que os prestadores veem (comunicados, eventos e grupos). Barra "Ver como"
+       que os prestadores veem (comunicados, divulgações, eventos e grupos). Barra "Ver como"
        no topo (componentes/ver-como) mostra a página como Visitante, Cliente
        CPF, Cliente CNPJ ou Prestador.
+       ESPELHO: a prévia do adm SEMPRE lê o banco na hora (sem cache) e, se falhar,
+       mostra o motivo na tela (antes podia ficar uma leitura antiga vazia).
    ATENÇÃO: esconder na tela não é segurança. Em produção, os dados da
    vitrine devem vir do SERVIDOR e só para quem tem sessão válida.
    ===================================================================== */
@@ -135,7 +137,7 @@
     if (ehCliente || ehAdm) carregarDivulgacoesCliente(alvo.querySelector("#hc-divulgacoes"), previa || ehAdm);
     // Adm: seções da Home do prestador (comunicados, eventos e grupos), lidas como adm
     if (ehAdm && window.SDHomePrestador) window.SDHomePrestador.montar(alvo.querySelector("#hc-prestadores-veem"), "",
-      { semBoasVindas: true, cache: "adm-prestador", carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") });
+      { semBoasVindas: true, previa: true, carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") });
     carregarPrestadores(alvo);
   }
 
@@ -155,8 +157,9 @@
   // A área de comunicados sempre aparece; "Anúncios" só quando houver.
   function carregarDivulgacoesCliente(caixa, previa) {
     if (!caixa || !window.SDHomePrestador) return;
+    // previa (adm): sem cache e com o motivo do erro na tela
     window.SDHomePrestador.montar(caixa, "", {
-      semBoasVindas: true, visao: "cliente", prefixo: "hc", cache: previa ? "adm-cliente" : "cliente",
+      semBoasVindas: true, visao: "cliente", prefixo: "hc", previa: !!previa, cache: "cliente",
       carregar: async () => { const M = await esperarDivulgacoes(); return previa ? M.listarPrevia("cliente") : M.listarParaMim(); }
     });
   }
@@ -198,7 +201,7 @@
      carregar, ficam só os atalhos (como antes). */
   function montarPrestador(alvo, nome, previa = false) {
     // Prévia do adm (v0.8.5): a Home do prestador lê pela prévia (dados lidos como adm)
-    const opcoes = previa ? { carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") } : {};
+    const opcoes = previa ? { previa: true, carregar: async () => (await esperarDivulgacoes()).listarPrevia("prestador") } : {};
     if (window.SDHomePrestador) { window.SDHomePrestador.montar(alvo, nome, opcoes); return; }
     alvo.innerHTML = `
       <section class="boas-vindas" aria-labelledby="ola-titulo">

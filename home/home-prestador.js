@@ -5,15 +5,17 @@
    serviços e dados da empresa continuam no Perfil do prestador (não duplicar).
 
    Seções (cada uma só aparece quando tem conteúdo publicado):
-     1. Comunicados da S.D (discreta)
-     2. Agenda de eventos (principal) — gerais e da área do prestador
-     3. Grupos e comunidades — links externos (WhatsApp, Instagram…)
+     1. Comunicados da S.D (discreta) — comunicados para TODOS os usuários (v0.8.5)
+     2. Divulgações — comunicados só para prestadores (todos ou da área) (v0.8.5)
+     3. Agenda de eventos (principal) — gerais e da área do prestador
+     4. Grupos e comunidades — links externos (WhatsApp, Instagram…)
 
    De onde vêm os dados: firebase/divulgacoes.js (window.SDDivulgacoes).
    Este arquivo NÃO fala com o banco. Sem dados fictícios.
    Depende de: configuracoes/config.js (SD) e componentes/utilidades (SDUtil.ligarPopup).
    Uso (home/home.js): SDHomePrestador.montar(elemento, ", Nome")
-   Prévia do adm (v0.8.5, "Ver como"): montar(elemento, nome, { carregar: () => dados })
+   Prévia do adm (v0.8.5, "Ver como"): montar(elemento, nome, { carregar: () => dados, previa: true })
+     → a prévia SEMPRE lê o banco na hora (sem cache) e, se falhar, mostra o motivo na tela.
    ===================================================================== */
 (function () {
   "use strict";
@@ -29,12 +31,34 @@
     carregando: "Carregando eventos e comunidades…",
     vazio: "Ainda não há eventos, grupos ou comunicados para a sua área. Quando a S.D publicar, eles aparecem aqui.",
     erro: "Não foi possível carregar os eventos e comunidades agora.",
+    // v0.8.5: a leitura nova falhou, mas há uma leitura anterior na tela
+    atualizarFalhou: "Não foi possível atualizar agora. Mostrando a última leitura.",
     externo: "abre outro site",
     // v0.8.5: Home dos clientes (mesmo visual da Home do prestador)
     carregandoCliente: "Carregando comunicados…",
     vazioCliente: "Nenhum comunicado no momento.",
-    erroCliente: "Não foi possível carregar os comunicados agora."
+    erroCliente: "Não foi possível carregar os comunicados agora.",
+    // v0.8.5: prévia do adm ("Ver como") — motivo do erro na tela
+    erroPrevia: "Não foi possível carregar a prévia agora.",
+    motivo: {
+      "conta-errada": "Neste navegador, o Firebase está conectado com outra conta (não adm). Isso acontece quando uma conta cliente ou prestador entra em outra aba. Clique em Sair, entre de novo como adm e volte ao Início.",
+      "sem-login": "O login do adm expirou neste navegador. Clique em Sair e entre de novo como adm.",
+      "sem-modulo": "O arquivo do banco (firebase/divulgacoes.js) não carregou. Aperte Ctrl+Shift+R para recarregar.",
+      "sem-permissao": "O banco recusou a leitura (permissão negada). Confira se as regras v0.8.5 estão publicadas.",
+      "sem-internet": "Sem conexão com o banco. Confira a internet e tente de novo.",
+      "outro": "Erro inesperado. Detalhe técnico no Console (F12)."
+    }
   };
+  // Erro → motivo (texto acima)
+  function motivoErro(e) {
+    if (!e) return "outro";
+    if (e.motivo === "sem-login") return "sem-login";
+    if (e.motivo) return "conta-errada";                       // conta-cliente-cpf, conta-prestador…
+    if (e.message === "sem-modulo") return "sem-modulo";
+    if (e.code === "permission-denied") return "sem-permissao";
+    if (e.code === "unavailable" || e.code === "deadline-exceeded") return "sem-internet";
+    return "outro";
+  }
   const ESPERA_MAX_MS = 15000;   // tempo máximo esperando o módulo do banco
   const LIMITE_RESUMO = 160;     // caracteres do resumo nos cartões
 
@@ -116,6 +140,11 @@
         ${c.descricao ? `<p class="hp-texto">${esc(resumo(c.descricao))}</p>` : ""}
         ${longo ? `<button type="button" class="btn btn-pequeno" data-detalhe="${esc(c.id)}">Ler mais<span class="visualmente-oculto">: ${esc(c.titulo)}</span></button>` : ""}
       </article></li>`;
+  }
+
+  // v0.8.5: Divulgações (comunicado só para prestadores) = cartão de comunicado + etiqueta do público
+  function cartaoDivulgacao(c) {
+    return cartaoComunicado(c).replace('<h3 id=', `<p class="hp-etiquetas">${etiquetaPublicoSo(c)}</p>\n        <h3 id=`);
   }
 
   function cartaoEvento(e) {
@@ -200,6 +229,9 @@
     const lista = sec.querySelector(".hp-faixa");
     const caixaSetas = sec.querySelector(".hp-setas");
     const [ant, prox] = sec.querySelectorAll("[data-rolar]");
+    // v0.8.5 (25/11): seção sem faixa (ex.: "Comunicados da S.D" VAZIA do cliente) não tem setas.
+    // Antes dava erro aqui e a leitura nova do banco NUNCA acontecia (a tela ficava com a leitura vazia guardada).
+    if (!lista || !caixaSetas || !ant || !prox) return;
     const passo = () => { const c = lista.querySelector("li"); return c ? c.getBoundingClientRect().width + 16 : lista.clientWidth * 0.9; };
     const rolar = (dir) => lista.scrollBy({ left: dir * passo(), behavior: suave() });   // 1 cartão
     const atualizar = () => {
@@ -312,14 +344,20 @@
     }
   };
 
+  // v0.8.5: a prévia do adm não usa mais cache → apaga as leituras antigas guardadas
+  // (uma leitura antiga VAZIA ficava na tela quando a leitura nova falhava).
+  ["adm-cliente", "adm-prestador"].forEach((k) => { try { localStorage.removeItem("sd-div-" + k); } catch (_) { /* sem armazenamento */ } });
+
   /* ---------- 8. MONTAGEM ----------
      opcoes.carregar      → função que traz os dados (prévia do adm)
      opcoes.semBoasVindas → true = só as seções (Home do adm junta tudo, v0.8.5)
-     opcoes.cache         → nome do cache (padrão "prestador")
+     opcoes.cache         → nome do cache (padrão "prestador") · false = sem cache (prévia do adm)
+     opcoes.previa        → true = prévia do adm: lê sempre na hora e mostra o MOTIVO do erro
      opcoes.visao         → "cliente" = Comunicados da S.D + Anúncios (Home dos clientes, v0.8.5)
      opcoes.prefixo       → prefixo dos ids (padrão "hp"; cliente "hc") */
   function montar(alvo, nome, opcoes = {}) {
-    const chaveCache = opcoes.cache || "prestador";
+    const previa = opcoes.previa === true;
+    const chaveCache = previa || opcoes.cache === false ? "" : opcoes.cache || "prestador";   // "" = sem cache
     const cliente = opcoes.visao === "cliente";
     const prefixo = opcoes.prefixo || (cliente ? "hc" : "hp");
     const txt = cliente ? { carregando: TEXTO.carregandoCliente, vazio: TEXTO.vazioCliente, erro: TEXTO.erroCliente } : TEXTO;
@@ -358,17 +396,31 @@
     });
 
     let mostrado = "";                               // o que está na tela (evita redesenhar igual)
+    // Falhou: sem nada na tela → mensagem de erro · com leitura anterior → aviso (antes era silencioso)
+    function falhou(e) {
+      if (previa) {                                  // adm: diz o MOTIVO (a prévia nunca mostra leitura antiga)
+        mostrado = "";
+        raiz.querySelector(".hp-secoes").innerHTML = "";
+        estado(raiz, `${TEXTO.erroPrevia} ${TEXTO.motivo[motivoErro(e)]}`, true);
+        return;
+      }
+      if (mostrado) avisoNaTela = true;
+      estado(raiz, mostrado ? TEXTO.atualizarFalhou : txt.erro, true);
+    }
+    let avisoNaTela = false;                         // aviso "Mostrando a última leitura" visível
     async function carregar() {
-      // 1) Na hora: a última leitura guardada (se houver)
-      const salvo = cache.ler(chaveCache);
-      if (salvo && !mostrado) mostrar(salvo);
+      // 1) Na hora: a última leitura guardada (se houver; a prévia do adm não usa)
+      const salvo = chaveCache ? cache.ler(chaveCache) : null;
+      // Erro ao desenhar a leitura guardada NUNCA pode impedir a leitura nova
+      if (salvo && !mostrado) { try { mostrar(salvo); } catch (e) { console.warn("[S.D] Home: leitura guardada ignorada:", e); mostrado = ""; } }
       else if (!mostrado) { raiz.querySelector(".hp-secoes").innerHTML = ""; estado(raiz, txt.carregando, false); }
       // 2) Do banco: o que há de novo
       let dados = null;
       try { dados = opcoes.carregar ? await opcoes.carregar() : await (await esperarModulo()).listarParaMim(); }
-      catch (e) { console.warn("[S.D] Home do prestador:", e && (e.code || e.message || e)); if (!mostrado) estado(raiz, txt.erro, true); return; }
-      if (!dados) { if (!mostrado) estado(raiz, txt.erro, true); return; }
-      cache.gravar(chaveCache, dados);
+      catch (e) { console.warn("[S.D] Home (divulgações):", e && (e.code || e.message || e), e && e.motivo ? "· " + e.motivo : ""); falhou(e); return; }
+      if (!dados) { falhou(null); return; }
+      if (chaveCache) cache.gravar(chaveCache, dados);
+      if (avisoNaTela) { avisoNaTela = false; mostrado = ""; }   // força redesenhar e tirar o aviso
       mostrar(dados);
     }
 
@@ -386,11 +438,15 @@
                 : `<section class="hp-secao hp-secao-comunicados" aria-labelledby="${prefixo}-comunicados-titulo"><div class="hp-secao-topo"><h2 id="${prefixo}-comunicados-titulo" class="hp-secao-titulo">Comunicados da S.D</h2></div><p class="hp-vazio">${esc(txt.vazio)}</p></section>`) +
                secao("hp-anuncios", "Anúncios", "hp-secao-anuncios", anuncios, cartaoAnuncio, "Anúncios");
       } else {
-        itensPorId = new Map([...dados.comunicados, ...dados.eventos, ...dados.grupos].map((i) => [i.id, i]));
+        // v0.8.5: Comunicados da S.D (todos) → Divulgações (só prestadores) → Agenda → Grupos
+        const comunicados = dados.comunicados || [], divulgacoes = dados.divulgacoes || [];
+        const eventos = dados.eventos || [], grupos = dados.grupos || [];
+        itensPorId = new Map([...comunicados, ...divulgacoes, ...eventos, ...grupos].map((i) => [i.id, i]));
         html =
-          secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", dados.comunicados, cartaoComunicado, "Comunicados") +
-          secao("hp-eventos", "Agenda de eventos", "hp-secao-eventos", dados.eventos, cartaoEvento, "Eventos") +
-          secao("hp-grupos", "Grupos e comunidades", "hp-secao-grupos", dados.grupos, cartaoGrupo, "Grupos e comunidades");
+          secao("hp-comunicados", "Comunicados da S.D", "hp-secao-comunicados", comunicados, cartaoComunicado, "Comunicados") +
+          secao("hp-divulg", "Divulgações", "hp-secao-comunicados hp-secao-divulgacoes", divulgacoes, cartaoDivulgacao, "Divulgações") +
+          secao("hp-eventos", "Agenda de eventos", "hp-secao-eventos", eventos, cartaoEvento, "Eventos") +
+          secao("hp-grupos", "Grupos e comunidades", "hp-secao-grupos", grupos, cartaoGrupo, "Grupos e comunidades");
       }
       const caixa = raiz.querySelector(".hp-secoes");
       caixa.innerHTML = html;

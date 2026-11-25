@@ -156,7 +156,7 @@ Evento cuja data (ou `dataFim`) já passou **some sozinho**. Para tirar antes: `
 
 **Só grupo:** `redes` (**map**) com os links que existirem: `whatsapp`, `telegram`, `instagram`, `facebook`, `youtube`, `linkedin`, `site` (todos `https://`) · `regiao` (80) ou `cidade` + `uf`. Grupo sem nenhum link válido não aparece.
 
-**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela). O nome é **Comunicados da S.D** para todos. `publico` = `todos` aparece para clientes e prestadores; `clientes` só para clientes (v0.8.5).
+**Só comunicado:** `nivel` (`info` = normal · `atencao` = importante, borda amarela). Onde aparece (v0.8.5): `todos` → **Comunicados da S.D** dos clientes e dos prestadores · `clientes` → **Comunicados da S.D** só dos clientes · `geral` ou `atividades` → **Divulgações** da Home do prestador.
 
 **Só anúncio (v0.8.5):** `publico` = `clientes` sempre · precisa de `imagem` **ou** `descricao` · `organizador` (120) = anunciante. Sempre aparece com a etiqueta "Anúncio".
 

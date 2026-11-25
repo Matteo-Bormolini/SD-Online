@@ -5,9 +5,10 @@ A primeira página do site e a página "Sobre nós".
 ## Quem vê
 - **Visitante:** apresentação da S.D e a lista de serviços (só os nomes).
 - **Cliente (CPF ou CNPJ):** Olá → **Comunicados da S.D** → **Anúncios** (etiqueta "Anúncio" sempre, v0.8.5) → Serviços → Prestadores perto de você. Comunicados e anúncios usam o **mesmo visual da Home do prestador** (`home-prestador.js`, visão "cliente").
-- **Adm (v0.8.5):** vê **tudo**: "O que os clientes veem" (comunicados e anúncios) e "O que os prestadores veem" (comunicados, eventos e grupos), depois Serviços e Prestadores. Barra **Ver como** no topo (Visitante · Cliente CPF · Cliente CNPJ · Prestador). Lembra a escolha nesta aba.
-- **Mais leve (v0.8.5):** a Home mostra na hora a última leitura guardada neste navegador (até 24 h, só divulgações, sem dados pessoais) e atualiza em seguida com o banco.
-- **Prestador:** Home própria (v0.8.2) — eventos, grupos e comunicados. **Nunca** vê dados de outros prestadores.
+- **Adm (v0.8.5):** vê **tudo**: "O que os clientes veem" (comunicados e anúncios) e "O que os prestadores veem" (comunicados, divulgações, eventos e grupos), depois Serviços e Prestadores. Barra **Ver como** no topo (Visitante · Cliente CPF · Cliente CNPJ · Prestador). Lembra a escolha nesta aba.
+  - **Espelho (25/11):** a prévia do adm **sempre lê o banco na hora** (não usa leitura guardada) e usa as mesmas regras de separar e a mesma ordem do cliente e do prestador. Corrigido: com a última leitura guardada vazia, a área "Comunicados da S.D" vazia dava erro e a leitura nova não acontecia ("Nenhum comunicado no momento" preso por até 24 h). Se a leitura falhar, aparece o **motivo** na tela (ex.: o Firebase deste navegador está com outra conta) + "Tentar de novo".
+- **Mais leve (v0.8.5):** para clientes e prestadores, a Home mostra na hora a última leitura guardada neste navegador (até 24 h, só divulgações, sem dados pessoais) e atualiza em seguida com o banco. Se a atualização falhar: aviso "Não foi possível atualizar agora. Mostrando a última leitura." + "Tentar de novo".
+- **Prestador:** Home própria (v0.8.2) — comunicados, divulgações, eventos e grupos. **Nunca** vê dados de outros prestadores.
 
 ## Arquivos
 | Arquivo | Para que serve |
@@ -22,7 +23,8 @@ Contatos, orçamentos e serviços **continuam no Perfil** (não são repetidos a
 
 | Seção | O que mostra | Quando aparece |
 |---|---|---|
-| Comunicados da S.D | Avisos da plataforma (discretos; "Importante" com borda amarela) | Se houver comunicado publicado |
+| Comunicados da S.D | Avisos da plataforma para **todos os usuários** (público `todos`; discretos; "Importante" com borda amarela) | Se houver comunicado publicado para todos |
+| Divulgações (v0.8.5) | Comunicados **só para prestadores** (todos os prestadores ou da área), com a etiqueta do público | Se houver comunicado publicado para prestadores |
 | Agenda de eventos | Eventos **gerais** e da **área do prestador** (atividade principal ou secundária), do mais próximo ao mais distante. "Ver detalhes" abre um pop-up | Se houver evento publicado que ainda não passou |
 | Grupos e comunidades | Grupos externos com botões das redes (WhatsApp, Telegram, Instagram, Facebook, YouTube, LinkedIn, Site) | Se houver grupo publicado |
 

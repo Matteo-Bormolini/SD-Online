@@ -1,7 +1,7 @@
 /* =====================================================================
    S.D — ABA "DIVULGAÇÕES" DO ADM (perfil-adm/divulgacoes-adm.js) · v0.8.3 / v0.8.5
    Cadastra, edita, publica/suspende/encerra e apaga o que aparece na
-   Home do prestador (eventos, grupos e comunicados) e, desde a v0.8.5,
+   Home do prestador (eventos, grupos, Comunicados da S.D e Divulgações) e, desde a v0.8.5,
    na Home dos clientes (Comunicados da S.D = comunicado para "Clientes" ou "Todos os usuários";
    Anúncios = tipo "Anúncio", sempre para "Clientes"). Tudo numa aba só,
    um bloco embaixo do outro:
@@ -45,7 +45,7 @@
     raiz.innerHTML = `
       <section class="dv-bloco" aria-labelledby="dv-ex-titulo">
         <h3 id="dv-ex-titulo">Exemplos ilustrativos</h3>
-        <p class="nota">Cria 13 divulgações FICTÍCIAS (marcadas "Exemplo"): 9 para a Home do prestador e 4 para a Home dos clientes (comunicados e anúncios). <strong>Apague antes do lançamento.</strong></p>
+        <p class="nota">Cria 14 divulgações FICTÍCIAS (marcadas "Exemplo"): 2 comunicados para todos, 8 só para prestadores (divulgação, eventos e grupos) e 4 para clientes (comunicados e anúncios). <strong>Apague antes do lançamento.</strong></p>
         <div class="dv-acoes">
           <button type="button" class="btn" id="dv-criar-exemplos">Criar exemplos ilustrativos</button>
           <button type="button" class="btn" id="dv-apagar-exemplos">Apagar exemplos</button>
@@ -66,6 +66,9 @@
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-geral" value="geral" checked><label for="dv-publico-geral">Todos os prestadores</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-ativ" value="atividades"><label for="dv-publico-ativ">Só algumas atividades (área de atuação ou atividade secundária)</label></div>
               <div class="campo campo-check"><input type="radio" name="dv-publico" id="dv-publico-clientes" value="clientes"><label for="dv-publico-clientes">Clientes CPF e CNPJ (Home dos clientes)</label></div>
+              <p class="nota" id="dv-publico-onde">Onde aparece (comunicado): <strong>Todos os usuários</strong> → "Comunicados da S.D" na Home dos clientes e dos prestadores ·
+                <strong>Todos os prestadores</strong> ou <strong>algumas atividades</strong> → "Divulgações" na Home do prestador ·
+                <strong>Clientes</strong> → "Comunicados da S.D" só na Home dos clientes. Confira no Início → "Ver como".</p>
               <span class="campo-erro" id="e-dv-publico"></span>
               <div class="dv-atividades" id="dv-lista-atividades" hidden>
                 ${ATIVIDADES.map((a, i) => `<div class="campo campo-check"><input type="checkbox" id="dv-at-${i}" value="${esc(a)}"><label for="dv-at-${i}">${esc(a)}</label></div>`).join("")}

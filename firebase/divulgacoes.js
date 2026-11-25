@@ -1,8 +1,9 @@
 /* =====================================================================
    S.D — DIVULGAÇÕES DA HOME (firebase/divulgacoes.js) · v0.8.2 / v0.8.5
    Lê do banco (coleção "divulgacoes") o que aparece na Home:
-   PRESTADOR
-     • comunicado → Comunicados da S.D
+   PRESTADOR (v0.8.5)
+     • comunicado com publico "todos"                → Comunicados da S.D
+     • comunicado com publico "geral" ou "atividades" → Divulgações (só prestadores)
      • evento     → Agenda de eventos
      • grupo      → Grupos e comunidades
    CLIENTE CPF/CNPJ (v0.8.5)
@@ -134,25 +135,31 @@ function hojeISO() {
    PRESTADOR — 2 consultas (as regras exigem os mesmos filtros):
      A) situacao == "publicado" e publico == "geral"   (+ "todos": comunicados para todos os usuários)
      B) situacao == "publicado" e atividades contém uma das MINHAS atividades
-     Resultado: { comunicados, eventos, grupos, minhasAtividades, parcial }
+     Resultado: { comunicados (publico "todos"), divulgacoes (comunicado "geral"/"atividades"), eventos, grupos, minhasAtividades, parcial }
    CLIENTE (v0.8.5) — 2 consultas: situacao == "publicado" e publico == "clientes" / "todos"
      Resultado: { avisos, anuncios } */
+// Ordem: "ordem" → mais recente → título → id. Desempate FIXO: o adm ("Ver como") vê na mesma ordem
+// que o cliente/prestador, mesmo lendo os documentos em outra sequência (v0.8.5, 25/11).
+function porOrdem(a, b) {
+  return a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "") || a.titulo.localeCompare(b.titulo, "pt-BR") || a.id.localeCompare(b.id);
+}
 function separarPrestador(todos, minhas, parcial) {
   const hoje = hojeISO();
   // Atividades do prestador que combinam com cada item (para a etiqueta "Para a sua área")
   todos.forEach((i) => { i.paraMim = i.publico === "atividades" ? i.atividades.filter((a) => minhas.includes(a)) : []; });
   const eventos = todos.filter((i) => i.tipo === "evento" && (i.dataFim || i.data) >= hoje)   // já passou = não aparece
-    .sort((a, b) => a.data.localeCompare(b.data) || (a.horaInicio || "").localeCompare(b.horaInicio || "") || a.ordem - b.ordem)
+    .sort((a, b) => a.data.localeCompare(b.data) || (a.horaInicio || "").localeCompare(b.horaInicio || "") || porOrdem(a, b))
     .slice(0, LIMITES.porTipo);
   const grupos = todos.filter((i) => i.tipo === "grupo")
-    .sort((a, b) => a.ordem - b.ordem || a.titulo.localeCompare(b.titulo, "pt-BR")).slice(0, LIMITES.porTipo);
-  const comunicados = todos.filter((i) => i.tipo === "comunicado" && i.publico !== "clientes")
-    .sort((a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "")).slice(0, LIMITES.porTipo);
-  return { comunicados, eventos, grupos, minhasAtividades: minhas, parcial };
+    .sort((a, b) => a.ordem - b.ordem || a.titulo.localeCompare(b.titulo, "pt-BR") || a.id.localeCompare(b.id)).slice(0, LIMITES.porTipo);
+  // v0.8.5: "Comunicados da S.D" = o que vai para TODOS os usuários; "Divulgações" = comunicado só de prestadores
+  const comunicados = todos.filter((i) => i.tipo === "comunicado" && i.publico === "todos").sort(porOrdem).slice(0, LIMITES.porTipo);
+  const divulgacoes = todos.filter((i) => i.tipo === "comunicado" && (i.publico === "geral" || i.publico === "atividades"))
+    .sort(porOrdem).slice(0, LIMITES.porTipo);
+  return { comunicados, divulgacoes, eventos, grupos, minhasAtividades: minhas, parcial };
 }
 function separarCliente(todos) {
   const doCliente = todos.filter((i) => i.publico === "clientes" || i.publico === "todos");
-  const porOrdem = (a, b) => a.ordem - b.ordem || (b.data || "").localeCompare(a.data || "");
   return {
     avisos: doCliente.filter((i) => i.tipo === "comunicado").sort(porOrdem).slice(0, LIMITES.porTipo),
     anuncios: doCliente.filter((i) => i.tipo === "anuncio").sort(porOrdem).slice(0, LIMITES.porTipo)
@@ -194,6 +201,7 @@ async function listarParaMim() {
 
 /* ---------- 4b. PRÉVIA DO ADM ("Ver como", v0.8.5) ----------
    O adm lê TUDO (regras: ehAdm) e a tela filtra como cada tipo veria.
+   Espelho: usa as MESMAS funções de separar do cliente e do prestador (separarCliente / separarPrestador).
    visao: "cliente" → { avisos, anuncios } · "prestador" → igual à Home do prestador
    (sem área de atuação: mostra o geral e também o de todas as atividades). */
 async function listarPrevia(visao) {
@@ -256,7 +264,8 @@ function montarDocumento(d) {
 async function souAdm() {
   await pronto;
   const eu = auth && auth.currentUser ? await meusDados() : null;
-  if (!eu || eu.tipo !== "adm") throw Object.assign(new Error("Só o administrador."), { code: "permission-denied" });
+  // motivo: qual conta o Firebase tem neste navegador (ajuda a Home do adm a explicar o erro)
+  if (!eu || eu.tipo !== "adm") throw Object.assign(new Error("Só o administrador."), { code: "permission-denied", motivo: eu ? "conta-" + eu.tipo : "sem-login" });
 }
 async function listarTodas() {
   await souAdm();
@@ -290,6 +299,8 @@ function exemplos() {
       descricao: "Exemplo ilustrativo. Na madrugada de sábado, das 2h às 4h, o site pode ficar fora do ar por alguns minutos." }),
     ex({ tipo: "comunicado", publico: "todos", nivel: "info", data: diaMais(-1), ordem: 1, titulo: "Exemplo: nova página inicial para prestadores",
       descricao: "Exemplo ilustrativo. Aqui aparecem eventos, grupos e comunidades da sua área. Contatos e orçamentos continuam no seu perfil." }),
+    ex({ tipo: "comunicado", publico: "geral", nivel: "info", data: diaMais(0), ordem: 0, titulo: "Exemplo: complete seu perfil",
+      descricao: "Exemplo ilustrativo (só prestadores). Perfis com foto, horário de atendimento e fotos de trabalhos aparecem melhor na busca dos clientes." }),
     ex({ tipo: "evento", titulo: "Exemplo: Encontro de Empreendedores da Zona Sul", subtitulo: "Networking entre prestadores de serviço e pequenas empresas",
       data: diaMais(10), horaInicio: "19:00", horaFim: "22:00", modalidade: "presencial", localNome: "Centro de Convenções Exemplo",
       cidade: "São Paulo", uf: "SP", endereco: "Av. Exemplo, 1000 — Santo Amaro", buffet: true, buffetEmpresa: "Buffet Exemplo",
