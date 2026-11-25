@@ -3,7 +3,7 @@
    UMA regra de senha para o site todo: cadastro, Editar perfil e
    "Esqueceu a senha?". Mudou a regra? Mude só aqui (e no servidor).
 
-   Regra atual (mínimo trocado de 12 para 6 em 11/11/2026, pedido do Marco):
+   Regra atual (mínimo trocado de 12 para 6 em 11/11/2026, pedido do Matteo):
      - mínimo de 6 caracteres (máximo 128) — igual à política do Firebase;
      - aceita letras, números, espaços e símbolos (não obriga misturar);
      - bloqueia senhas comuns e previsíveis (123456..., "senha2026",

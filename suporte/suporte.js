@@ -10,7 +10,7 @@
 
   /* ---------- 1. E-MAILS (editar aqui; vazio = "E-mail em definição") ---------- */
   const EMAILS = {
-    // 09/11/2026: por enquanto um e-mail só para tudo (definido pelo Marco). Trocar aqui quando houver e-mails próprios.
+    // 09/11/2026: por enquanto um e-mail só para tudo (definido pelo Matteo). Trocar aqui quando houver e-mails próprios.
     suporte:         "matteo.bormolini228@al.unieduk.com.br",   // dúvidas da plataforma (botão Dúvidas)
     sugestoes:       "matteo.bormolini228@al.unieduk.com.br",   // botão Sugestões + resumo do assistente
     desenvolvimento: "matteo.bormolini228@al.unieduk.com.br",   // equipe técnica

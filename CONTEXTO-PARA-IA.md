@@ -5,7 +5,7 @@
 
 ## 1. O projeto
 - **S.D Serviços Digitais (SD-Online):** site/app que conecta clientes a prestadores de manutenção.
-- Projeto **individual** do Marco (GitHub **Matteo-Bormolini**, repositório **SD-Online**). Sem equipe, sem Scrum.
+- Projeto **individual** do Matteo Bormolini (GitHub **Matteo-Bormolini**, repositório **SD-Online**). Sem equipe, sem Scrum.
 - 4 tipos de conta: **Administrador**, **Cliente CPF**, **Cliente CNPJ**, **Prestador** (CNPJ ou MEI).
 - **Dinheiro:** a S.D não intermedeia o serviço nem o pagamento. Cliente não paga nada. Sem preço padrão: cada orçamento diz o valor e se cobra visita (e quanto).
   A S.D ganha com **anúncios** e **destaque** do prestador (mensal, cancelável, a partir de R$ 20 — depois do MVP).

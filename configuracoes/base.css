@@ -29,7 +29,7 @@
   --cor-erro:    #A11B1B;  --cor-erro-fundo:    #FBE7E7;
   --cor-info:    #1D4E89;  --cor-info-fundo:    #E5EEF8;
 
-  /* Destaque pago (vermelho brilhante, aprovado pelo Marco em 05/11/2026) */
+  /* Destaque pago (vermelho brilhante, aprovado pelo Matteo em 05/11/2026) */
   --cor-destaque:       #E00000;
   --cor-destaque-texto: #FFFFFF;
 
@@ -137,7 +137,7 @@ img { height: auto; }
 .link:hover { text-decoration-thickness: 2px; }
 .link:focus-visible { outline: 3px solid var(--cor-vinho); outline-offset: 2px; border-radius: 4px; }
 /* Tema escuro: #800000 não tem contraste sobre fundo escuro; o link ganha fundo claro
-   (#F2ECE6) e mantém a cor oficial legível. PROVISÓRIO até decisão do Marco. */
+   (#F2ECE6) e mantém a cor oficial legível. PROVISÓRIO até decisão do Matteo. */
 [data-tema="escuro"] .link { background: #F2ECE6; padding: .125rem .5rem; border-radius: 6px; }
 [data-tema="escuro"] .link:focus-visible { outline-color: #FFFFFF; }
 

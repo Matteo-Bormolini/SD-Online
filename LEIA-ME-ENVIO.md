@@ -1,30 +1,24 @@
-# Envio v0.8.5 — pasta completa + espelho do adm (25/11/2026)
+# Envio v0.8.6 — revisão geral (25/11/2026)
 
-Versão continua **v0.8.5**. **Regras do banco não mudaram** (as que estão publicadas valem).
+Versão **v0.8.6** (correções da v0.8.5). **As regras do banco MUDARAM** (áreas 60 e 80).
 
-**Erro corrigido:** na conta adm, "Ver como → Cliente CPF/CNPJ" mostrava "Nenhum comunicado no momento".
-Causa: a última leitura guardada no navegador estava vazia; ao desenhar a área vazia dava um erro
-(`Cannot read properties of undefined (reading 'addEventListener')`) e a leitura nova do banco não acontecia.
+## 1. Firebase Console → Firestore → Regras
+Apague tudo, cole `firebase/firestore.rules` → **Publicar**. Linha 2 = `REGRAS DO BANCO v0.8.6 (25/11/2026)`.
+Opcional: Firestore → Índices → apague o índice `divulgacoes` · `situacao` + `atividades` (não é mais usado).
 
-## 1. Sua pasta no computador
-Troque a pasta inteira por esta (ela é igual ao GitHub + as mudanças abaixo).
-As pastas `solicitacao/` e `interruptores/` **não existem mais** desde a v0.8.5 (não copie de volta).
+## 2. GitHub → Upload files
+**ARRASTE as pastas** e os arquivos soltos de `SD-Online-envio` para a página "Upload files".
+Não use "choose your files": ele joga tudo na raiz (fora das pastas).
+Commit: `v0.8.6 - Revisão geral e testes reais de orçamento`
 
-## 2. GitHub → Upload files (só estes 12 arquivos; o resto já está igual)
-- `firebase/divulgacoes.js` · `firebase/README.md`
-- `home/home.js` · `home/home-prestador.js` · `home/README.md`
-- `perfil-adm/divulgacoes-adm.js` · `perfil-adm/README.md`
-- `componentes/ver-como/README.md`
-- `docs/versoes.md` · `README.md` · `CONTEXTO-PARA-IA.md` · `LEIA-ME-ENVIO.md`
+## 3. Sua pasta no computador
+Troque a pasta inteira pela do `SD-Online-v0.8.6-completo.zip` (igual ao GitHub + estas mudanças).
 
-Commit: `v0.8.5 - espelho do adm e Divulgacoes`
+## 4. Conferir (Claude testa ao vivo nas abas logadas)
+- Prestador de Elétrica → Início: aparecem "Palestra NR-10" e "Comunidade de Eletricistas".
+- Prestador → orçamento com valor acima de R$ 10.000.000: mensagem de erro (não salva).
+- Cliente → Meu perfil → Serviços: "Em orçamento e em andamento" aparece antes de "Serviços realizados".
+- Sino: avisos continuam chegando (fechar, orçar, concluir).
 
-## 3. Conferir (conta adm)
-1. Início → **Ctrl+Shift+R** (recarrega os arquivos novos).
-2. **Ver como → Cliente CPF** e **Cliente CNPJ**: Comunicados da S.D + Anúncios iguais aos da conta cliente.
-3. **Ver como → Prestador**: Comunicados da S.D → Divulgações → Agenda → Grupos.
-4. Se aparecer "Não foi possível carregar a prévia agora…", a frase seguinte diz o motivo e o que fazer.
-5. Exemplo novo "complete seu perfil" (Divulgações): aba Divulgações → **Apagar exemplos** → **Criar exemplos ilustrativos** (14).
-
-## 4. Antes do lançamento
+## 5. Antes do lançamento
 Aba Divulgações → **Apagar exemplos** + apagar `fotos/divulgacoes/exemplo-*.webp`.
