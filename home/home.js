@@ -65,9 +65,9 @@
 
   /* ---------- 5. UTILITÁRIOS ---------- */
   // Escapa texto vindo do servidor (evita injeção de HTML)
-  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = SD.esc;
   const numBR = (n, casas = 1) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
-  const iniciais = (nome) => String(nome).split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+  const iniciais = SD.iniciais;
 
 
   /* ---------- 6. VISITANTE ---------- */
@@ -207,7 +207,7 @@
       <section class="boas-vindas" aria-labelledby="ola-titulo">
         <h1 id="ola-titulo">Olá${nome}!</h1>
         <div class="atalhos">
-          <a class="btn" href="${CAMINHOS.localizarCondominios}">Seus Serviços</a>
+          <a class="btn" href="${esc(SD.caminho("perfil-prestador/index.html"))}#servicos">Meus serviços</a>
           <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
         </div>
       </section>`;

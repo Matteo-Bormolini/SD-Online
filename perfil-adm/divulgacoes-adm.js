@@ -27,7 +27,7 @@
   const IMAGEM = { largura: 960, maxCaracteres: 150000 };
   const ATIVIDADES = SD.config.servicos.map((s) => s.nome);  // lista única (configuracoes/config.js)
 
-  const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = SD.esc;
   const $ = (s) => raiz.querySelector(s);
   const atualizarAltura = () => { if (window.SDPerfil && window.SDPerfil.atualizarAltura) window.SDPerfil.atualizarAltura(); };
   const confirmar = (o) => (window.SDConfirmar ? window.SDConfirmar(o) : Promise.resolve(window.confirm(o.titulo)));

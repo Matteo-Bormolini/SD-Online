@@ -132,9 +132,8 @@ function hojeISO() {
 }
 
 /* ---------- 4. LEITURA PARA QUEM ESTÁ LOGADO ----------
-   PRESTADOR — 2 consultas (as regras exigem os mesmos filtros):
-     A) situacao == "publicado" e publico == "geral"   (+ "todos": comunicados para todos os usuários)
-     B) situacao == "publicado" e atividades contém uma das MINHAS atividades
+   PRESTADOR — 3 consultas (publico "geral", "todos" e "atividades"); a tela filtra "atividades" pela área
+     (o banco não consegue provar "contém uma das minhas atividades" numa consulta → dava permission-denied)
      Resultado: { comunicados (publico "todos"), divulgacoes (comunicado "geral"/"atividades"), eventos, grupos, minhasAtividades, parcial }
    CLIENTE (v0.8.5) — 2 consultas: situacao == "publicado" e publico == "clientes" / "todos"
      Resultado: { avisos, anuncios } */
@@ -185,8 +184,8 @@ async function listarParaMim() {
 
   const minhas = [eu.areaAtuacao, ...(eu.especialidades || [])]
     .filter((a) => typeof a === "string" && a.trim()).slice(0, 9);
-  const consultas = ["geral", "todos"].map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p))));
-  if (minhas.length) consultas.push(getDocs(query(col, where("situacao", "==", "publicado"), where("atividades", "array-contains-any", minhas))));
+  const publicos = minhas.length ? ["geral", "todos", "atividades"] : ["geral", "todos"];
+  const consultas = publicos.map((p) => getDocs(query(col, where("situacao", "==", "publicado"), where("publico", "==", p))));
 
   const respostas = await Promise.allSettled(consultas);
   if (respostas.every((r) => r.status === "rejected")) throw respostas[0].reason;
@@ -194,7 +193,10 @@ async function listarParaMim() {
   const porId = new Map();
   respostas.forEach((r) => {
     if (r.status === "rejected") { parcial = true; console.warn("[S.D] Divulgações: uma consulta falhou:", r.reason && (r.reason.code || r.reason)); return; }
-    r.value.docs.forEach((s) => { const item = limpar(s.id, s.data()); if (item) porId.set(item.id, item); });
+    r.value.docs.forEach((s) => {
+      const item = limpar(s.id, s.data());
+      if (item && (item.publico !== "atividades" || item.atividades.some((a) => minhas.includes(a)))) porId.set(item.id, item);
+    });
   });
   return separarPrestador([...porId.values()], minhas, parcial);
 }

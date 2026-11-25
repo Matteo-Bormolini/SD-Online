@@ -1,22 +1,10 @@
 /* =====================================================================
    S.D — PERFIL DO ADMINISTRADOR (perfil-adm/perfil-adm.css)
    Carregado DEPOIS de componentes/perfil-base/perfil-base.css.
-   Só o que é exclusivo do adm: galeria de fotos e painel "Administração".
+   Só o que é exclusivo do adm: painel "Administração".
    ===================================================================== */
 
-/* ---------- 1. GALERIA (até 12 fotos secundárias) ---------- */
-.galeria { width: 100%; }
-.galeria h3 { font-size: .875rem; font-weight: 600; margin: 0 0 .5rem; color: var(--cor-texto-secundario); }
-.galeria-grade { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-.galeria-grade li { position: relative; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; box-shadow: var(--sombra-imagem); background: var(--cor-superficie-2); }
-.galeria-grade img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.galeria-grade .btn-remover {
-  position: absolute; top: .25rem; right: .25rem;
-  background: #FFFFFF; color: #1F1A17; border: 1px solid #000000;
-}
-.galeria-vazia { font-size: .8125rem; color: var(--cor-texto-secundario); margin: 0; }
-
-/* ---------- 2. PAINEL ADMINISTRAÇÃO (v0.8.5: todos os botões juntos) ---------- */
+/* ---------- 1. PAINEL ADMINISTRAÇÃO (v0.8.5: todos os botões juntos) ---------- */
 .painel-admin { padding: 1.5rem; }
 .painel-admin h2 { font-size: 1.5rem; font-weight: 700; margin: 0; }
 .painel-admin p  { margin: .375rem 0 0; color: var(--cor-texto-secundario); }
@@ -40,7 +28,7 @@
 .adm-grupo-vazio { margin: 0; font-size: .875rem; color: var(--cor-texto-secundario); }
 @media (max-width: 47.99rem) { .painel-admin { padding: 1rem; } .adm-comandos { grid-template-columns: 1fr; } }
 
-/* ---------- 3. ABA DIVULGAÇÕES (v0.8.3) — um bloco embaixo do outro ---------- */
+/* ---------- 2. ABA DIVULGAÇÕES (v0.8.3) — um bloco embaixo do outro ---------- */
 .painel-divulgacoes { padding: 1.5rem; position: relative; }   /* prende o campo de arquivo oculto (sem rolagem lateral) */
 .painel-divulgacoes > h2 { margin: 0; font-size: 1.5rem; }
 .dv-bloco { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--cor-divisoria); }

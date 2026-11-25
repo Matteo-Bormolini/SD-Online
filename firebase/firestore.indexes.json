@@ -5,14 +5,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "situacao", "order": "ASCENDING" },
-        { "fieldPath": "atividades", "arrayConfig": "CONTAINS" }
-      ]
-    },
-    {
-      "collectionGroup": "divulgacoes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "situacao", "order": "ASCENDING" },
         { "fieldPath": "publico", "order": "ASCENDING" }
       ]
     }

@@ -277,8 +277,13 @@
         if (!(Number(dados.valorTotal) > 0)) marcar("po-total", "Informe o valor total.");
         if (!(parseInt(dados.validadeDias, 10) >= 1)) marcar("po-validade", "Informe a validade (1 a 365 dias).");
         if (dados.cobraVisita && !(Number(dados.valorVisita) > 0)) marcar("po-valor-visita", "Informe o valor da visita.");
-        ["po-valor-visita", "po-valor-materiais", "po-mao-de-obra", "po-visitas", "po-funcionarios", "po-duracao"].forEach((id) => {
-          if (val(id) && Number(val(id)) < 0) marcar(id, "Use um número positivo.");
+        // Limites (iguais aos do banco): acima do máximo mostra erro em vez de cortar o valor
+        const MAX = { "po-total": [1e7, 1], "po-valor-visita": [1e5, 1], "po-valor-materiais": [1e7, 1], "po-mao-de-obra": [1e7, 1],
+          "po-validade": [365], "po-visitas": [100], "po-funcionarios": [500], "po-duracao": [3650] };          // [máximo, dinheiro?]
+        Object.entries(MAX).forEach(([id, [max, dinheiro]]) => {
+          const n = Number(val(id));
+          if (val(id) && n < 0) marcar(id, "Use um número positivo.");
+          else if (n > max) marcar(id, "Máximo: " + (dinheiro ? moeda(max) : max.toLocaleString("pt-BR")) + ".");
         });
         if (primeiro) { d.querySelector("#" + primeiro).focus(); return false; }
         botao.disabled = true; botao.textContent = "Salvando…";
@@ -463,7 +468,8 @@
     const validoAte = a ? somarDias(o.respondidoEm || o.atualizadoEm, a.validadeDias) : 0;
     const resumo = a
       ? `<span class="pd-valor">${moeda(a.valorTotal)}</span>
-         <span class="pd-linha">${a.inicioPrevisto ? "Início " + isoBR(a.inicioPrevisto) + " · " : ""}${a.duracaoDias ? a.duracaoDias + (a.duracaoDias === 1 ? " dia · " : " dias · ") : ""}válido até ${validoAte ? new Date(validoAte).toLocaleDateString("pt-BR") : "—"}</span>`
+         <span class="pd-linha">${[a.inicioPrevisto ? "Início " + isoBR(a.inicioPrevisto) : "", a.duracaoDias ? a.duracaoDias + (a.duracaoDias === 1 ? " dia" : " dias") : "",
+           o.situacao === S.orcado && validoAte ? "válido até " + new Date(validoAte).toLocaleDateString("pt-BR") : ""].filter(Boolean).join(" · ")}</span>`
       : `<span class="pd-linha">${o.situacao === S.contato ? "Contato em " + dataBR(o.contatoEm) : ""}</span>`;
     li.innerHTML = `
       <div class="pd-cartao-topo">
@@ -527,7 +533,7 @@
     alvo.innerHTML = "";
     alvo.hidden = !pedidos.length;
     if (!pedidos.length) return 0;
-    const titulo = document.createElement("h3");
+    const titulo = document.createElement("h2");          // mesmo nível de "Serviços realizados"
     titulo.className = "pd-bloco-titulo";
     titulo.textContent = "Em orçamento e em andamento";
     alvo.append(titulo);

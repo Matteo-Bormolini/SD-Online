@@ -300,7 +300,9 @@
 
   /* ---------- 5. FUNÇÕES DE APOIO ---------- */
   // Escapa texto antes de colocar no HTML (evita injeção)
-  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Iniciais do nome (2 letras) para avatar sem foto
+  const iniciais = (nome) => String(nome || "").split(/\s+/).filter((p) => /[A-Za-zÀ-ú]/.test(p)).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
   // Monta o caminho a partir da raiz do site (links externos e data:/blob: ficam iguais)
   const caminho = (rel) => (/^(https?:|mailto:|tel:|data:|blob:|#)/i.test(rel) ? rel : raiz() + rel);
 
@@ -352,7 +354,7 @@
   window.SD = Object.freeze({
     config: CONFIG, icones: ICONES, sessao, tema, iconeCategoria, ehDestaque, categoriasDe,
     iconesCategoria: Object.freeze({ ...ICONES_CATEGORIA }),
-    esc, caminho, urlPagina, urlPerfil, hrefItem, linkMenu, itemVisivel, pode,
+    esc, iniciais, caminho, urlPagina, urlPerfil, hrefItem, linkMenu, itemVisivel, pode,
     logado, paginaAtual, tipoUsuario, ehApp
   });
 })();

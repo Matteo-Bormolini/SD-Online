@@ -1,29 +1,18 @@
 rules_version = '2';
-// S.D — REGRAS DO BANCO v0.8.5 (organizadas por ÁREA · 24/11/2026 · área 80: comunicados para todos, avisos e anúncios para clientes · área 40: comando Mostrar destaques)
-// Tudo que não está liberado aqui é PROIBIDO. 1 CPF/CNPJ = 1 conta.
-// Firebase: máximo 1.000 cálculos por pedido → cada área confere SÓ os campos dela
-// e, ao editar, SÓ os campos que mudaram.
-// Mapa das áreas:
-//   00 Geral: Interruptores          10 Cadastro_Geral: Passo 1      20 Perfil_Todos: Ler, Criar, Excluir
-//   01 Geral: Funções de apoio       11 Cadastro_CPF: Criar          21 Perfil_CPF: Editar
-//   02 Geral: Campos comuns          12 Cadastro_CNPJ: Criar         22 Perfil_CNPJ: Editar
-//   03 Geral: CPF e CNPJ (dígitos)   13 Cadastro_Prestador: Criar    23 Perfil_Prestador: Editar
-//   04 Geral: Horário da semana                                      24 Perfil_Adm: Editar
-//   25 Vitrine_Prestador: Ler e Publicar    30 Reserva_Documento: Criar e Excluir
-//   40 Config_Site: comandos do adm         50 Contatos_Orçamentos (v0.8.0)
-//   60 Avisos: sino (v0.8.0)                70 Fotos: compactadas, sem Storage (v0.8.0)
-//   80 Divulgacoes_Home: Home do prestador (v0.8.2) + avisos e anúncios da Home dos clientes (v0.8.5)
+// S.D — REGRAS DO BANCO v0.8.6 (25/11/2026) · tudo que não está liberado aqui é PROIBIDO · 1 CPF/CNPJ = 1 conta
+// Limite do Firebase: 1.000 cálculos por pedido → cada área confere só os SEUS campos e, ao editar, só os que mudaram.
+// Áreas: 00-05 Geral · 10-13 Cadastro · 20-24 Perfil · 25 Vitrine · 30 Reserva CPF/CNPJ · 40 Comandos do site
+//        50 Contatos/Orçamentos · 60 Avisos (sino) · 70 Fotos · 80 Divulgações (Home)
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===== 00 · Geral: Interruptores ← MUDE AQUI (true/false) e clique em Publicar =====
+    // ===== 00 · Interruptores ← MUDE AQUI e Publicar =====
     function EXIGIR_EMAIL_CONFIRMADO() { return true; }   // false = aceita perfil sem e-mail confirmado (só teste)
-    function ANO_MINIMO() { return 1975; }                 // "Início das atividades" (o máximo é o ano atual)
-    function DIAS_PARA_RESPONDER() { return 10; }          // prestador responde "Fez orçamento?" (depois: Expirou)
-    // US13: fotos do "Pedir contato". false = opcionais (sem Storage pago) · true = exige 3 fotos
-    function FOTOS_PEDIDO_OBRIGATORIAS() { return false; }
+    function ANO_MINIMO() { return 1975; }                 // "Início das atividades" (máximo = ano atual)
+    function DIAS_PARA_RESPONDER() { return 10; }          // depois disso o contato pode virar "expirado"
+    function FOTOS_PEDIDO_OBRIGATORIAS() { return false; } // true = "Pedir contato" exige 3 fotos
 
-    // ===== 01 · Geral: Funções de apoio =====
+    // ===== 01 · Funções de apoio =====
     function logado() { return request.auth != null; }
     function eDono(uid) { return logado() && request.auth.uid == uid; }
     function caminho(colecao, id) { return /databases/$(database)/documents/$(colecao)/$(id); }
@@ -31,38 +20,35 @@ service cloud.firestore {
     function ehAdm() { return logado() && exists(caminho('usuarios', request.auth.uid)) && tipoLogado() == 'adm'; }
     function novo() { return request.resource.data; }
     function emailOk() { return logado() && (!EXIGIR_EMAIL_CONFIRMADO() || request.auth.token.email_verified == true); }
-    // d = dados · k = campos a conferir (cadastro: todos · edição: só os que mudaram) · número = limite ← MUDE AQUI
-    // Campo ausente (apagado) passa: "apagar" é permitido nos campos opcionais.
+    // d = dados · k = campos a conferir · campo ausente passa (apagar campo opcional é permitido) · número = limite
     function texto(d, k, c, max) { return !(c in k) || !(c in d) || (d[c] is string && d[c].size() <= max); }
     function booleano(d, k, c) { return !(c in k) || !(c in d) || d[c] is bool; }
     function digitos(d, k, c, regex) { return !(c in k) || !(c in d) || (d[c] is string && d[c].matches(regex)); }
-    // Listas: as regras do Firebase NÃO têm "for". item() confere 1 posição; ate10() confere 10 (usado só em CNAEs e fotos).
+    // Listas: sem "for" nas regras → item() confere 1 posição, ate10() confere 10
     function item(l, i, tam) { return l.size() <= i || (l[i] is string && l[i].size() <= tam); }
     function ate10(l, tam) {
       return item(l, 0, tam) && item(l, 1, tam) && item(l, 2, tam) && item(l, 3, tam) && item(l, 4, tam)
           && item(l, 5, tam) && item(l, 6, tam) && item(l, 7, tam) && item(l, 8, tam) && item(l, 9, tam);
     }
-    // Listas de TEXTO (v0.8.4): junta os itens com "|" e confere tudo de uma vez (poucos cálculos).
-    // Antes (item por item) a vitrine do prestador passava do limite com 5 itens ou mais → permission-denied.
-    // Regra: até maxItens itens, cada um com até "tam" letras, sem o caractere "|".
+    // Lista de textos: junta com "|" e confere de uma vez (até maxItens, cada um até tam letras, sem "|")
     function lista(d, k, c, maxItens, tam) {
       return !(c in k) || !(c in d) || (d[c] is list && d[c].size() <= maxItens
         && (d[c].size() == 0 || textosOk(d[c].join('|'), d[c].size(), tam)));
     }
     function textosOk(j, n, tam) {
       return j.split('[|]').size() == n
-        && ((tam == 20 && j.matches('([^|]{0,20}[|])*[^|]{0,20}'))      // ← tamanhos usados nas listas
+        && ((tam == 20 && j.matches('([^|]{0,20}[|])*[^|]{0,20}'))
          || (tam == 30 && j.matches('([^|]{0,30}[|])*[^|]{0,30}'))
          || (tam == 40 && j.matches('([^|]{0,40}[|])*[^|]{0,40}'))
          || (tam == 60 && j.matches('([^|]{0,60}[|])*[^|]{0,60}')));
     }
 
-    // ===== 02 · Geral: Campos comuns (todos os tipos de conta) =====
+    // ===== 02 · Campos comuns (todas as contas) =====
     function camposComuns() {
       return ['email', 'atualizadoEm', 'telefones', 'interruptores', 'foto', 'local',
               'cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
     }
-    // Telefones: até 5 · { numero: até 11 dígitos, principal: true/false }
+    // Telefones: até 5 × { numero: até 11 dígitos, principal: true/false }
     function tel(l, i) {
       return l.size() <= i || (l[i] is map && l[i].keys().hasOnly(['numero', 'principal'])
         && l[i].get('numero', '').matches('[0-9]{0,11}') && l[i].get('principal', false) is bool);
@@ -71,16 +57,16 @@ service cloud.firestore {
       return !('telefones' in k) || !('telefones' in d) || (d.telefones is list && d.telefones.size() <= 5
         && tel(d.telefones, 0) && tel(d.telefones, 1) && tel(d.telefones, 2) && tel(d.telefones, 3) && tel(d.telefones, 4));
     }
-    // Botões liga/desliga: só nomes conhecidos e só true/false ("destaque" só o adm muda: área 20)
+    // Botões liga/desliga: só nomes conhecidos, só true/false ("destaque" só o adm muda)
     function interruptores(d, k) {
       return !('interruptores' in k) || !('interruptores' in d) || (d.interruptores is map
         && d.interruptores.keys().hasOnly(['localizacao', 'mostrar-contatos', 'compartilhar-dados-cpf', 'destaque'])
         && d.interruptores.values().hasOnly([true, false]));
     }
-    // Foto de perfil: imagem pequena guardada como texto (≈ 20 KB; máx. 60.000 caracteres) ← MUDE AQUI
+    // Foto de perfil em texto (≈20 KB, máx. 60.000 caracteres) ← MUDE AQUI
     function fotoOk(f) { return f is string && (f == '' || (f.size() <= 60000 && f.matches('data:image/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+'))); }
     function foto(d, k) { return !('foto' in k) || !('foto' in d) || fotoOk(d.foto); }
-    // Ponto no mapa (calculado pelo endereço): só dentro do Brasil
+    // Ponto no mapa: só dentro do Brasil
     function local(d, k) {
       return !('local' in k) || !('local' in d) || (d.local is map && d.local.keys().hasOnly(['lat', 'lng', 'precisao'])
         && d.local.lat is number && d.local.lat >= -34 && d.local.lat <= 6
@@ -96,18 +82,18 @@ service cloud.firestore {
         && (!k.hasAny(['cep', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf']) || enderecoOk(d, k));
     }
 
-    // ===== 03 · Geral: CPF e CNPJ (dígitos verificadores; botão do adm "Conferir CPF e CNPJ") =====
+    // ===== 03 · CPF e CNPJ: dígitos verificadores (comando do adm "Conferir CPF e CNPJ") =====
     function conferirDocumentos() {
       return !exists(caminho('configuracoes', 'site')) || get(caminho('configuracoes', 'site')).data.get('conferirDocumentos', true) != false;
     }
     function dvOk(soma, dig) { return (soma % 11 < 2 && dig == 0) || (soma % 11 >= 2 && dig == 11 - soma % 11); }
-    function x(c, i) { return int(c[i]); }   // dígito i do CPF
+    function x(c, i) { return int(c[i]); }
     function cpfValido(c) {
       return !c.matches('(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)')
         && dvOk(x(c,0)*10 + x(c,1)*9 + x(c,2)*8 + x(c,3)*7 + x(c,4)*6 + x(c,5)*5 + x(c,6)*4 + x(c,7)*3 + x(c,8)*2, x(c,9))
         && dvOk(x(c,0)*11 + x(c,1)*10 + x(c,2)*9 + x(c,3)*8 + x(c,4)*7 + x(c,5)*6 + x(c,6)*5 + x(c,7)*4 + x(c,8)*3 + x(c,9)*2, x(c,10));
     }
-    // CNPJ (também o novo com letras, 07/2026): letra = código ASCII − 48
+    // CNPJ com letras (07/2026): letra = código ASCII − 48
     function cnpjValido(c) {
       let v = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 'A': 17, 'B': 18, 'C': 19, 'D': 20,
                'E': 21, 'F': 22, 'G': 23, 'H': 24, 'I': 25, 'J': 26, 'K': 27, 'L': 28, 'M': 29, 'N': 30, 'O': 31, 'P': 32, 'Q': 33,
@@ -116,7 +102,7 @@ service cloud.firestore {
         && dvOk(v[c[0]]*5 + v[c[1]]*4 + v[c[2]]*3 + v[c[3]]*2 + v[c[4]]*9 + v[c[5]]*8 + v[c[6]]*7 + v[c[7]]*6 + v[c[8]]*5 + v[c[9]]*4 + v[c[10]]*3 + v[c[11]]*2, v[c[12]])
         && dvOk(v[c[0]]*6 + v[c[1]]*5 + v[c[2]]*4 + v[c[3]]*3 + v[c[4]]*2 + v[c[5]]*9 + v[c[6]]*8 + v[c[7]]*7 + v[c[8]]*6 + v[c[9]]*5 + v[c[10]]*4 + v[c[11]]*3 + v[c[12]]*2, v[c[13]]);
     }
-    // Formato + chave coerente com o tipo + dígitos (se a conferência estiver ligada)
+    // Formato + chave do tipo + dígitos (se o comando estiver ligado)
     function documentoOk(p) {
       return p.documento is string && (
            (p.tipo == 'cliente-cpf' && p.documento.matches('[0-9]{11}') && p.documentoChave == 'cpf-' + p.documento
@@ -125,8 +111,7 @@ service cloud.firestore {
              && (!conferirDocumentos() || cnpjValido(p.documento))));
     }
 
-    // ===== 04 · Geral: Horário da semana (visitas do CNPJ e atendimento do prestador) =====
-    // { faixas: até 3 × { dias: [0..6], inicio: 'HH:MM', fim: 'HH:MM' }, obs: até 80 }
+    // ===== 04 · Horário da semana: { faixas: até 3 × { dias: [0..6], inicio, fim }, obs: até 80 } =====
     function hora(h) { return h is string && h.matches('([01][0-9]|2[0-3]):[0-5][0-9]'); }
     function faixa(f, i) {
       return f.size() <= i || (f[i] is map && f[i].keys().hasOnly(['dias', 'inicio', 'fim'])
@@ -141,13 +126,11 @@ service cloud.firestore {
     }
     function semana(d, k, c) { return !(c in k) || !(c in d) || semanaOk(d[c]); }
 
-    // ===== 05 · Geral: Visita técnica e lista de fotos (v0.8.0) =====
-    // Visita: cobraVisita (sim/não) + valorVisita (R$ 0 a 100.000) ← MUDE AQUI
+    // ===== 05 · Visita técnica (R$ 0 a 100.000) e lista de fotos (até 12; imagem fica em fotos/{id}) =====
     function visitaOk(d, k) {
       return booleano(d, k, 'cobraVisita')
         && (!('valorVisita' in k) || !('valorVisita' in d) || (d.valorVisita is number && d.valorVisita >= 0 && d.valorVisita <= 100000));
     }
-    // Lista de fotos do perfil: até 12 × { id, legenda (trabalho) ou area (local CNPJ) }. A imagem fica em fotos/{id}.
     function fref(l, i) {
       return l.size() <= i || (l[i] is map && l[i].keys().hasOnly(['id', 'legenda', 'area'])
         && l[i].get('id', '') is string && l[i].get('id', '').size() > 0 && l[i].get('id', '').size() <= 40
@@ -160,9 +143,8 @@ service cloud.firestore {
         && fref(d[c], 6) && fref(d[c], 7) && fref(d[c], 8) && fref(d[c], 9) && fref(d[c], 10) && fref(d[c], 11));
     }
 
-    // ===== 10 · Cadastro_Geral: Passo 1 (dados esperando o e-mail ser confirmado) =====
-    // Cada tipo só aceita os campos do SEU formulário → poucos cálculos
-    function txt(p, c, max) { return p.get(c, '') is string && p.get(c, '').size() <= max; }   // número = limite ← MUDE AQUI
+    // ===== 10 · Cadastro passo 1: dados esperando o e-mail ser confirmado =====
+    function txt(p, c, max) { return p.get(c, '') is string && p.get(c, '').size() <= max; }
     function cadastroOk(p) {
       return p is map && p.size() <= 25 && txt(p, 'email', 254) && txt(p, 'documento', 14)
         && ((p.get('tipo', '') == 'cliente-cpf' && cadastroCpf(p)) || (p.get('tipo', '') in ['cliente-cnpj', 'prestador'] && cadastroEmpresa(p)))
@@ -173,7 +155,7 @@ service cloud.firestore {
         && p.get('interruptores', {}).values().hasOnly([true, false]);
     }
 
-    // ===== 11 · Cadastro_CPF: Criar =====
+    // ===== 11 · Cadastro CPF =====
     function cadastroCpf(p) {
       return p.keys().hasOnly(['tipo', 'email', 'documento', 'telefones', 'interruptores', 'cep', 'endereco', 'numero', 'complemento',
                                'bairro', 'cidade', 'uf', 'nome', 'compartilharDados', 'compartilharDadosEm'])
@@ -181,7 +163,7 @@ service cloud.firestore {
         && p.get('compartilharDados', false) is bool;
     }
 
-    // ===== 12 · Cadastro_CNPJ: Criar  ·  13 · Cadastro_Prestador: Criar (+ consulta do CNPJ) =====
+    // ===== 12-13 · Cadastro CNPJ e Prestador (+ consulta do CNPJ, só prestador) =====
     function cadastroEmpresa(p) {
       return p.keys().hasOnly(['tipo', 'email', 'documento', 'telefones', 'interruptores', 'cep', 'endereco', 'numero', 'complemento',
                                'bairro', 'cidade', 'uf', 'razaoSocial', 'responsavelNome', 'autorizacaoExibir', 'cnpjConsulta'])
@@ -203,12 +185,11 @@ service cloud.firestore {
         && request.resource.data.criadoEm == request.time && cadastroOk(request.resource.data.dados);
     }
 
-    // ===== 20 · Perfil_Todos: Ler, Criar (passo 2) e Excluir =====
+    // ===== 20 · Perfil: ler, criar (passo 2), excluir e editar =====
     match /usuarios/{uid} {
       allow read: if eDono(uid) || ehAdm();
 
-      // Passo 2: perfil = EXATAMENTE os dados do passo 1 (já conferidos) + e-mail do login, chave e datas.
-      //          Cria a reserva do CPF/CNPJ no MESMO envio.
+      // Passo 2: perfil = dados do passo 1 + e-mail, chave e datas; reserva do CPF/CNPJ no MESMO envio
       allow create: if eDono(uid) && emailOk() && perfilNovoOk(uid, novo(), get(caminho('cadastrosPendentes', uid)).data.dados);
       function perfilNovoOk(uid, p, pendente) {
         return p.diff(pendente).affectedKeys().hasOnly(['email', 'documentoChave', 'criadoEm', 'atualizadoEm'])
@@ -219,18 +200,17 @@ service cloud.firestore {
           && getAfter(caminho('documentos', p.documentoChave)).data.tipo == p.tipo;
       }
 
-      // Excluir: só junto com a reserva do CPF/CNPJ, ou o adm
+      // Excluir: junto com a reserva do CPF/CNPJ, ou o adm
       allow delete: if ehAdm() || (eDono(uid) && !existsAfter(caminho('documentos', resource.data.documentoChave)));
 
-      // Editar: o DONO edita só os campos do SEU tipo (áreas 21 a 24); o ADM edita tudo menos tipo, documento e criação.
-      // k = campos que mudaram (calculado UMA vez → menos cálculos)
+      // Editar: dono só os campos do SEU tipo (21-24) · adm tudo menos tipo, documento e criação · k = campos que mudaram
       allow update: if editar(request.resource.data.diff(resource.data).affectedKeys());
       function editar(k) {
         return (eDono(uid) && donoOk(k) && porTipo(resource.data.tipo, novo(), k))
             || (ehAdm() && !k.hasAny(['tipo', 'documento', 'documentoChave', 'criadoEm']) && admCamposOk(novo(), k)
                 && porTipo(resource.data.tipo, novo(), k.difference(camposAdm().toSet())));
       }
-      // O dono NUNCA muda: tipo, documento, criação, consulta do CNPJ, campos do adm e o "destaque"
+      // O dono NUNCA muda: tipo, documento, criação, consulta do CNPJ, campos do adm e "destaque"
       function donoOk(k) {
         return !k.hasAny(['tipo', 'documento', 'documentoChave', 'criadoEm', 'cnpjConsulta']) && !k.hasAny(camposAdm())
           && (!('email' in k) || novo().email == request.auth.token.email)
@@ -245,13 +225,13 @@ service cloud.firestore {
           || (t == 'adm'          && k.hasOnly(camposComuns().concat(['nome']))          && texto(d, k, 'nome', 120)));
       }
 
-      // ----- 21 · Perfil_CPF: Editar -----
+      // ----- 21 · CPF -----
       function camposCpf() { return ['nome', 'compartilharDados', 'compartilharDadosEm']; }
       function cpfOk(d, k) {
         return texto(d, k, 'nome', 120) && booleano(d, k, 'compartilharDados') && texto(d, k, 'compartilharDadosEm', 30);
       }
 
-      // ----- 22 · Perfil_CNPJ: Editar (horário de visitas é opcional) -----
+      // ----- 22 · CNPJ (horário de visitas opcional) -----
       function camposCnpj() {
         return ['razaoSocial', 'nomeFantasia', 'responsavelNome', 'responsavelCargo', 'tipoEstabelecimento', 'autorizacaoExibir',
                 'contatoNome', 'contatoFuncao', 'contatoTelefone', 'horarioVisitas', 'fotosLocal'];
@@ -263,8 +243,7 @@ service cloud.firestore {
           && semana(d, k, 'horarioVisitas') && fotosLista(d, k, 'fotosLocal');
       }
 
-      // ----- 23 · Perfil_Prestador: Editar -----
-      // "horario" e "bairrosAtendidos" (texto livre antigo) só podem ser APAGADOS.
+      // ----- 23 · Prestador ("horario" e "bairrosAtendidos" antigos: só podem ser apagados) -----
       function camposPrestador() {
         return ['razaoSocial', 'nomeFantasia', 'responsavelNome', 'responsavelCargo', 'autorizacaoExibir',
                 'areaAtuacao', 'sobre', 'especialidades', 'certificacoes', 'anoInicio', 'raioKm', 'emergencia',
@@ -287,7 +266,7 @@ service cloud.firestore {
           && visitaOk(d, k) && fotosLista(d, k, 'fotosTrabalho');
       }
 
-      // ----- 24 · Perfil_Adm: Editar (campos que SÓ o adm muda, em qualquer conta) -----
+      // ----- 24 · Campos que SÓ o adm muda (qualquer conta) -----
       function camposAdm() { return ['tags', 'avaliacao', 'servicosAnteriores', 'cargoBase', 'verificado']; }
       function admCamposOk(d, k) {
         return lista(d, k, 'tags', 10, 30) && texto(d, k, 'cargoBase', 30) && booleano(d, k, 'verificado')
@@ -298,16 +277,13 @@ service cloud.firestore {
       }
     }
 
-    // ===== 25 · Vitrine_Prestador: Ler e Publicar =====
-    // Cartão PÚBLICO do prestador (busca e perfil público). Sem CPF/CNPJ, e-mail ou endereço completo.
-    // Lê: clientes (CPF/CNPJ), adm e o próprio prestador. Outro prestador NÃO lê (concorrência).
+    // ===== 25 · Vitrine: cartão PÚBLICO do prestador (sem CPF/CNPJ, e-mail ou endereço completo) =====
+    // Lê: clientes, adm e o próprio prestador (outro prestador NÃO: concorrência). É cópia do perfil já conferido.
     match /vitrine/{uid} {
       allow read: if logado() && (eDono(uid) || tipoLogado() in ['cliente-cpf', 'cliente-cnpj', 'adm']);
       allow create, update: if eDono(uid) && tipoLogado() == 'prestador' && vitrineOk(novo());
       allow delete: if eDono(uid) || ehAdm();
-      // v0.8.4: a vitrine é uma CÓPIA do perfil já salvo (e já conferido na área 23).
-      // Os campos "pesados" (listas, horário, fotos) só precisam ser IGUAIS aos do perfil:
-      // 1 comparação cada, em vez de conferir item por item (passava do limite de cálculos).
+      // Campos "pesados" (listas, horário, fotos) só precisam ser IGUAIS aos do perfil (1 comparação cada)
       function vitrineOk(v) {
         let k = v.keys();
         let p = get(caminho('usuarios', request.auth.uid)).data;
@@ -330,13 +306,13 @@ service cloud.firestore {
           && (!('lng' in v) || (v.lng is number && v.lng >= -74 && v.lng <= -28))
           && v.atualizadoEm == request.time;
       }
-      // Tipos de serviço da busca ← MUDE AQUI junto com "categorias" em configuracoes/config.js
+      // Tipos de serviço ← MUDE AQUI junto com "categorias" em configuracoes/config.js
       function CATEGORIAS() {
         return ['eletrica', 'hidraulica', 'infiltracao', 'pintura', 'climatizacao', 'portoes', 'monitoramento', 'reparos', 'equipamentos'];
       }
     }
 
-    // ===== 30 · Reserva_Documento: Criar e Excluir (só o adm lê; já existe → "CPF/CNPJ já cadastrado") =====
+    // ===== 30 · Reserva do CPF/CNPJ (só o adm lê; já existe → "CPF/CNPJ já cadastrado") =====
     match /documentos/{chave} {
       allow read: if ehAdm();
       allow create: if emailOk() && novo().keys().hasOnly(['uid', 'tipo', 'criadoEm']) && novo().uid == request.auth.uid
@@ -347,23 +323,20 @@ service cloud.firestore {
       allow delete: if ehAdm() || (logado() && resource.data.uid == request.auth.uid && !existsAfter(caminho('usuarios', request.auth.uid)));
     }
 
-    // ===== 40 · Config_Site: Ler e Alterar (todos leem; só o adm muda) =====
+    // ===== 40 · Comandos do site (todos leem; só o adm muda) ← MUDE AQUI ao criar comando novo =====
     match /configuracoes/{id} {
       allow read: if true;
-      // Comandos do site ← MUDE AQUI ao criar um comando novo (configuracoes/interruptores.js → comando: true)
       allow write: if ehAdm() && id == 'site' && novo().keys().hasOnly(['conferirDocumentos', 'mostrarDestaques', 'atualizadoEm'])
         && novo().get('conferirDocumentos', true) is bool && novo().get('mostrarDestaques', true) is bool;
     }
 
-    // ===== 50 · Contatos_Orçamentos (v0.8.0 · fluxo "Contato registrado") =====
-    // 1 documento por prestador em cada pedido: id = pedidoId + "_" + prestadorUid (sem repetição).
-    // Cliente CRIA (clicou no WhatsApp ou "Pedir contato"); cada lado só muda o que é seu.
+    // ===== 50 · Contatos e orçamentos: id = pedidoId + "_" + prestadorUid (1 por prestador em cada pedido) =====
     // Situações: contato → orcado | nao-orcou | expirado → escolhido | nao-escolhido | cancelado | encerrado → concluido → prestado
     match /orcamentos/{id} {
       allow read: if logado() && (resource.data.clienteUid == request.auth.uid || resource.data.prestadorUid == request.auth.uid || ehAdm());
       allow create: if contatoNovo(id, novo());
       allow update: if logado() && novo().atualizadoEm == request.time && orcMudanca(resource.data, novo(), novo().diff(resource.data).affectedKeys());
-      // Apagar: o cliente (dono do pedido, LGPD), o prestador quando já terminou, qualquer lado depois de 1 ano, ou o adm
+      // Apagar: cliente (LGPD), prestador quando terminou, qualquer lado depois de 1 ano, ou o adm
       allow delete: if logado() && (ehAdm() || resource.data.clienteUid == request.auth.uid
         || (resource.data.prestadorUid == request.auth.uid
             && (resource.data.apagarEm < request.time || resource.data.situacao in ['nao-orcou', 'expirado', 'nao-escolhido', 'cancelado', 'encerrado', 'prestado'])));
@@ -372,6 +345,7 @@ service cloud.firestore {
         return ['pedidoId', 'clienteUid', 'prestadorUid', 'situacao', 'origem', 'categoria', 'servico', 'clienteNome', 'clienteTipo',
                 'clienteRegiao', 'prestadorNome', 'contatoEm', 'ultimoContatoEm', 'atualizadoEm', 'apagarEm'];
       }
+      // Cliente cria (clicou no WhatsApp ou "Pedir contato")
       function contatoNovo(id, d) {
         return logado() && emailOk() && d.clienteUid == request.auth.uid && tipoLogado() in ['cliente-cpf', 'cliente-cnpj']
           && d.keys().hasAll(camposContato()) && d.keys().hasOnly(camposContato().concat(['mensagem', 'fotos']))
@@ -389,12 +363,13 @@ service cloud.firestore {
                   && d.get('fotos', []) is list && d.get('fotos', []).size() <= 6 && ate10(d.get('fotos', []), 40)
                   && (!FOTOS_PEDIDO_OBRIGATORIAS() || d.get('fotos', []).size() >= 3)));
       }
+      // Cada lado só muda o que é seu
       function orcMudanca(r, d, k) {
         return (r.clienteUid == request.auth.uid && clienteMuda(r, d, k))
             || (r.prestadorUid == request.auth.uid && prestadorMuda(r, d, k))
             || expirar(r, d, k);
       }
-      // Cliente: novo clique (anti-spam), reabrir, escolher/recusar/cancelar, confirmar serviço feito
+      // Cliente: novo clique (anti-spam) · reabrir · escolher/recusar/cancelar · confirmar serviço feito
       function clienteMuda(r, d, k) {
         return (k.hasOnly(['ultimoContatoEm', 'atualizadoEm']) && r.situacao in ['contato', 'orcado'] && d.ultimoContatoEm == request.time)
           || (k.hasOnly(['situacao', 'contatoEm', 'ultimoContatoEm', 'atualizadoEm']) && r.situacao in ['expirado', 'nao-orcou']
@@ -403,7 +378,7 @@ service cloud.firestore {
               && d.situacao in ['escolhido', 'nao-escolhido', 'cancelado'] && d.decididoEm == request.time)
           || (k.hasOnly(['situacao', 'prestadoEm', 'atualizadoEm']) && r.situacao == 'concluido' && d.situacao == 'prestado' && d.prestadoEm == request.time);
       }
-      // Prestador: Não fiz, orçamento (primeiro ou edição), concluído, encerrar, arquivar (lixeira)
+      // Prestador: Não fiz · orçamento (novo ou edição) · concluído · encerrar · arquivar
       function prestadorMuda(r, d, k) {
         return (k.hasOnly(['situacao', 'respondidoEm', 'atualizadoEm']) && r.situacao == 'contato' && d.situacao == 'nao-orcou' && d.respondidoEm == request.time)
           || (k.hasOnly(['situacao', 'respondidoEm', 'orcamento', 'whatsapp', 'atualizadoEm']) && r.situacao == 'contato' && d.situacao == 'orcado'
@@ -414,14 +389,14 @@ service cloud.firestore {
           || (k.hasOnly(['arquivadoPrestador', 'atualizadoEm']) && d.arquivadoPrestador == true
               && r.situacao in ['nao-orcou', 'expirado', 'nao-escolhido', 'cancelado', 'encerrado', 'prestado']);
       }
-      // Qualquer um dos dois marca "Expirou" depois de 10 dias sem resposta (o site faz isso sozinho ao abrir)
+      // Qualquer lado marca "expirado" depois de DIAS_PARA_RESPONDER sem resposta
       function expirar(r, d, k) {
         return (r.clienteUid == request.auth.uid || r.prestadorUid == request.auth.uid)
           && k.hasOnly(['situacao', 'atualizadoEm']) && r.situacao == 'contato' && d.situacao == 'expirado'
           && request.time > r.contatoEm + duration.value(DIAS_PARA_RESPONDER(), 'd');
       }
       function whatsOk(d) { return !('whatsapp' in d) || (d.whatsapp is string && d.whatsapp.matches('[0-9]{0,11}')); }
-      // Orçamento (informativo): números ≥ 0 com limite ← MUDE AQUI
+      // Orçamento informativo: números ≥ 0 com limite ← MUDE AQUI
       function num(o, c, max) { return o.get(c, 0) is number && o.get(c, 0) >= 0 && o.get(c, 0) <= max; }
       function inteiro(o, c, max) { return o.get(c, 0) is int && o.get(c, 0) >= 0 && o.get(c, 0) <= max; }
       function orcamentoOk(o) {
@@ -439,27 +414,33 @@ service cloud.firestore {
       }
     }
 
-    // ===== 60 · Avisos: sino (v0.8.0) =====
-    // Só quem participa do contato/orçamento cria aviso para o OUTRO lado. Sem texto livre (a tela monta a frase).
+    // ===== 60 · Avisos (sino): id = orcamentoId + "_" + tipo · sem texto livre (a tela monta a frase) =====
+    // Só quem participa do orçamento avisa o OUTRO lado, e o tipo tem que bater com a situação real do orçamento.
     match /avisos/{id} {
       allow read, delete: if logado() && resource.data.para == request.auth.uid;
-      allow update: if logado() && resource.data.para == request.auth.uid
-        && novo().diff(resource.data).affectedKeys().hasOnly(['lido']) && novo().lido == true;
-      allow create: if logado() && avisoNovo(novo(), getAfter(caminho('orcamentos', novo().orcamentoId)).data);
-      function avisoNovo(a, o) {
+      allow create: if logado() && avisoNovo(id, novo(), getAfter(caminho('orcamentos', novo().orcamentoId)).data);
+      allow update: if logado() && ((resource.data.para == request.auth.uid                 // quem recebe: só marca como lido
+          && novo().diff(resource.data).affectedKeys().hasOnly(['lido']) && novo().lido == true)
+        || (resource.data.de == request.auth.uid && avisoNovo(id, novo(), getAfter(caminho('orcamentos', novo().orcamentoId)).data)));   // quem envia: reenvia
+      function avisoNovo(id, a, o) {
         return a.keys().hasOnly(['para', 'de', 'tipo', 'orcamentoId', 'nome', 'servico', 'lido', 'criadoEm', 'apagarEm'])
+          && id == a.orcamentoId + '_' + a.tipo
           && a.de == request.auth.uid && a.lido == false && a.criadoEm == request.time
           && a.apagarEm is timestamp && a.apagarEm > request.time + duration.value(29, 'd') && a.apagarEm < request.time + duration.value(31, 'd')
-          && a.tipo in ['novo-contato', 'orcamento', 'orcamento-alterado', 'nao-orcou', 'escolhido', 'nao-escolhido', 'cancelado',
-                        'encerrado', 'concluido', 'prestado']
           && a.nome is string && a.nome.size() <= 120 && a.servico is string && a.servico.size() <= 80
-          && ((o.clienteUid == a.de && o.prestadorUid == a.para) || (o.prestadorUid == a.de && o.clienteUid == a.para));
+          && ((o.clienteUid == a.de && o.prestadorUid == a.para && avisoDoCliente(a.tipo, o.situacao))
+           || (o.prestadorUid == a.de && o.clienteUid == a.para && avisoDoPrestador(a.tipo, o.situacao)));
+      }
+      function avisoDoCliente(t, s) {
+        return (t == 'novo-contato' && s in ['contato', 'orcado']) || (t in ['escolhido', 'nao-escolhido', 'cancelado', 'prestado'] && s == t);
+      }
+      function avisoDoPrestador(t, s) {
+        return (t in ['nao-orcou', 'encerrado', 'concluido'] && s == t) || (t in ['orcamento', 'orcamento-alterado'] && s in ['orcado', 'escolhido']);
       }
     }
 
-    // ===== 70 · Fotos: compactadas no banco, sem Storage (v0.8.0) =====
-    // 1 foto = 1 documento. "url" fica RESERVADO (vazio) para quando houver Storage.
-    // Lê: o dono, o adm; fotos de TRABALHO: clientes; fotos de PEDIDO: o prestador daquele contato.
+    // ===== 70 · Fotos compactadas no banco (sem Storage): 1 foto = 1 documento · "url" reservado (vazio) =====
+    // Lê: dono e adm · fotos de TRABALHO: clientes · fotos de PEDIDO: o prestador daquele contato
     match /fotos/{id} {
       allow read: if logado() && (resource.data.dono == request.auth.uid || ehAdm()
         || (resource.data.tipo == 'trabalho' && tipoLogado() in ['cliente-cpf', 'cliente-cnpj'])
@@ -469,7 +450,7 @@ service cloud.firestore {
       allow update: if logado() && resource.data.dono == request.auth.uid
         && novo().diff(resource.data).affectedKeys().hasOnly(['legenda']) && novo().legenda is string && novo().legenda.size() <= 80;
       allow delete: if logado() && (resource.data.dono == request.auth.uid || ehAdm());
-      // Tamanho máximo da imagem em texto ← MUDE AQUI (igual a firebase/fotos.js)
+      // Tamanho máximo ← MUDE AQUI (igual a firebase/fotos.js)
       function fotoNova(f) {
         return f.keys().hasOnly(['dono', 'tipo', 'ref', 'legenda', 'formato', 'largura', 'altura', 'dados', 'url', 'criadoEm'])
           && f.dono == request.auth.uid && f.criadoEm == request.time && f.url == ''
@@ -482,34 +463,16 @@ service cloud.firestore {
       }
     }
 
-    // ===== 80 · Divulgacoes_Home: Home do prestador (v0.8.2) e dos clientes (v0.8.5) =====
-    // Eventos, grupos/comunidades e comunicados da S.D. Só o ADM cadastra, edita, publica e apaga
-    // (aba "Divulgações" do Perfil do adm, v0.8.3). exemplo: true = exemplo ilustrativo (apagar antes do lançamento).
-    // Lê: o adm (tudo) e o PRESTADOR (só "publicado" e só o que é do público dele):
-    //   publico == 'geral'      → todos os prestadores
-    //   publico == 'atividades' → só quem tem uma das "atividades" como área de atuação ou atividade secundária
-    //                             (nomes iguais aos da lista única de serviços: configuracoes/config.js → servicos)
-    // CLIENTE CPF/CNPJ (v0.8.5) lê só "publicado" com publico == 'clientes' ou 'todos':
-    //   tipo 'comunicado' → Comunicados da S.D · tipo 'anuncio' → Anúncios (sempre 'clientes'; anunciante em "organizador")
-    // publico == 'todos' (v0.8.5) → clientes E prestadores; só para comunicado (ex.: site fora do ar).
-    // Evento e grupo NUNCA são 'clientes'. Visitantes NÃO leem. Não guarda quem viu.
-    // ATENÇÃO: o Firebase Console ignora estas regras (é acesso de dono). Ao cadastrar pelo console,
-    // siga o modelo de firebase/README.md; a tela (firebase/divulgacoes.js) também confere cada campo.
+    // ===== 80 · Divulgações da Home (só o adm grava; visitante não lê; não guarda quem viu) =====
+    // Prestador: publico geral, todos ou atividades (a tela filtra pela área) · Cliente: clientes ou todos
+    // Tipos: evento e grupo → só prestadores · anuncio → só clientes · comunicado → qualquer público
+    // ATENÇÃO: o Firebase Console ignora estas regras → ao cadastrar por lá, siga firebase/README.md
     match /divulgacoes/{id} {
-      // ← MUDE AQUI: true = o banco confere a área do prestador (padrão).
-      // false = PLANO B, só se a Agenda der "permissão negada" no teste real: qualquer prestador lê o que
-      // está publicado e a tela filtra pela área (conteúdo é divulgação, não é dado pessoal).
-      function SEGMENTAR_PUBLICO() { return true; }
       allow read: if emailOk() && (leituraPrestador(resource.data) || leituraCliente(resource.data) || ehAdm());
       allow create, update: if ehAdm() && divulgacaoOk(novo());
       allow delete: if ehAdm();
-      function minhasAtividades() {
-        let u = get(caminho('usuarios', request.auth.uid)).data;
-        return [u.get('areaAtuacao', '')] + u.get('especialidades', []);
-      }
       function leituraPrestador(d) {
-        return tipoLogado() == 'prestador' && d.situacao == 'publicado'
-          && (d.publico == 'geral' || d.publico == 'todos' || (d.publico == 'atividades' && (!SEGMENTAR_PUBLICO() || d.atividades.hasAny(minhasAtividades()))));
+        return tipoLogado() == 'prestador' && d.situacao == 'publicado' && d.publico in ['geral', 'todos', 'atividades'];
       }
       function leituraCliente(d) {
         return d.situacao == 'publicado' && (d.publico == 'clientes' || d.publico == 'todos') && tipoLogado() in ['cliente-cpf', 'cliente-cnpj'];

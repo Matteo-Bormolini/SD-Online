@@ -74,7 +74,7 @@
           <div class="filtro">
             <label for="filtro-horario">Horário</label>
             <select id="filtro-horario">
-              <option value="">Qualquer horário</option>
+              <option value="">Todos</option>
               <option value="semana">Dias de semana</option>
               <option value="fimdesemana">Fim de semana</option>
               <option value="emergencia">Atende emergência</option>
@@ -83,7 +83,7 @@
           <div class="filtro">
             <label for="filtro-distancia">Distância</label>
             <select id="filtro-distancia">
-              <option value="">Qualquer distância</option>
+              <option value="">Todas</option>
               <option value="5">Até 5 km</option>
               <option value="10">Até 10 km</option>
               <option value="20">Até 20 km</option>
@@ -93,7 +93,7 @@
           <div class="filtro">
             <label for="filtro-visita">Preço da visita</label>
             <select id="filtro-visita">
-              <option value="">Qualquer preço</option>
+              <option value="">Todos</option>
               <option value="0">Não cobra visita</option>
               <option value="50">Até R$ 50</option>
               <option value="100">Até R$ 100</option>
@@ -116,7 +116,7 @@
         <ul class="mapa-legenda" aria-label="Legenda do mapa">
           <li><span class="mapa-marcador mapa-marcador-voce" aria-hidden="true"></span>Você</li>
           <li><span class="mapa-marcador" aria-hidden="true"></span>Prestador</li>
-          <li><span class="mapa-marcador mapa-marcador-destaque" aria-hidden="true"></span>Destaque pago</li>
+          <li id="legenda-destaque" hidden><span class="mapa-marcador mapa-marcador-destaque" aria-hidden="true"></span>Destaque pago</li>
         </ul>
 
         <!-- Cartão do prestador escolhido (somente o necessário para pedir o serviço) -->

@@ -1,70 +1,54 @@
-# Banco de dados
+# Banco de dados (Firestore · v0.8.5)
 
-É onde as informações ficam guardadas de verdade: contas, pedidos, orçamentos e avaliações.
-**Desde 11/11/2026:** banco **Firestore** (Firebase, plano grátis). Contas já são reais (sem dados fictícios desde a v0.7.9); pedidos, orçamentos e avaliações chegam nos Ciclos 3 e 4.
-Código: `firebase/firebase.js` · Regras de segurança: `firebase/firestore.rules`.
+Banco **Firestore** (Firebase, plano grátis). Só a pasta `firebase/` fala com ele. Regras: `firebase/firestore.rules` (áreas 00–80).
+Senha: só no **Firebase Authentication** (com hash). Ninguém vê, nem o adm.
 
-## Coleções que já existem (Ciclo 2)
-| Coleção | Documento | Guarda | Quem lê / edita |
-|---|---|---|---|
-| `usuarios` | id = uid do login | Dados da conta (campos abaixo). **Sem senha.** | A própria pessoa e o adm. Tipo, documento e selo de destaque a pessoa não muda. |
-| `documentos` | `cpf-<11 números>` ou `cnpj-<14 caracteres>` | `{ uid, tipo, criadoEm }` — garante **1 conta por CPF/CNPJ** | Ninguém lê (só o adm). Criado junto com a conta; apagado ao excluir. |
-| `cadastrosPendentes` | id = uid | Dados do cadastro esperando o e-mail ser confirmado (passo 1) | Só o dono e o adm. |
-| `vitrine` | id = uid do prestador | Cartão **público** do prestador (sem CPF/CNPJ, e-mail ou endereço completo) | Lê: clientes e adm. Escreve: só o próprio prestador. |
+## Mapa das coleções
+| Coleção | id do documento | Guarda | Lê | Grava | Apaga |
+|---|---|---|---|---|---|
+| `usuarios` | uid do login | Dados da conta (por tipo, abaixo) | dono, adm | dono (só campos do seu tipo), adm | dono (junto com `documentos`), adm |
+| `cadastrosPendentes` | uid | Cadastro esperando o e-mail ser confirmado (`dados`, `criadoEm`) | dono, adm | dono | dono, adm |
+| `documentos` | `cpf-<11>` ou `cnpj-<14>` | `{ uid, tipo, criadoEm }` → 1 conta por CPF/CNPJ | adm | dono (junto com o perfil) | dono (ao excluir a conta), adm |
+| `vitrine` | uid do prestador | Cartão **público** (cópia resumida do perfil, sem CPF/CNPJ, e-mail ou endereço) | clientes, adm, o próprio | o próprio prestador | o próprio, adm |
+| `configuracoes` | `site` | Comandos do site: `conferirDocumentos`, `mostrarDestaques` | todos | adm | — |
+| `orcamentos` | `<pedidoId>_<prestadorUid>` | 1 contato/orçamento por prestador em cada pedido | cliente e prestador dele, adm | cada lado só o que é seu (área 50) | cliente, prestador (se terminou), adm |
+| `avisos` | `<orcamentoId>_<tipo>` | Sino: 1 aviso de cada tipo por orçamento | quem recebe | quem participa do orçamento (tipo = situação real) | quem recebe |
+| `fotos` | aleatório | 1 foto compactada (texto) por documento | dono, adm, clientes (trabalho), prestador do contato (pedido) | dono | dono, adm |
+| `divulgacoes` | aleatório | Comunicados, anúncios, eventos e grupos da Home | por público (área 80), adm | adm | adm |
 
-**Campos de `usuarios`** (mesmos nomes dos objetos `perfil` das páginas de perfil):
-`tipo` (cliente-cpf · cliente-cnpj · prestador · adm) · `email` · `documento` (só números/letras) · `documentoChave` ·
-`telefones` [{ numero, principal }] · `cep`, `endereco`, `numero`, `complemento`, `bairro`, `cidade`, `uf` ·
-`interruptores` { localizacao, mostrar-contatos, … } · `foto` (imagem pequena em texto) · `local` { lat, lng, precisao } (ponto no mapa) · `criadoEm`, `atualizadoEm`.
-- CPF: `nome`, `compartilharDados` + `compartilharDadosEm`.
-- CNPJ e prestador: `razaoSocial`, `responsavelNome`, `autorizacaoExibir` + os campos do "Editar perfil".
-- CNPJ: `horarioVisitas` { faixas: [{ dias, inicio, fim }], obs } (opcional).
-- Prestador: `especialidades` (= atividades secundárias), `cidadesAtendidas`, `horarioAtendimento` (mesmo formato), `anoInicio` (1975 até hoje).
-- Senha: fica só no **Firebase Authentication** (com hash). Ninguém vê, nem o adm.
-- Foto de perfil: salva no próprio perfil, reduzida (256 px). Fotos de trabalhos/local ainda não são salvas (Storage é pago).
+## Relações (quem aponta para quem)
+```
+usuarios/{uid} ──1:1── vitrine/{uid}            (só prestador)
+usuarios/{uid} ──1:1── documentos/{cpf|cnpj-…}  (chave = usuarios.documentoChave)
+orcamentos.clienteUid / prestadorUid ──► usuarios/{uid}
+orcamentos.pedidoId  = agrupa os prestadores chamados no MESMO pedido (mesmo cliente + mesmo serviço)
+orcamentos.fotos[]   ──► fotos/{id}   (fotos.ref = id do orçamento)
+avisos.orcamentoId   ──► orcamentos/{id}
+usuarios.fotosTrabalho[] / fotosLocal[] ──► fotos/{id}
+```
 
-## O que vai guardar
-Contas (4 tipos) · telefones · endereços · pedidos · orçamentos · avaliações · fotos · avisos · escolhas dos botões liga/desliga.
+## Campos de `usuarios`
+- **Todos:** `tipo` (cliente-cpf · cliente-cnpj · prestador · adm) · `email` · `documento` · `documentoChave` · `telefones` [{ numero, principal }] · `cep`, `endereco`, `numero`, `complemento`, `bairro`, `cidade`, `uf` · `local` { lat, lng, precisao } · `interruptores` { localizacao, mostrar-contatos, compartilhar-dados-cpf, destaque } · `foto` · `criadoEm`, `atualizadoEm`.
+- **CPF:** `nome`, `compartilharDados`, `compartilharDadosEm`.
+- **CNPJ:** `razaoSocial`, `nomeFantasia`, `responsavelNome`, `responsavelCargo`, `tipoEstabelecimento`, `autorizacaoExibir`, `contatoNome`, `contatoFuncao`, `contatoTelefone`, `horarioVisitas`, `fotosLocal`.
+- **Prestador:** os do CNPJ (menos local/visitas) + `areaAtuacao`, `especialidades`, `certificacoes`, `sobre`, `anoInicio`, `raioKm`, `emergencia`, `horarioAtendimento`, `cidadesAtendidas`, `cobraVisita`, `valorVisita`, `fotosTrabalho`, `cnpjConsulta`. Antigos (só podem ser apagados): `horario`, `bairrosAtendidos`.
+- **Só o adm muda:** `tags`, `avaliacao` { media, total }, `servicosAnteriores`, `cargoBase`, `verificado`, `interruptores.destaque`.
+- **Adm:** `nome` + comuns.
 
-## Campos já decididos
-**Todos os usuários**
-- Endereço separado: `cep`, `endereco`, `numero`, `complemento` (opcional), `bairro`, `cidade`, `uf`.
-- Um campo para cada botão liga/desliga de `configuracoes/interruptores.js` (ex.: `localizacao`).
+## Campos de `orcamentos`
+`pedidoId`, `clienteUid`, `prestadorUid`, `situacao`, `origem` (whatsapp · pedido), `categoria`, `servico`, `clienteNome`, `clienteTipo`, `clienteRegiao`, `prestadorNome` · datas `contatoEm`, `ultimoContatoEm`, `respondidoEm`, `decididoEm`, `concluidoEm`, `prestadoEm`, `atualizadoEm`, `apagarEm` (+1 ano) · `orcamento` { descricao, valorTotal, validadeDias, … } · `mensagem`, `fotos`, `whatsapp` (só "Pedir contato") · `arquivadoPrestador`.
+Situações: `contato` → `orcado` | `nao-orcou` | `expirado` → `escolhido` | `nao-escolhido` | `cancelado` | `encerrado` → `concluido` → `prestado`.
 
-**Prestador**
-- `tags` — `destaque` = assinatura de destaque ativa (o adm liga/desliga).
-- `localizacao` (sim/não) — desligado: não aparece em mapas nem listas.
-- `mostrar_contatos` (sim/não, padrão sim) — desligado: telefone, WhatsApp e e-mail não são enviados ao navegador do cliente.
-- `latitude`, `longitude` — calculados pelo servidor a partir do endereço.
-- `informativo_cobranca` — texto de como cobra (só informação; o site não mexe com dinheiro).
+## Limpeza automática (sem servidor: feita quando a pessoa abre o site)
+- Contato sem resposta há 10 dias → `expirado`.
+- Orçamento com mais de 1 ano → apagado (o cliente apaga também as fotos do "Pedir contato").
+- Aviso com mais de 30 dias → apagado.
+- Cliente apaga um contato → as fotos dele saem junto.
 
-**Cliente CPF**
-- `compartilhar_dados` (sim/não, padrão não) + data da última mudança.
+## Índices (Firestore → Índices → Compostos)
+Só 1 é usado: `divulgacoes` · `situacao` (Crescente) + `publico` (Crescente). O índice antigo `situacao` + `atividades` não é mais usado (pode apagar).
 
-**Cliente CNPJ**
-- `responsavel_cargo`; `horario_visitas` (até 3 faixas: dias 0–6, hora de início e fim) + `horario_obs`.
-
-**Pedidos e quadro do prestador**
-- `etapa`: a_orcar · orcando · aceito · a_realizar · prestado · encerrado.
-- `motivo_encerramento` + `encerrado_em`. O servidor **apaga sozinho 1 ano depois** de `encerrado_em`.
-- Uma **solicitação** do cliente (descrição + 3 a 6 fotos; mínimo 3) ligada a vários prestadores (um pedido por prestador marcado).
-- `responder_ate` = data do pedido + 10 dias. Passou sem resposta → `encerrado` com motivo "Expirou".
-- Orçamento: valores, datas, `cobra_visita` (sim/não) e `valor_visita`. Sem tabela de preço fixa. Ao enviar, libera o contato do prestador para aquele cliente. Sem contraproposta.
-- Finalização **pelo cliente**: `finalizado_em` + 2 a 6 fotos. Só então a etapa vira `prestado`.
-
-**Avaliações**
-- `mostrar_nome` (sim/não, padrão não). `resposta_prestador` (opcional) e a data da resposta.
-
-## Login (como ficou no Firebase)
-| Antes (planejado) | Agora |
-|---|---|
-| `identificadores_acesso` | E-mail = Firebase Authentication · CPF/CNPJ = coleção `documentos` |
-| `credenciais` (antes: Argon2id próprio) | Senha guardada pelo Firebase Authentication (hash próprio do Google) |
-
-## Situação
-✅ pronto · 🟡 só na demonstração · ⬜ a fazer
-
-- ✅ Servidor escolhido: Firebase (11/11/2026).
-- ✅ Contas (`usuarios`, `documentos`) — Ciclo 2.
-- ✅ Vitrine do prestador (`vitrine`) — v0.7.9.
-- ⬜ Pedidos, orçamentos, avaliações — Ciclos 3 e 4.
+## Pontos em aberto
+- **Destaque pago:** o adm liga `interruptores.destaque` no perfil, mas a `vitrine` não leva essa marca → hoje nenhum destaque aparece na busca (a legenda só aparece quando houver).
+- **Avaliações:** chegam no Ciclo 4 (coleção nova).
+- `cadastrosPendentes` abandonado (pessoa nunca confirmou o e-mail) fica no banco; o adm pode apagar pelo console.

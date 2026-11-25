@@ -99,6 +99,11 @@ Chromium (Playwright) + Firebase FALSO em memória que imita a área 80 das regr
 - No site real (navegador do Claude, conta de prestador do Marco, e-mail confirmado): as 2 consultas da Home deram **permission-denied**; o sino da mesma conta leu normalmente → regras da área 80 ainda não publicadas (ou com defeito, a confirmar depois de publicar).
 - Firebase FALSO (Chromium): ✅ 22 verificações com prints — aba aparece para o adm; criar 9 exemplos; validação (link http, evento sem data); salvar com imagem enviada (vira data:image); editar com confirmação; suspender/publicar; prestador (Elétrica) vê gerais + Elétrica e não vê Marcenaria; etiqueta "Exemplo ilustrativo"; apagar exemplos deixa só o real; excluir; prestador não consegue gravar; celular sem rolagem lateral; 0 erros. Home: 58/58 de novo.
 
+## 3e. Teste real de orçamento (25/11/2026, v0.8.6 — site publicado, 7 contas logadas)
+- OK: 3 orçamentos → renegociar (prestador edita) → fechar → concluído → confirmado · 4 orçamentos → fechar → editar depois de fechado · "Não fechei com nenhum" (novo contato abre pedido novo) · reabrir após "Não fiz" · pedido em aberto · anti-spam · XSS na observação escapado.
+- Segurança: 24 tentativas negadas (ler dados de outros, virar adm/verificado, mudar valor do outro lado, pular etapas, contato em nome de outro, vitrine falsa, ler todas as fotos/usuários).
+- Corrigido: aviso falso no sino (regra área 60 confere tipo × situação; id = orçamento_tipo) · Home do prestador sem eventos/grupos da área (consulta por atividade negada) · valor acima do limite cortado em silêncio · fotos do "Pedir contato" ficavam soltas ao apagar o contato.
+
 ## 4. Piores cenários e como contornar
 
 | Cenário | Risco | Como contornar | Quando |

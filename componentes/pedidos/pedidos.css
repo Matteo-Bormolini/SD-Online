@@ -64,7 +64,7 @@
 
 /* ---------- 4. BLOCO "EM ORÇAMENTO" (perfil do cliente, aba Serviços) ---------- */
 .pd-em-orcamento { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
-.pd-bloco-titulo { margin: 0; font-size: 1rem; }
+.pd-bloco-titulo { margin: 0; font-size: 1.125rem; font-weight: 600; }   /* igual a .servicos-topo h2 */
 .pd-bloco { padding: 1rem; background: var(--cor-superficie); border: 1px dashed var(--cor-vinho); border-radius: var(--raio-cartao); }
 .pd-bloco-andamento { border-style: solid; }
 .pd-bloco-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; flex-wrap: wrap; }

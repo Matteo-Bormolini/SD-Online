@@ -21,7 +21,7 @@
    v0.8.0 (Ciclo 3):
      - FILTROS na tela (sem novas leituras do banco): nome, horário (1º horário = principal:
        dias de semana / fim de semana; "Atende emergência"), distância e preço da visita
-       (quem não cobra = R$ 0; quem não informou só aparece em "Qualquer preço").
+       (quem não cobra = R$ 0; quem não informou só aparece em "Todos" (preço)).
      - WhatsApp passa pelo AVISO DE COBRANÇA e registra o contato (componentes/pedidos).
      - Prestador sem contatos à mostra: botão "Pedir contato".
    ===================================================================== */
@@ -145,7 +145,7 @@
     if (km && (p.distancia == null || p.distancia > Number(km))) return false;   // sem ponto: não dá para saber a distância
     const visita = filtro.visita.value;
     if (visita !== "") {
-      if (p.cobraVisita === undefined) return false;                     // não informou: só em "Qualquer preço"
+      if (p.cobraVisita === undefined) return false;                     // não informou: só em "Todos" (preço)
       const preco = p.cobraVisita ? p.valorVisita : 0;                   // não cobra = R$ 0
       if (preco > Number(visita)) return false;
     }
@@ -251,7 +251,7 @@
   }
 
   /* ---------- 7. LISTA DE PRESTADORES ---------- */
-  const iniciais = (nome) => nome.split(/\s+/).filter((p) => /[A-Za-zÀ-ú]/.test(p)).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+  const iniciais = SD.iniciais;
   const logo = (p, classe) => p.logo
     ? `<img class="${classe}" src="${esc(p.logo)}" alt="" width="56" height="56" loading="lazy">`
     : `<span class="${classe}" aria-hidden="true">${esc(iniciais(p.nome))}</span>`;
@@ -259,6 +259,8 @@
   const etiquetaDestaque = (p) => (SD.ehDestaque(p) ? `<span class="tag-destaque">${esc(C.destaque.rotulo)}</span>` : "");
 
   function renderizarLista() {
+    const leg = document.getElementById("legenda-destaque");                 // legenda só quando há destaque na lista
+    if (leg) leg.hidden = !estado.visiveis.some((p) => SD.ehDestaque(p));
     el.vazia.hidden = estado.lista.length > 0;
     el.lista.innerHTML = estado.visiveis.map((p) => `
       <li><button type="button" class="item-prestador" data-id="${esc(p.id)}" aria-pressed="false"${atributoDestaque(p)}>

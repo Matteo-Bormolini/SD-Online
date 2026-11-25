@@ -91,9 +91,9 @@
   const ESTACIONAMENTO = { gratuito: "Gratuito", pago: "Pago", nao: "Não tem" };
 
   /* ---------- 3. UTILITÁRIOS ---------- */
-  const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = SD.esc;
   const resumo = (t, max = LIMITE_RESUMO) => (t.length > max ? t.slice(0, max).replace(/\s+\S*$/, "") + "…" : t);
-  const iniciais = (nome) => String(nome).split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+  const iniciais = SD.iniciais;
   const dominio = (url) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch (_) { return ""; } };
   // Imagem: arquivo do site (caminho a partir da raiz) ou imagem em texto (data:)
   const srcImagem = (v) => (!v ? "" : v.startsWith("data:") ? v : SD.caminho(v));
@@ -367,7 +367,7 @@
           <h1 id="ola-titulo">Olá${nome || ""}!</h1>
           <p>${esc(TEXTO.subtitulo)}</p>
           <div class="atalhos">
-            <a class="btn" href="${esc(SD.caminho("localizar-condominios/index.html"))}">Seus Serviços</a>
+            <a class="btn" href="${esc(SD.caminho("perfil-prestador/index.html"))}#servicos">Meus serviços</a>
             <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
           </div>
         </section>`}

@@ -110,7 +110,7 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 
 ## Coleções do Ciclo 3 (v0.8.0)
 - `orcamentos/{pedidoId_prestadorUid}`: 1 por prestador em cada pedido (sem repetição). Campos: ids, situação, origem (whatsapp/pedido), categoria, serviço, nome de exibição e região do cliente, nome do prestador, datas (`contatoEm`, `ultimoContatoEm`, `respondidoEm`, `decididoEm`, `concluidoEm`, `prestadoEm`, `atualizadoEm`, `apagarEm` = +1 ano), `orcamento` (mapa), `mensagem`/`fotos` (só Pedir contato), `whatsapp` (só Pedir contato, enviado com o orçamento), `arquivadoPrestador`.
-- `avisos/{id}`: para, de, tipo, orcamentoId, nome, serviço, lido, criadoEm, apagarEm (+30 dias).
+- `avisos/{orcamentoId_tipo}`: para, de, tipo, orcamentoId, nome, serviço, lido, criadoEm, apagarEm (+30 dias). 1 por tipo em cada orçamento; o banco confere o tipo com a situação (v0.8.5).
 - `fotos/{id}`: dono, tipo (trabalho/local/pedido), ref, legenda, formato, largura, altura, dados, url (reservado), criadoEm.
 - **Índices:** as buscas usam só `where(campo, "==", …)` (clienteUid, prestadorUid, para) — o Firestore cria esses índices sozinho. Nada a configurar.
 - **Sem servidor:** prazos (10 dias, 1 ano, 30 dias) são conferidos quando cliente ou prestador abre o site; as regras conferem as datas.
@@ -118,11 +118,10 @@ Ao mudar um limite, mude também na tela para a pessoa não digitar mais do que 
 ## Coleção `divulgacoes` — Home do prestador (v0.8.2)
 Eventos, grupos/comunidades e comunicados que aparecem na **Home do prestador**. **Só o adm cadastra** (por enquanto pelo console; não existe painel).
 
-### 1. Criar os índices (uma vez, grátis)
+### 1. Criar o índice (uma vez, grátis)
 Firestore Database → **Índices** → **Compostos** → **Criar índice**:
 | Coleção | Campo 1 | Campo 2 |
 |---|---|---|
-| `divulgacoes` | `situacao` · Crescente | `atividades` · **Matrizes (array-contains)** |
 | `divulgacoes` | `situacao` · Crescente | `publico` · Crescente |
 Escopo: **Coleção**. Leva alguns minutos para ficar "Ativado". (O mesmo está em `firestore.indexes.json`.)
 Se faltar um índice, o console do navegador (F12) mostra o erro com um **link que cria o índice** sozinho.

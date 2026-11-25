@@ -3,11 +3,10 @@
    O comportamento comum (abas, telefones, edição, exclusão) vem de
    componentes/perfil-base/perfil-base.js. Aqui fica só o exclusivo do adm:
      - "Cargo" = "Administrador - <cargo definido pelo líder>"
-     - Foto de perfil (sem foto → iniciais do nome) + galeria de até 12 fotos
+     - Foto de perfil (sem foto → iniciais do nome)
      - Aba "Administração" (v0.8.5: botões de comando do site, por grupo) e aba "Divulgações" (divulgacoes-adm.js)
    O adm vê dados sigilosos dos usuários, mas NUNCA a senha (hash no servidor).
    DADOS: sempre os REAIS (Firebase). Sem dados fictícios desde a v0.7.9.
-   Galeria de fotos: ainda só na tela (próximo ciclo).
    ===================================================================== */
 (function () {
   "use strict";
@@ -16,18 +15,16 @@
 
   /* ---------- 1. CONFIGURAÇÃO (fácil de ajustar) ---------- */
   const CONFIG = {
-    ...P.PADRAO,                 // telefones (4), fotos (JPG/PNG/WEBP até 5 MB)
-    maxFotosGaleria: 12,
-    urlAvaliacoes: SD.urlPagina("avaliacoes")
+    ...P.PADRAO                  // telefones (4), fotos (JPG/PNG/WEBP até 5 MB)
   };
 
   /* ---------- 2. DADOS DO PERFIL ----------
      Começa VAZIO; carregarDadosReais() preenche com a conta logada. */
   const perfil = {
-    nome: "", cargoBase: "Administrador", cargoLider: "", documento: "", email: "",
+    nome: "", cargoBase: "Administrador", cargoLider: "", email: "",
     telefones: [{ numero: "", principal: true }],
     endereco: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", uf: "",
-    avaliacao: { media: 0, total: 0 }, foto: null, galeria: []
+    foto: null
   };
 
   let telefones = null;
@@ -37,11 +34,9 @@
     P.preencherCampos({
       nome: perfil.nome,
       cargo: perfil.cargoLider ? perfil.cargoBase + " - " + perfil.cargoLider : perfil.cargoBase,  // espaço antes e depois do "-"
-      documento: perfil.documento,
       email: perfil.email,
       ...P.enderecoParaTela(perfil)
     });
-    P.preencherLinkAvaliacoes($("#link-avaliacoes"), perfil.avaliacao, CONFIG.urlAvaliacoes);
     P.preencherPlaceholders({
       "f-nome": perfil.nome, "f-email": perfil.email,
       "f-telefone": U.formatarTelefone(perfil.telefones.find((t) => t.principal)?.numero),
@@ -52,37 +47,16 @@
     renderizarFoto();
   }
 
-  /* ---------- 4. FOTO DE PERFIL E GALERIA ---------- */
+  /* ---------- 4. FOTO DE PERFIL ---------- */
   function renderizarFoto() {
     const img = $("#foto-perfil");
     img.src = perfil.foto || U.iconeIniciais(perfil.nome);
     img.alt = "Foto de perfil de " + perfil.nome;
   }
 
-  function renderizarGaleria() {
-    const grade = $("#galeria-grade");
-    grade.innerHTML = "";
-    perfil.galeria.forEach((url, i) => {
-      const li = document.createElement("li");
-      const img = document.createElement("img");
-      img.src = url; img.alt = `Foto secundária ${i + 1}`; img.loading = "lazy";
-      const rem = document.createElement("button");
-      rem.type = "button"; rem.className = "btn-remover"; rem.innerHTML = P.ICONES.x;
-      rem.setAttribute("aria-label", `Remover foto secundária ${i + 1}`);
-      rem.addEventListener("click", () => { URL.revokeObjectURL(url); perfil.galeria.splice(i, 1); renderizarGaleria(); $("#btn-galeria").focus(); });
-      li.append(img, rem);
-      grade.append(li);
-    });
-    $("#titulo-galeria").textContent = `Galeria (${perfil.galeria.length})`;
-    $("#galeria-vazia").hidden = perfil.galeria.length > 0;
-    $("#btn-galeria").disabled = perfil.galeria.length >= CONFIG.maxFotosGaleria;
-    P.atualizarAltura();
-  }
-
   function iniciarFotos() {
     const msg = $("#msg-foto");
     $("#btn-foto").addEventListener("click", () => $("#input-foto").click());
-    $("#btn-galeria").addEventListener("click", () => $("#input-galeria").click());
 
     $("#input-foto").addEventListener("change", async (e) => {
       const arq = e.target.files[0];
@@ -91,20 +65,6 @@
       const erro = P.validarArquivo(arq, CONFIG);
       if (erro) { U.mostrarMensagem(msg, "erro", erro); return; }
       await P.salvarFoto(perfil, arq, msg, renderizarFoto);   // reduz (256 px) e salva no perfil
-    });
-
-    $("#input-galeria").addEventListener("change", (e) => {
-      const arquivos = [...e.target.files];
-      e.target.value = "";
-      const problemas = [];
-      arquivos.forEach((arq) => {
-        if (perfil.galeria.length >= CONFIG.maxFotosGaleria) { problemas.push(`Limite de ${CONFIG.maxFotosGaleria} fotos atingido.`); return; }
-        const erro = P.validarArquivo(arq, CONFIG);
-        if (erro) problemas.push(erro); else perfil.galeria.push(URL.createObjectURL(arq));
-      });
-      renderizarGaleria();
-      if (problemas.length) U.mostrarMensagem(msg, "erro", [...new Set(problemas)].join(" "));
-      else if (arquivos.length) U.mostrarMensagem(msg, "atencao", "Fotos adicionadas à pré-visualização (ainda não enviadas ao servidor).");
     });
   }
 
@@ -196,7 +156,6 @@
     await P.carregarDadosReais(perfil, "adm");
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios });
     renderizarDados();
-    renderizarGaleria();
     P.iniciarSanfona();
     P.iniciarFormulario({
       perfil,

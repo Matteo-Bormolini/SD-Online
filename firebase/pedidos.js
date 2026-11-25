@@ -134,7 +134,7 @@ async function limpezaAutomatica() {
   const tarefas = [];
   for (const o of estado.lista) {
     if (ms(o.apagarEm) && ms(o.apagarEm) < agora()) {                     // passou de 1 ano
-      tarefas.push(deleteDoc(doc(db, COLECAO.orcamentos, o.id)).then(() => { o._apagado = true; }).catch(() => null));
+      tarefas.push(deleteDoc(doc(db, COLECAO.orcamentos, o.id)).then(() => { o._apagado = true; apagarFotos(o); }).catch(() => null));
     } else if (o.situacao === SITUACAO.contato && diasDesde(o.contatoEm) > REGRAS.diasParaResponder) {
       tarefas.push(updateDoc(doc(db, COLECAO.orcamentos, o.id), { situacao: SITUACAO.expirado, atualizadoEm: serverTimestamp() })
         .then(() => { o.situacao = SITUACAO.expirado; }).catch(() => null));
@@ -144,10 +144,11 @@ async function limpezaAutomatica() {
   estado.lista = estado.lista.filter((o) => !o._apagado);
 }
 
-/* ---------- 4. AVISOS (coleção "avisos") ---------- */
+/* ---------- 4. AVISOS (coleção "avisos") ----------
+   id = orçamento + tipo → 1 aviso de cada tipo por orçamento (o banco confere o tipo com a situação) */
 async function criarAviso(o, para, tipo, nome) {
   try {
-    await setDoc(doc(collection(db, COLECAO.avisos)), {
+    await setDoc(doc(db, COLECAO.avisos, `${o.id}_${tipo}`), {
       para, de: auth.currentUser.uid, tipo, orcamentoId: o.id,
       nome: String(nome || "").slice(0, 120), servico: String(o.servico || "").slice(0, 80),
       lido: false, criadoEm: serverTimestamp(), apagarEm: daquiA(REGRAS.diasAvisos)
@@ -354,9 +355,15 @@ export async function cancelarPedido(pedidoId) {
   for (const o of abertos) await avisarPrestador(o, AVISO.cancelado);
   avisarMudanca();
 }
+// Fotos do "Pedir contato" saem junto com o contato (só o cliente, dono das fotos, consegue apagar)
+function apagarFotos(o) {
+  if (estado.papel === "cliente" && window.SDFotos) (o.fotos || []).forEach((f) => window.SDFotos.apagar(f).catch(() => null));
+}
 // Cliente apaga um contato da lista dele (LGPD: pode apagar quando quiser)
 export async function excluir(id) {
+  const o = (estado.lista || []).find((x) => x.id === id);
   await deleteDoc(doc(db, COLECAO.orcamentos, id));
+  if (o) apagarFotos(o);
   estado.lista = (estado.lista || []).filter((o) => o.id !== id);
   avisarMudanca();
 }

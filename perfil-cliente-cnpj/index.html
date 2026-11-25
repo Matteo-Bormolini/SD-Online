@@ -337,12 +337,13 @@
 
       <!-- ===================== PAINEL SERVIÇOS REALIZADOS ===================== -->
       <div class="painel painel-servicos" role="tabpanel" id="painel-servicos" aria-labelledby="aba-servicos" tabindex="0">
+        <!-- 1º: pedidos em orçamento / em andamento (componentes/pedidos). Some quando não há nenhum. -->
+        <div class="pd-em-orcamento" id="em-orcamento" hidden></div>
+        <!-- 2º: serviços realizados -->
         <div class="servicos-topo">
           <h2 id="titulo-servicos">Serviços realizados</h2>
           <span class="servicos-total" id="servicos-total"></span>
         </div>
-        <!-- v0.8.0: pedidos em orçamento / em andamento (componentes/pedidos). Some quando não há nenhum. -->
-        <div class="pd-em-orcamento" id="em-orcamento" hidden></div>
         <p class="servicos-dica">Serviços já realizados. Clique em um serviço para ver os detalhes.</p>
         <!-- Lista (mais recente primeiro), montada por componentes/servicos-realizados -->
         <ol class="lista-servicos" id="lista-servicos" aria-labelledby="titulo-servicos"></ol>

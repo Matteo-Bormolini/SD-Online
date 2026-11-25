@@ -65,16 +65,6 @@
             <tbody>
               <tr><th scope="row">Nome completo</th><td class="valor" data-campo="nome"></td></tr>
               <tr><th scope="row">Cargo</th><td class="valor" data-campo="cargo"></td></tr>
-              <tr>
-                <th scope="row">CPF/CNPJ</th>
-                <td class="valor">
-                  <span data-campo="documento"></span>
-                  <span class="etiqueta" title="Documento único, não pode ser alterado">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                    Inalterável
-                  </span>
-                </td>
-              </tr>
               <tr><th scope="row">E-mail</th><td class="valor" data-campo="email"></td></tr>
               <tr>
                 <th scope="row">WhatsApp/Telefone</th>
@@ -102,11 +92,6 @@
                   <!-- CEP | Endereço · Número | Complemento | Bairro · Cidade | UF (componentes/endereco) -->
                   <div data-endereco="exibir"></div>
                 </td>
-              </tr>
-              <tr>
-                <th scope="row">Avaliações</th>
-                <!-- Hiperlink para a página de avaliações (pasta avaliacoes/) -->
-                <td><a class="link estrelas" href="../avaliacoes/index.html" id="link-avaliacoes">Ver avaliações</a></td>
               </tr>
               <tr>
                 <th scope="row">Senha</th>
@@ -192,25 +177,16 @@
         </div>
 
         <!-- ===== FOTO DE PERFIL E GALERIA (à direita; no celular vai para cima) ===== -->
-        <aside class="perfil-foto" aria-label="Foto de perfil e galeria">
+        <aside class="perfil-foto" aria-label="Foto de perfil">
           <div class="foto-moldura">
             <img id="foto-perfil" src="data:," alt="Foto de perfil" width="200" height="200">
           </div>
           <div class="foto-botoes">
             <button type="button" class="btn btn-pequeno" id="btn-foto">Editar foto de perfil</button>
-            <button type="button" class="btn btn-pequeno btn-icone" id="btn-galeria" aria-label="Adicionar fotos à galeria" title="Adicionar fotos à galeria">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            </button>
           </div>
           <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp" class="visualmente-oculto" tabindex="-1" aria-hidden="true">
-          <input type="file" id="input-galeria" accept="image/jpeg,image/png,image/webp" multiple class="visualmente-oculto" tabindex="-1" aria-hidden="true">
           <div class="mensagem" id="msg-foto" role="status" aria-live="polite"></div>
 
-          <div class="galeria">
-            <h3 id="titulo-galeria">Galeria (0)</h3>
-            <ul class="galeria-grade" id="galeria-grade" aria-labelledby="titulo-galeria"></ul>
-            <p class="galeria-vazia" id="galeria-vazia">Nenhuma foto secundária. Use o “+” para adicionar.</p>
-          </div>
         </aside>
       </div>
 
