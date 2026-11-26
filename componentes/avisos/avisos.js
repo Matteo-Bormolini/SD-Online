@@ -35,10 +35,8 @@
     if (dias === 1) return "ontem";
     return `há ${dias} dias`;
   };
-  const destino = () => {
-    const url = D.papel() === "prestador" ? SD.urlPagina("perfilPrestador") : SD.urlPerfil();
-    return url + "#servicos";
-  };
+  // Prestador → página "Seus Serviços" (v0.8.7) · cliente → aba Serviços do perfil
+  const destino = () => (D.papel() === "prestador" ? SD.urlPagina("seusServicos") : SD.urlPerfil() + "#servicos");
 
   const SINO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
 
@@ -120,7 +118,7 @@
     });
   }
 
-  // Abre o perfil na aba Serviços. Já está na página? Só troca a aba (sem recarregar).
+  // Abre o destino (cliente: perfil na aba Serviços · prestador: Seus Serviços). Já está lá? Não recarrega.
   function irPara(href) {
     const destinoUrl = new URL(href, location.href);
     if (destinoUrl.pathname === location.pathname) {

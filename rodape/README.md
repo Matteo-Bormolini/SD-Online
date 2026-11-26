@@ -3,8 +3,8 @@
 A faixa vinho no fim de todas as páginas.
 
 ## O que tem
-- Atalhos: Serviços · Seus Serviços · Sobre nós · Suporte (cada um vê o que pode usar).
-- Linha de baixo: Política da empresa · Termos de uso · Responsabilidade · Privacidade.
+- Atalhos: Serviços · Seus Serviços · Suporte (cada um vê o que pode usar).
+- Linha de baixo (v0.8.7): **Termos de uso** · **Privacidade**.
 - **Baixe o app:** "Em breve" até existirem os selos oficiais em `fotos/marca/lojas/`.
 - Aviso: o Suporte é para dúvidas e melhorias, não para reclamações.
 

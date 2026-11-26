@@ -1,5 +1,6 @@
 /* =====================================================================
    S.D — QUADRO DE SERVIÇOS DO PRESTADOR (componentes/kanban-servicos/kanban-servicos.js)
+   Usado na página "Seus Serviços" (localizar-condominios/) desde a v0.8.7.
    v0.8.0 — fluxo "Contato registrado" (18/11/2026). Etapas (colunas):
      Contatos → Orçado → A realizar → Prestados   + área ENCERRADOS embaixo.
    Os cartões MUDAM DE ETAPA PELAS AÇÕES (não há mais arrastar):
@@ -16,7 +17,8 @@
        alvo, resumo (<dl>), encerrados, total, anuncio (aria-live),
        servicos: SDPedidos.paraKanban(),
        aoAcao: async (acao, servico) => {...},   // "orcar" | "nao-fiz" | "editar" | "concluir" | "encerrar" | "arquivar"
-       aoMudar: () => {}                          // altura do painel etc.
+       aoMudar: () => {},                         // altura do painel etc.
+       umaPorVez: true                            // (opcional) celular: só uma etapa aberta
      });
      quadro.atualizar(novaLista);
    Formato de cada serviço: ver SDPedidos.paraKanban() (componentes/pedidos/pedidos.js).
@@ -80,7 +82,8 @@
       alvo.append(col);
       colunas[et.id] = col;
       col.querySelector(".kanban-coluna-botao").addEventListener("click", () => {
-        if (colunasAbertas.has(et.id)) colunasAbertas.delete(et.id); else colunasAbertas.add(et.id);
+        if (colunasAbertas.has(et.id)) colunasAbertas.delete(et.id);
+        else { if (opcoes.umaPorVez) colunasAbertas.clear(); colunasAbertas.add(et.id); }   // umaPorVez: abre uma, fecha as outras
         aplicarSanfonas(); avisar();
       });
     });

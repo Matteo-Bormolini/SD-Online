@@ -36,14 +36,13 @@
       cadastro:    "login-cadastro/index.html?acao=criar-conta",
       sair:        "login-cadastro/index.html?sair=1",
       avaliacoes:  "avaliacoes/index.html",
-      sobre:       "home/sobre.html",
-      // Os 4 documentos legais ficam juntos na pasta politica-privacidade/
-      politicas:        "politica-privacidade/index.html",          // Política da empresa
-      termos:           "politica-privacidade/termos.html",
-      responsabilidade: "politica-privacidade/responsabilidade.html",
-      privacidade:      "politica-privacidade/privacidade.html",
+      // Documentos legais (v0.8.7: 2 páginas, cada uma com 2 títulos)
+      politicas:   "politica-privacidade/index.html",
+      termos:      "politica-privacidade/termos.html",               // Termos de uso + Termo de responsabilidade
+      privacidade: "politica-privacidade/privacidade.html",          // Política de privacidade + Política da empresa
       localizarPrestador: "localizar-prestador/index.html",
-      perfilPrestador:    "perfil-prestador/index.html"              // abre com ?visao=cliente&id=...
+      perfilPrestador:    "perfil-prestador/index.html",             // abre com ?visao=cliente&id=...
+      seusServicos:       "localizar-condominios/index.html"         // quadro do prestador (v0.8.7)
     },
 
     // "Meu perfil" abre a página do tipo de usuário (data-tipo no <body>)
@@ -54,28 +53,24 @@
       "prestador":    "perfil-prestador/index.html"
     },
 
-    // Itens da NavBar (6). requerLogin: cadeado + vai ao login até a pessoa entrar.
+    // Itens da NavBar (5). requerLogin: cadeado + vai ao login até a pessoa entrar.
     // Depois do login, o item só aparece se seguranca/acesso.js permitir.
     //   "Serviços"       (id clientes)  → só clientes: buscar prestadores e pedir orçamento.
-    //   "Seus Serviços"  (id prestador) → só prestador: futura página com a localização dos
-    //                                     clientes que estão orçando/vão realizar com ele.
+    //   "Seus Serviços"  (id prestador) → só prestador: quadro de contatos, orçamentos e serviços.
     menu: [
       { id: "inicio",    texto: "Início",        href: "home/index.html" },
       { id: "clientes",  texto: "Serviços",      href: "localizar-prestador/index.html",   requerLogin: true },
       { id: "prestador", texto: "Seus Serviços", href: "localizar-condominios/index.html", requerLogin: true },
-      { id: "sobre",     texto: "Sobre nós",     href: "home/sobre.html" },
       { id: "politicas", texto: "Políticas",     href: "politica-privacidade/index.html" },
       { id: "suporte",   texto: "Suporte",       href: "suporte/index.html" }
     ],
 
     // Rodapé: coluna "Navegação"
-    rodapeLinks: ["clientes", "prestador", "sobre", "suporte"],
-    // Rodapé: os 4 documentos legais ficam só na linha de baixo (canto direito)
+    rodapeLinks: ["clientes", "prestador", "suporte"],
+    // Rodapé: documentos legais na linha de baixo (canto direito) — v0.8.7: 2 links
     rodapeDocumentos: [
-      { texto: "Política da empresa", href: "politica-privacidade/index.html" },
-      { texto: "Termos de uso",       href: "politica-privacidade/termos.html" },
-      { texto: "Responsabilidade",    href: "politica-privacidade/responsabilidade.html" },
-      { texto: "Privacidade",         href: "politica-privacidade/privacidade.html" }
+      { texto: "Termos de uso", href: "politica-privacidade/termos.html" },
+      { texto: "Privacidade",   href: "politica-privacidade/privacidade.html" }
     ],
     // Lojas: deixar href vazio até o app ser publicado (mostra "Em breve").
     // selo = arquivo OFICIAL baixado da Apple/Google (não desenhar nem recolorir).

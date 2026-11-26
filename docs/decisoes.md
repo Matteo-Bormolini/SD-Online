@@ -4,6 +4,13 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 26/11/2026 — v0.8.7 (pedidos do Matteo)
+- **Quadro do prestador** sai do perfil e vai para a página **Seus Serviços** (`localizar-condominios/`), em blocos: Resumo (4 números) · Quadro · Encerrados (fechado). Celular: uma etapa aberta por vez. O perfil fica com empresa, fotos e avaliações.
+- **Suporte enxuto:** 5 perguntas frequentes em sanfona, 3 dicas de segurança e prazo de resposta. Assistente fica para depois (IA, US40).
+- **Rodapé:** 2 links — Termos de uso (Termos + Termo de responsabilidade) e Privacidade (Política de privacidade + Política da empresa). Páginas só com os títulos; textos no **Ciclo 4 ou 5**. Menu "Políticas" continua.
+- **Sobre nós** retirado (página e menu).
+- **Avisos apagados em 30 dias:** continua sem TTL do Firestore. O site apaga quando a pessoa entra. Se o banco crescer demais, o jeito de guardar será revisto.
+
 ### 19/11/2026 — Home do prestador (v0.8.2 · US46)
 - Home **só informativa**: Comunicados da S.D → Agenda de eventos → Grupos e comunidades. Conceito interno "Comunidade e Networking Profissional" (só comentário no código).
 - Não repete o Perfil (contatos, orçamentos, serviços e dados da empresa ficam lá).
@@ -113,7 +120,7 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 - Sem botões de rota. Mapa: MapLibre + OpenFreeMap.
 
 ### 03/11/2026
-- Sobre nós em `home/sobre.html`; os 4 documentos legais juntos em `politica-privacidade/`.
+- Sobre nós em `home/sobre.html` (retirado em 26/11); os 4 documentos legais juntos em `politica-privacidade/` (2 páginas desde 26/11).
 - Página sem conteúdo: cartão "Esta página ainda está em desenvolvimento.".
 
 ### Em aberto

@@ -11,13 +11,12 @@
 <link rel="stylesheet" href="../configuracoes/base.css">
 <link rel="stylesheet" href="../navbar/navbar.css">
 <link rel="stylesheet" href="../rodape/rodape.css">
-<!-- Base comum dos perfis + componentes (carrossel e quadro de serviços) + exclusivo do prestador -->
+<!-- Base comum dos perfis + componentes (carrossel) + exclusivo do prestador -->
 <link rel="stylesheet" href="../componentes/formulario/formulario.css">
 <link rel="stylesheet" href="../componentes/endereco/endereco.css">
 <link rel="stylesheet" href="../componentes/senha/senha.css">
 <link rel="stylesheet" href="../componentes/perfil-base/perfil-base.css">
 <link rel="stylesheet" href="../componentes/carrossel/carrossel.css">
-<link rel="stylesheet" href="../componentes/kanban-servicos/kanban-servicos.css">
 <link rel="stylesheet" href="../componentes/datahora/datahora.css">
 <link rel="stylesheet" href="../componentes/lista-escolha/lista-escolha.css">
 <link rel="stylesheet" href="perfil-prestador.css">
@@ -32,7 +31,6 @@
 <script src="../componentes/endereco/endereco.js" defer></script>
 <script src="../componentes/perfil-base/perfil-base.js" defer></script>
 <script src="../componentes/carrossel/carrossel.js" defer></script>
-<script src="../componentes/kanban-servicos/kanban-servicos.js" defer></script>
 <script src="../componentes/datahora/datahora.js" defer></script>
 <script src="../componentes/lista-escolha/lista-escolha.js" defer></script>
 <script src="perfil-prestador.js" defer></script>
@@ -48,7 +46,7 @@
 
   <header class="perfil-cabecalho">
     <h1 id="titulo-pagina">Perfil do prestador</h1>
-    <p class="so-dono">Mantenha o perfil completo para transmitir confiança aos clientes e organize seus serviços na aba <strong>Meus serviços</strong>.</p>
+    <p class="so-dono">Mantenha o perfil completo para transmitir confiança aos clientes. Contatos e orçamentos ficam em <strong>Seus Serviços</strong>.</p>
     <p class="so-cliente">Conheça a empresa, veja trabalhos já realizados e as avaliações de outros clientes.</p>
   </header>
 
@@ -77,18 +75,22 @@
 
   <!-- Aviso exibido quando o prestador está vendo o próprio perfil como cliente -->
   <div class="aviso-visao so-cliente" id="aviso-visao" hidden>
-    <span>Você está vendo seu perfil <strong>como os clientes veem</strong>. Dados privados (senha, endereço completo e serviços) ficam ocultos.</span>
+    <span>Você está vendo seu perfil <strong>como os clientes veem</strong>. Dados privados (senha e endereço completo) ficam ocultos.</span>
     <button type="button" class="btn btn-pequeno" id="btn-voltar-edicao">Voltar à edição</button>
   </div>
 
   <section class="perfil-cartao" aria-label="Perfil do prestador de serviços">
 
-    <!-- ===== ABAS (também troca arrastando para os lados) ===== -->
+    <!-- ===== BARRA DO PERFIL (v0.8.7: o quadro de serviços foi para a página Seus Serviços) ===== -->
     <div class="perfil-abas">
-      <div class="abas-lista so-dono" role="tablist" aria-label="Seções do perfil">
+      <!-- Aba única (escondida): mantém a base comum dos perfis funcionando -->
+      <div class="abas-lista" role="tablist" aria-label="Seções do perfil" hidden>
         <button type="button" class="btn aba" role="tab" id="aba-perfil" aria-controls="painel-perfil" aria-selected="true" tabindex="0">Perfil</button>
-        <button type="button" class="btn aba" role="tab" id="aba-servicos" aria-controls="painel-servicos" aria-selected="false" tabindex="-1">Meus serviços</button>
       </div>
+      <a class="btn btn-pequeno so-dono" id="btn-seus-servicos" href="../localizar-condominios/index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg>
+        Seus Serviços
+      </a>
       <button type="button" class="btn btn-pequeno so-dono" id="btn-ver-como-cliente">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
         Ver como cliente
@@ -104,7 +106,7 @@
     <div class="perfil-trilho" id="perfil-trilho">
 
       <!-- ===================== PAINEL PERFIL ===================== -->
-      <div class="painel painel-perfil" role="tabpanel" id="painel-perfil" aria-labelledby="aba-perfil" tabindex="0">
+      <div class="painel painel-perfil" role="region" id="painel-perfil" aria-label="Perfil">
 
         <div class="perfil-dados">
 
@@ -473,23 +475,8 @@
         </section>
       </div>
 
-      <!-- ===================== PAINEL MEUS SERVIÇOS (Kanban) — só o prestador ===================== -->
-      <div class="painel painel-servicos so-dono" role="tabpanel" id="painel-servicos" aria-labelledby="aba-servicos" tabindex="0">
-        <div class="servicos-topo">
-          <h2 id="titulo-servicos">Meus serviços</h2>
-          <span class="servicos-total" id="servicos-total"></span>
-        </div>
-        <p class="servicos-dica">Clientes que chamam você pelo site chegam em <strong>Contatos</strong>. Clique em um serviço para ver os detalhes e use os botões dele (Fiz orçamento, Marcar como concluído…). Quem fecha é o cliente; quem confirma o serviço feito também. No celular, toque no nome da etapa para abrir ou fechar.</p>
-        <dl class="kanban-resumo" id="kanban-resumo"></dl>
-        <div class="kanban" id="kanban"></div>
-        <!-- Encerrados: pedidos que terminaram sem serviço (apagados em 1 ano) -->
-        <section id="kanban-encerrados" aria-label="Encerrados"></section>
-      </div>
-
     </div>
   </section>
-  <!-- Avisos do quadro para leitor de tela (fora do trilho: posição absoluta não pode vazar a largura) -->
-  <p class="visualmente-oculto" id="kanban-anuncio" aria-live="polite"></p>
 </main>
 
 <!-- ===== POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO ===== -->

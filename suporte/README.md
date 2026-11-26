@@ -1,23 +1,26 @@
 # Suporte
 
-Lugar para tirar dúvidas sobre o site e mandar ideias de melhoria. Tem um assistente que responde na hora.
+Lugar para tirar dúvidas sobre o site e mandar ideias de melhoria.
 
 ## Quem vê
 - Todos (visitantes e quem tem conta).
 
-## O que tem
-- Botões **Dúvidas** e **Sugestões** → escrever e enviar por e-mail (abre o e-mail da pessoa com o texto pronto).
-- Lixeira pede confirmação antes de apagar.
-- **Assistente** (conversa temporária) com botão "Não resolveu?" e resumo para a equipe.
+## O que tem (v0.8.7: tela enxuta)
+- Botões **Dúvidas** e **Sugestões** → escrever e enviar por e-mail (abre o e-mail da pessoa com o texto pronto). A lixeira pede confirmação.
+- **Perguntas frequentes** (5): abrem e fecham (sanfona).
+- **Dicas de segurança** (3).
+- **Fale com a equipe:** e-mails por assunto + **prazo de resposta**.
 
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `index.html` / `suporte.css` / `suporte.js` | Página, visual e envio. |
-| `assistente.js` / `assistente-regras.md` | Respostas do assistente e suas regras. |
+| `index.html` | Página. Perguntas e dicas são texto direto aqui. |
+| `suporte.css` / `suporte.js` | Visual e envio. |
 
 ## Como mudar
-- E-mails → `suporte.js`, lista `EMAILS`. Hoje todos usam **matteo.bormolini228@al.unieduk.com.br** (definido em 09/11/2026).
+- Perguntas frequentes e dicas → `index.html` (cada pergunta é um `<details>`).
+- E-mails e prazo → `suporte.js`, `EMAILS` e `PRAZO_RESPOSTA`. Hoje todos usam **matteo.bormolini228@al.unieduk.com.br** (definido em 09/11/2026).
 
 ## Situação
-- ✅ Pronto (US27). ⬜ Assistente com inteligência artificial — depois do MVP (US40).
+- ✅ Pronto (US27).
+- ⬜ Assistente com inteligência artificial — depois do MVP (US40). O assistente de demonstração saiu na v0.8.7.

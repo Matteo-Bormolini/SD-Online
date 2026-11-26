@@ -11,8 +11,8 @@
      - "Trabalhos e empresa": carrossel OPCIONAL de fotos com legenda.
      - Avaliações recentes (públicas e anônimas; nome só com autorização de quem avaliou).
      - "Ver como cliente": mostra o perfil como o cliente vê (sem dados privados).
-     - Aba "Meus serviços": quadro Kanban (componentes/kanban-servicos) com os
-       contatos/orçamentos REAIS (componentes/pedidos · firebase/pedidos.js) — v0.8.0.
+     - v0.8.7: o quadro de serviços saiu do perfil → página "Seus Serviços"
+       (localizar-condominios/). Aqui só o número de serviços concluídos.
      - Visita técnica (aviso de preço) e fotos de trabalhos SALVAS (firebase/fotos.js) — v0.8.0.
      - Visão do cliente: WhatsApp passa pelo aviso de cobrança e registra o contato;
        contatos escondidos → "Pedir contato".
@@ -82,7 +82,7 @@
   let categoriaVisita = new URLSearchParams(location.search).get("categoria") || "";
   let horarioEditor = null, secundarias = null, cidades = null;
 
-  let quadro = null, telefones = null, abas = null;
+  let telefones = null, abas = null;
 
   /* ---------- 3. EXIBIÇÃO DOS DADOS ---------- */
   function textoRegiao() {
@@ -164,9 +164,13 @@
     renderizarFoto();
   }
 
+  // Serviços confirmados pelo cliente (contatos reais · componentes/pedidos)
+  // (só na conta do próprio prestador: o cliente e o adm não somam os pedidos deles)
+  let contarPrestados = false;
+  const prestados = () => (contarPrestados && window.SDPedidosDados ? window.SDPedidosDados.lista().filter((o) => o.situacao === "prestado").length : 0);
   // Números da vitrine (somente números, sem gráficos)
   function renderizarNumeros() {
-    const concluidos = perfil.servicosAnteriores + (quadro ? quadro.contar("prestado") : 0);
+    const concluidos = perfil.servicosAnteriores + prestados();
     // Ano de início vazio (conta nova) → "Não informado" (antes mostrava "2026 anos")
     const anos = Number(perfil.anoInicio) > 0 ? new Date().getFullYear() - Number(perfil.anoInicio) : null;
     $("#num-concluidos").textContent = concluidos.toLocaleString("pt-BR");
@@ -463,30 +467,6 @@
     });
   }
 
-  /* ---------- 6d. MEUS SERVIÇOS: QUADRO COM OS CONTATOS REAIS (v0.8.0) ---------- */
-  const pedidosApi = () => (window.SDPedidos ? Promise.resolve(window.SDPedidos) : new Promise((ok) => {
-    const t = setTimeout(() => ok(window.SDPedidos || null), 12000);
-    document.addEventListener("sd:pedidos-pronto", () => { clearTimeout(t); ok(window.SDPedidos); }, { once: true });
-  }));
-  async function acaoQuadro(acao, s) {
-    const T = window.SDPedidos, D = window.SDPedidosDados;
-    try {
-      if (acao === "orcar" || acao === "editar") await T.abrirOrcamento(s._orig);
-      else if (acao === "nao-fiz") await D.responderNao(s.id);
-      else if (acao === "concluir") await D.concluir(s.id);
-      else if (acao === "encerrar") await D.encerrarPeloPrestador(s.id);
-      else if (acao === "arquivar") await D.arquivar(s.id);
-    } catch (e) {
-      U.mostrarMensagem($("#msg-geral"), "erro", "Não foi salvo: " + D.mensagemErro(e));
-    }
-  }
-  async function ligarQuadro() {
-    const T = await pedidosApi();
-    if (!T || !quadro) return;
-    quadro.atualizar(T.paraKanban());
-    document.addEventListener("sd:pedidos-mudou", () => quadro.atualizar(T.paraKanban()));
-  }
-
   // Mensagem curta quando o prestador liga/desliga um botão
   function iniciarInterruptores() {
     P.iniciarInterruptoresPerfil();
@@ -495,7 +475,7 @@
 
   /* ---------- 7. VISÃO: DONO x CLIENTE ----------
      Só muda a TELA. Na versão final o servidor envia ao cliente somente os
-     dados públicos (nunca senha, endereço completo ou o quadro). */
+     dados públicos (nunca senha nem endereço completo). */
   const visaoCliente = () => document.body.dataset.visao === "cliente";
 
   function definirVisao(visao, focar) {
@@ -682,14 +662,10 @@
     // Conta real (Firebase): troca o exemplo pelos dados do prestador logado.
     // Dono: dados reais da conta · Cliente (?id=): só a vitrine pública
     const idOutro = new URLSearchParams(location.search).get("id");
+    // Links antigos (#servicos) → página Seus Serviços (v0.8.7)
+    if (location.hash === "#servicos" && !idOutro && SD.tipoUsuario() === "prestador") { location.replace(SD.urlPagina("seusServicos")); return; }
     const real = idOutro ? false : await P.carregarDadosReais(perfil, "prestador");
     if (idOutro) await carregarVitrine(idOutro);
-    quadro = window.SDKanban.criar({
-      alvo: $("#kanban"), resumo: $("#kanban-resumo"), total: $("#servicos-total"), anuncio: $("#kanban-anuncio"),
-      encerrados: $("#kanban-encerrados"),
-      servicos: [], aoAcao: acaoQuadro,
-      aoMudar: () => { renderizarNumeros(); P.atualizarAltura(); }
-    });
     telefones = P.iniciarTelefones(perfil, { max: CONFIG.maxTelefonesSecundarios, classeRemover: "so-dono" });
     renderizarDados();
     iniciarFotosTrabalho();
@@ -698,20 +674,15 @@
     iniciarFormulario();
     iniciarLogo();
     P.iniciarExclusao();
-    abas = P.iniciarAbas({
-      abas: ["#aba-perfil", "#aba-servicos"],
-      // Na visão do cliente só existe o painel Perfil
-      navegaveis: () => (visaoCliente() ? [$("#aba-perfil")] : [$("#aba-perfil"), $("#aba-servicos")]),
-      semArrasto: visaoCliente
-    });
+    abas = P.iniciarAbas({ abas: ["#aba-perfil"], semArrasto: () => true });   // painel único (ajusta a altura)
     iniciarInterruptores();
     iniciarVisao();
     if (idOutro) iniciarContatoCliente();
-    if (real) ligarQuadro();
-    // Avisos do sino abrem direto a aba "Meus serviços" (#servicos)
-    const abrirServicosPeloEndereco = () => { if (location.hash === "#servicos" && real && !visaoCliente()) abas.ativar(1, true); };
-    abrirServicosPeloEndereco();
-    window.addEventListener("hashchange", abrirServicosPeloEndereco);
+    if (real && SD.tipoUsuario() === "prestador") {                    // serviços concluídos
+      contarPrestados = true;
+      renderizarNumeros();
+      document.addEventListener("sd:pedidos-mudou", renderizarNumeros);
+    }
     if (real) {
       // Perfil sem ponto no mapa (contas antigas): calcula uma vez pelo endereço
       if (!perfil.local && perfil.cidade && window.SDFirebase.atualizarLocal) await window.SDFirebase.atualizarLocal(perfil);
@@ -720,5 +691,5 @@
   });
 
   // Ganchos só para testes automatizados (não usados pela página)
-  window.__SDPrestador = { perfil, get quadro() { return quadro; }, definirVisao };
+  window.__SDPrestador = { perfil, definirVisao };
 })();

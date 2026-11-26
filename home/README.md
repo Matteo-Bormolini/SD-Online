@@ -1,6 +1,6 @@
-# Início (Home) e Sobre nós
+# Início (Home)
 
-A primeira página do site e a página "Sobre nós".
+A primeira página do site.
 
 ## Quem vê
 - **Visitante:** apresentação da S.D e a lista de serviços (só os nomes).
@@ -15,11 +15,10 @@ A primeira página do site e a página "Sobre nós".
 |---|---|
 | `index.html` / `home.css` / `home.js` | Página inicial: decide a visão (visitante, cliente ou prestador). |
 | `home-prestador.js` / `home-prestador.css` | **v0.8.2** Home do prestador: seções, cartões, faixas rolantes e pop-up de detalhes. CSS só dentro de `.home-prestador` (classes `hp-`). |
-| `sobre.html` | Sobre nós (provisória: "em desenvolvimento"). |
 
 ## Home do prestador (v0.8.2 · US46)
 Página **só informativa e de divulgação** (conceito interno: Comunidade e Networking Profissional).
-Contatos, orçamentos e serviços **continuam no Perfil** (não são repetidos aqui).
+Contatos, orçamentos e serviços ficam em **Seus Serviços** (v0.8.7; botão no topo da Home).
 
 | Seção | O que mostra | Quando aparece |
 |---|---|---|
@@ -43,4 +42,4 @@ Contatos, orçamentos e serviços **continuam no Perfil** (não são repetidos a
 - 🟠 Home do prestador (v0.8.2) — falta o teste com conta real e o 1º conteúdo cadastrado pelo adm.
 - 🟠 Avisos e anúncios da Home dos clientes + "Ver como" do adm (v0.8.5) — falta teste com as regras reais.
 - ⬜ Pós-MVP da Home do prestador (US64–US67): divulgação paga, capacitação, "Confirmar que vou". Ver `docs/backlog.md`.
-- ⬜ Sobre nós — **depois do MVP** (a história da empresa ainda será escrita).
+- ➖ Sobre nós — página retirada na v0.8.7 (volta depois do MVP, US29).

@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob: https://tiles.openfreemap.org https://www.google.com; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://viacep.com.br https://brasilapi.com.br https://open.cnpja.com https://publica.cnpj.ws https://servicodados.ibge.gov.br https://nominatim.openstreetmap.org https://tiles.openfreemap.org https://cdn.jsdelivr.net; worker-src 'self' blob:; child-src blob:; frame-src https://plataforma-sdonline.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Suporte — S.D Serviços Digitais</title>
-<meta name="description" content="Suporte da plataforma S.D: dúvidas, sugestões de melhoria, assistente e e-mails da equipe.">
+<meta name="description" content="Suporte da plataforma S.D: perguntas frequentes, dicas de segurança, dúvidas, sugestões e e-mails da equipe.">
 <!-- Padrão do site (mesma ordem em todas as páginas) -->
 <link rel="stylesheet" href="../configuracoes/base.css">
 <link rel="stylesheet" href="../navbar/navbar.css">
@@ -16,8 +16,6 @@
 <script src="../configuracoes/config.js" defer></script>
 <script src="../navbar/navbar.js" defer></script>
 <script src="../rodape/rodape.js" defer></script>
-<!-- Página: assistente (respostas) antes do suporte.js (telas) -->
-<script src="assistente.js" defer></script>
 <script src="suporte.js" defer></script>
 <!-- Firebase (login e banco). Sempre o ÚLTIMO script, com type="module" -->
 <script type="module" src="../firebase/firebase.js"></script>
@@ -85,53 +83,47 @@
     </div>
   </section>
 
-  <!-- ===== 3. ASSISTENTE ===== -->
-  <section class="sup-bloco sup-chat" aria-labelledby="sup-chat-titulo">
-    <div class="sup-chat-topo">
-      <!-- Robô com capacete de obra -->
-      <span class="sup-chat-icone" aria-hidden="true">
-        <svg viewBox="0 0 24 24" focusable="false">
-          <path class="sup-preenchido" d="M6.5 8.5a5.5 4.5 0 0 1 11 0Z"/>
-          <path d="M4.5 8.6h15M12 4v1.6"/>
-          <rect x="6.5" y="10.5" width="11" height="8.5" rx="2.2"/>
-          <path d="M10 13.6h.01M14 13.6h.01M10.2 16.6h3.6M4.5 13.5v2.5M19.5 13.5v2.5"/>
-        </svg>
-      </span>
-      <div class="sup-chat-titulos">
-        <h2 id="sup-chat-titulo">Assistente S.D</h2>
-        <p>Dúvidas da plataforma e cálculos rápidos.</p>
-      </div>
-      <span class="selo-demo" id="sup-chat-selo">Demonstração</span>
+  <!-- ===== 3. PERGUNTAS FREQUENTES (sanfona: abre e fecha) ===== -->
+  <section class="sup-bloco" aria-labelledby="sup-faq-titulo">
+    <h2 id="sup-faq-titulo" class="sup-titulo-secao">Perguntas frequentes</h2>
+    <div class="sup-perguntas">
+      <details class="sup-pergunta">
+        <summary>A S.D cobra alguma coisa?</summary>
+        <p>Do cliente, não. A S.D só aproxima clientes e prestadores: o valor do serviço é combinado e pago direto ao prestador.</p>
+      </details>
+      <details class="sup-pergunta">
+        <summary>Como peço um orçamento?</summary>
+        <p>Entre na sua conta, abra <strong>Serviços</strong> no menu, escolha o prestador e toque em <strong>WhatsApp</strong> (ou <strong>Pedir contato</strong>).</p>
+      </details>
+      <details class="sup-pergunta">
+        <summary>Onde acompanho meus orçamentos?</summary>
+        <p>Cliente: <strong>Meu perfil → Serviços</strong>. Prestador: <strong>Seus Serviços</strong>, no menu.</p>
+      </details>
+      <details class="sup-pergunta">
+        <summary>Esqueci minha senha. E agora?</summary>
+        <p>Na tela <strong>Entrar</strong>, toque em <strong>Esqueceu a senha?</strong> e receba no e-mail um link para criar outra.</p>
+      </details>
+      <details class="sup-pergunta">
+        <summary>Como mudo meus dados ou excluo a conta?</summary>
+        <p>Em <strong>Meu perfil</strong>: <strong>Editar perfil</strong> para mudar os dados ou <strong>Excluir perfil</strong> (não dá para desfazer).</p>
+      </details>
     </div>
-
-    <!-- Conversa: rola com o dedo/mouse; a alça abaixo aumenta ou diminui a área -->
-    <div class="sup-chat-log" id="sup-chat-log" role="log" aria-live="polite" aria-label="Conversa com o assistente" tabindex="0"></div>
-    <div class="sup-chat-alca" id="sup-chat-alca" role="separator" aria-orientation="horizontal" tabindex="0"
-         aria-controls="sup-chat-log" aria-label="Arraste para aumentar ou diminuir a conversa" title="Arraste para aumentar ou diminuir">
-      <span aria-hidden="true"></span>
-    </div>
-
-    <form class="sup-chat-form" id="sup-chat-form" novalidate>
-      <button type="button" class="sup-lixo" id="sup-chat-limpar" aria-label="Apagar conversa" title="Apagar conversa">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>
-      </button>
-      <label for="sup-chat-texto" class="visualmente-oculto">Mensagem para o assistente</label>
-      <textarea id="sup-chat-texto" rows="1" maxlength="300" placeholder="Digite sua pergunta…"></textarea>
-      <button type="submit" class="sup-chat-enviar" aria-label="Enviar mensagem" title="Enviar">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12 20 4l-4 16-4-6-8-2Z"/><path d="m12 14 8-10"/></svg>
-      </button>
-    </form>
-
-    <p class="sup-chat-rodape">
-      <span>Conversa temporária</span>
-      <em>Em desenvolvimento: envio de áudios e fotos.</em>
-    </p>
   </section>
 
-  <!-- ===== 4. E-MAILS DA EQUIPE (preenchidos pelo suporte.js) ===== -->
+  <!-- ===== 4. DICAS DE SEGURANÇA ===== -->
+  <section class="sup-bloco" aria-labelledby="sup-dicas-titulo">
+    <h2 id="sup-dicas-titulo" class="sup-titulo-secao">Dicas de segurança</h2>
+    <ul class="sup-dicas">
+      <li>A S.D <strong>nunca pede sua senha</strong> por e-mail, WhatsApp ou telefone.</li>
+      <li>Combine <strong>valor, prazo e garantia</strong> antes de o serviço começar.</li>
+      <li>Desconfie de <strong>pagamento adiantado</strong> e de links estranhos.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 5. E-MAILS DA EQUIPE + PRAZO (preenchidos pelo suporte.js) ===== -->
   <section class="sup-bloco" aria-labelledby="sup-contatos-titulo">
     <h2 id="sup-contatos-titulo" class="sup-titulo-secao">Fale com a equipe</h2>
-    <p class="sup-nota sup-centro">Prefere e-mail? Escolha o assunto.</p>
+    <p class="sup-nota sup-centro">Prefere e-mail? Escolha o assunto. <strong class="sup-prazo" id="sup-prazo"></strong></p>
     <ul class="sup-contatos" id="sup-contatos"></ul>
   </section>
 </main>
@@ -140,7 +132,7 @@
 
 <!-- ===== POPUPS (dialog nativo: Esc fecha, foco preso dentro) ===== -->
 
-<!-- Confirmação genérica (excluir texto / apagar conversa) -->
+<!-- Confirmação (excluir texto) -->
 <dialog class="sup-popup" id="sup-dlg-confirmar" role="alertdialog" aria-labelledby="sup-dlg-confirmar-titulo" aria-describedby="sup-dlg-confirmar-texto">
   <form method="dialog">
     <h2 id="sup-dlg-confirmar-titulo">Confirmar</h2>
@@ -152,53 +144,5 @@
   </form>
 </dialog>
 
-<!-- Assistente não conseguiu ajudar: duas saídas -->
-<dialog class="sup-popup" id="sup-dlg-ajuda" aria-labelledby="sup-dlg-ajuda-titulo" aria-describedby="sup-dlg-ajuda-texto">
-  <form method="dialog">
-    <h2 id="sup-dlg-ajuda-titulo">Não consegui ajudar</h2>
-    <p id="sup-dlg-ajuda-texto">Sua dúvida é sobre a plataforma ou sobre outro assunto?</p>
-    <div class="sup-popup-opcoes">
-      <button class="sup-opcao" value="plataforma">
-        <strong>Sobre a plataforma</strong>
-        <span>Enviar o resumo da conversa para a equipe.</span>
-      </button>
-      <button class="sup-opcao" value="externa">
-        <strong>Dúvida externa</strong>
-        <span>Assunto fora da plataforma. A conversa é mantida.</span>
-      </button>
-    </div>
-    <div class="sup-popup-botoes">
-      <button class="btn sup-redondo" value="voltar">Voltar à conversa</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- Saída 1: sobre a plataforma (usuário vê só o resumo e quem envia) -->
-<dialog class="sup-popup sup-popup-largo" id="sup-dlg-plataforma" aria-labelledby="sup-dlg-plataforma-titulo">
-  <form method="dialog">
-    <h2 id="sup-dlg-plataforma-titulo">Enviar para a equipe</h2>
-    <dl class="sup-resumo" id="sup-resumo">
-      <dt>Enviado por</dt><dd id="sup-resumo-quem"></dd>
-      <dt>Resumo da conversa</dt><dd id="sup-resumo-texto"></dd>
-    </dl>
-    <p class="mensagem" id="sup-resumo-msg" role="status"></p>
-    <div class="sup-popup-botoes">
-      <button class="btn sup-redondo" value="voltar">Voltar</button>
-      <button type="button" class="btn sup-redondo sup-perigo" id="sup-resumo-deletar">Deletar</button>
-      <button type="button" class="btn sup-redondo" id="sup-resumo-enviar">Enviar</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- Saída 2: dúvida externa -->
-<dialog class="sup-popup" id="sup-dlg-externa" aria-labelledby="sup-dlg-externa-titulo">
-  <form method="dialog">
-    <h2 id="sup-dlg-externa-titulo">Assunto fora da plataforma</h2>
-    <p>Ainda não temos conhecimento sobre este assunto. Sua conversa foi mantida.</p>
-    <div class="sup-popup-botoes">
-      <button class="btn sup-redondo" value="voltar" autofocus>Voltar à conversa</button>
-    </div>
-  </form>
-</dialog>
 </body>
 </html>

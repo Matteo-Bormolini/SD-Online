@@ -1,0 +1,38 @@
+/* =====================================================================
+   S.D — SEUS SERVIÇOS (localizar-condominios/seus-servicos.css) · v0.8.7
+   Página em blocos. O visual do quadro vem de componentes/kanban-servicos.
+   ===================================================================== */
+
+/* ---------- 1. CABEÇALHO ---------- */
+.ss-cabecalho { margin-bottom: 1.25rem; }
+.ss-cabecalho h1 { margin: 0 0 .25rem; font-size: 1.75rem; font-weight: 700; }
+.ss-cabecalho p { margin: 0; font-size: .875rem; color: var(--cor-texto-secundario); }
+.seus-servicos > .mensagem:empty { display: none; }
+
+/* Carregando / adm / erro */
+.ss-estado {
+  margin: 0; padding: 1.5rem; text-align: center; color: var(--cor-texto-secundario);
+  background: var(--cor-superficie); border: 1px dashed var(--cor-divisoria); border-radius: var(--raio-cartao);
+}
+
+/* ---------- 2. BLOCOS ---------- */
+.ss-blocos { display: grid; gap: 1.25rem; min-width: 0; }
+.ss-blocos[hidden] { display: none; }
+.ss-bloco {
+  min-width: 0; padding: 1.25rem 1.5rem;
+  background: var(--cor-superficie); border: 1px solid var(--cor-contorno); border-radius: var(--raio-cartao);
+}
+.ss-bloco-topo { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; flex-wrap: wrap; margin-bottom: .875rem; }
+.ss-bloco-topo h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+.ss-total { font-size: .8125rem; color: var(--cor-texto-secundario); }
+.ss-dica { margin: -.375rem 0 1rem; font-size: .8125rem; color: var(--cor-texto-secundario); }
+.ss-bloco .kanban-resumo { margin: 0; }
+
+/* Encerrados: o bloco já é a moldura (sem a caixa tracejada do componente) */
+.ss-bloco-encerrados .kanban-encerrados { margin: 0; padding: 0; background: none; border: 0; }
+
+/* ---------- 3. CELULAR ---------- */
+@media (max-width: 47.99rem) {
+  .ss-bloco { padding: 1rem; }
+  .ss-cabecalho h1 { font-size: 1.5rem; }
+}

@@ -367,7 +367,7 @@
           <h1 id="ola-titulo">Olá${nome || ""}!</h1>
           <p>${esc(TEXTO.subtitulo)}</p>
           <div class="atalhos">
-            <a class="btn" href="${esc(SD.caminho("perfil-prestador/index.html"))}#servicos">Meus serviços</a>
+            <a class="btn" href="${esc(SD.urlPagina("seusServicos"))}">Seus Serviços</a>
             <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
           </div>
         </section>`}

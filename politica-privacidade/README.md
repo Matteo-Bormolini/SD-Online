@@ -2,13 +2,15 @@
 
 Os documentos com as regras da S.D, em linguagem simples.
 
-## Páginas
-| Arquivo | Documento |
+## Páginas (v0.8.7: 2 páginas, 2 documentos em cada)
+| Arquivo | Documentos (1 bloco cada) |
 |---|---|
-| `index.html` | Política da empresa |
-| `termos.html` | Termos de uso |
-| `responsabilidade.html` | Termo de responsabilidade |
-| `privacidade.html` | Política de privacidade (LGPD) |
+| `index.html` | Menu "Políticas": atalhos para os 4 documentos. |
+| `termos.html` | Termos de uso · Termo de responsabilidade |
+| `privacidade.html` | Política de privacidade (LGPD) · Política da empresa |
+| `politicas.css` | Visual dos blocos e dos atalhos. |
+
+Rodapé (linha de baixo): **Termos de uso** e **Privacidade** (`configuracoes/config.js` → `rodapeDocumentos`).
 
 ## O que os textos precisam dizer
 - A S.D **só aproxima** cliente e prestador. Não intermedeia o serviço, não recebe nem garante pagamentos.
@@ -19,4 +21,5 @@ Os documentos com as regras da S.D, em linguagem simples.
 - Canal para denunciar conteúdo (avaliações, fotos) e prazo de resposta.
 
 ## Situação
-- ⬜ Escrever os 4 textos com advogado — **Ciclo 6**, antes do lançamento (US28, decisão de 09/11).
+- ✅ Páginas com os títulos ("Página em desenvolvimento") — v0.8.7.
+- ⬜ Escrever os 4 textos — **Ciclo 4 ou 5** (US28).

@@ -1,6 +1,6 @@
 /* =====================================================================
    S.D — PERFIL DO PRESTADOR (perfil-prestador/perfil-prestador.css)
-   Carregado DEPOIS de perfil-base.css, carrossel.css e kanban-servicos.css.
+   Carregado DEPOIS de perfil-base.css e carrossel.css.
    Só o que é exclusivo do Prestador: visão dono/cliente, alerta da logo,
    vitrine (estilo LinkedIn), etiquetas, avaliações recentes.
    (O bloco "Trabalhos e empresa" usa .bloco-fotos, da base.)
@@ -122,3 +122,6 @@
 [data-visao="cliente"] .perfil-abas { display: none; }   /* sem abas na visão do cliente: evita faixa vazia */
 .aviso-taxa:empty { display: none; }
 .aviso-taxa { margin-top: .375rem; }
+
+/* ---------- 8. v0.8.7: perfil sem abas (quadro em "Seus Serviços") ---------- */
+#perfil-trilho { cursor: auto; }   /* um painel só: nada para arrastar */

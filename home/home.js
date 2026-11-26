@@ -207,7 +207,7 @@
       <section class="boas-vindas" aria-labelledby="ola-titulo">
         <h1 id="ola-titulo">Olá${nome}!</h1>
         <div class="atalhos">
-          <a class="btn" href="${esc(SD.caminho("perfil-prestador/index.html"))}#servicos">Meus serviços</a>
+          <a class="btn" href="${esc(SD.urlPagina("seusServicos"))}">Seus Serviços</a>
           <a class="btn" href="${esc(SD.urlPerfil())}">Meu perfil</a>
         </div>
       </section>`;

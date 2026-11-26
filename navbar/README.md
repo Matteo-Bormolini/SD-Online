@@ -6,7 +6,7 @@ A barra vinho no alto de todas as páginas.
 - Todos. Cada tipo de conta vê só os itens que pode usar.
 
 ## O que tem
-- Início · Serviços 🔒 (clientes) · Seus Serviços 🔒 (prestador) · Sobre nós · Políticas · Suporte.
+- Início · Serviços 🔒 (clientes) · Seus Serviços 🔒 (prestador) · Políticas · Suporte. (Sobre nós saiu na v0.8.7.)
 - 🔒 = leva ao login se a pessoa ainda não entrou.
 - Botão de tema claro/escuro (a escolha fica salva).
 - Entrar / Criar conta (visitante) ou Meu perfil / Sair (com conta).

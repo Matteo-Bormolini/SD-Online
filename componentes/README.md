@@ -12,7 +12,7 @@ Peças prontas usadas por várias páginas. Mude aqui e todas as páginas mudam 
 | `senha/` | Regra da senha (6+ caracteres) e medidor de força. | Cadastro, perfis, recuperação |
 | `perfil-base/` | Partes comuns dos 4 perfis: abas, telefones, editar, excluir, botões liga/desliga. | Perfis |
 | `carrossel/` | Fotos passando para os lados, com legenda. | Perfis e quadro |
-| `kanban-servicos/` | Quadro do prestador: Contatos → Orçado → A realizar → Prestados + Encerrados (v0.8.0, ações por botão). | Perfil do prestador |
+| `kanban-servicos/` | Quadro do prestador: Contatos → Orçado → A realizar → Prestados + Encerrados (v0.8.0, ações por botão). | Seus Serviços (v0.8.7) |
 | `pedidos/` | **v0.8.0** Aviso de cobrança, Pedir contato, "Você fez orçamento?", formulário do orçamento, bloco "Em orçamento". Carregado sozinho por `firebase/pedidos.js`. | Todas (logado) |
 | `avisos/` | **v0.8.0** Sino de avisos na NavBar. Carregado sozinho por `firebase/pedidos.js`. | Todas (logado) |
 | `servicos-realizados/` | Histórico de serviços do cliente, com fotos. | Perfis CPF e CNPJ |

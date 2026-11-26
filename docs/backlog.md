@@ -20,7 +20,7 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 ## 2. Agora · Próximo · Depois
 
 ### ✅ Ciclo 1 · Fechar pendências e decidir (v0.6.0)
-> Os textos legais (US28) saíram deste Ciclo e foram para o Ciclo 6 (decisão de 09/11).
+> Os textos legais (US28) ficam para o Ciclo 4 ou 5 (decisão de 26/11; antes: Ciclo 6). Páginas com os títulos já existem (v0.8.7).
 - [x] READMEs reescritos para projeto individual (09/11).
 - [x] E-mail do Suporte definido (09/11).
 - [x] Regras de dinheiro decididas: sem intermediação; anúncios + destaque mensal (09/11).
@@ -76,8 +76,8 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 ### ⬜ Depois (na ordem)
 - **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
 - **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
-- **Ciclo 6 · Lançamento fechado (v1.0.0):** **US28 textos legais com advogado (LGPD)**, domínio, hospedagem de produção, marca registrada no INPI.
-- **Depois do MVP:** Home do prestador paga/presença/capacitação (US64–US67), segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
+- **Ciclo 6 · Lançamento fechado (v1.0.0):** revisão final dos textos legais (US28), domínio, hospedagem de produção, marca registrada no INPI.
+- **Depois do MVP:** Home do prestador paga/presença/capacitação (US64–US67), segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), mapa em Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
 
 ### ⏸️ Pós-MVP · precisa pagar (pausado)
 > Regra do Matteo (11/11/2026): no MVP **nada pago** (nem plano com cartão "grátis até um limite", como o Blaze do Firebase). Cada item volta quando o projeto der resultado.
@@ -175,8 +175,8 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
 | US27 | Tirar dúvidas e enviar sugestões. | M | — | ✅ (e-mail definido em 09/11) |
-| US28 | Ler termos, privacidade e responsabilidades em linguagem simples (com advogado). | M | 6 | ⬜ |
-| US29 | Sobre nós (história da empresa). | S | Depois | ⬜ |
+| US28 | Ler termos, privacidade e responsabilidades em linguagem simples (com advogado). | M | 4–5 | 🟡 páginas com títulos (v0.8.7) |
+| US29 | Sobre nós (história da empresa). Página retirada na v0.8.7. | S | Depois | ⬜ |
 
 ### Servidor, segurança e LGPD
 | Nº | História | Prior. | Ciclo | Situação |
@@ -199,7 +199,7 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | US40 | Assistente do Suporte com IA. | C |
 | US41 | Cadastro único CNPJ/MEI. | C |
 | US44 | Página do adm para ligar/desligar o destaque. | C |
-| US45 | Seus Serviços: mapa dos clientes do prestador (região aproximada). | S |
+| US45 | Seus Serviços: mapa dos clientes do prestador (região aproximada). A página já existe com o quadro (v0.8.7). | S |
 | US46 | Home própria do prestador (comunidade e networking): comunicados, agenda de eventos e grupos. **✅ v0.8.2 (19/11), falta teste real.** | S |
 | US64 | **Eventos seletivos e divulgação comercial:** organizador contrata espaço e escolhe o público (todos, 1 atividade, várias atividades ou um segmento). Adm aprova e controla o período. Etiqueta "Patrocinado". Relatório só com números agregados (visualizações, se for medido). Nunca dados pessoais dos prestadores. | C |
 | US65 | **Divulgação paga de grupos:** o responsável cadastra o grupo e paga **por anúncio** (valor + período), com aprovação do adm, redes sociais, segmentação por atividade e etiqueta "Patrocinado". | C |

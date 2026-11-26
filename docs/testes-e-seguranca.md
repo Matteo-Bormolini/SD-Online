@@ -48,11 +48,11 @@ página abre, sem erro no navegador, sem rolagem para os lados e sem link quebra
 | Firefox | ❌ | ❌ | Download bloqueado. Motor **diferente** (Gecko): risco médio. |
 
 **Teste manual sugerido (Edge, Brave, Opera GX e Firefox), 5 minutos cada:**
-1. Entrar como Prestador → Meu perfil → aba Meus serviços: as 5 etapas aparecem; no celular (F12 → modo celular) abrem e fecham.
+1. Entrar como Prestador → Seus Serviços: as 4 etapas aparecem; no celular (F12 → modo celular) abre uma por vez.
 2. Abrir Encerrados → lixeira → aparece "Tem certeza?".
 3. Desligar "Mostrar meus contatos" → Ver como cliente → botões cinza.
 4. Trocar para o tema escuro e mudar de página: continua escuro.
-5. Arrastar um cartão do quadro com o mouse.
+5. Suporte → abrir e fechar uma pergunta frequente.
 
 ## 2. Logins (5 testes por tipo de conta = 20)
 
@@ -103,6 +103,13 @@ Chromium (Playwright) + Firebase FALSO em memória que imita a área 80 das regr
 - OK: 3 orçamentos → renegociar (prestador edita) → fechar → concluído → confirmado · 4 orçamentos → fechar → editar depois de fechado · "Não fechei com nenhum" (novo contato abre pedido novo) · reabrir após "Não fiz" · pedido em aberto · anti-spam · XSS na observação escapado.
 - Segurança: 24 tentativas negadas (ler dados de outros, virar adm/verificado, mudar valor do outro lado, pular etapas, contato em nome de outro, vitrine falsa, ler todas as fotos/usuários).
 - Corrigido: aviso falso no sino (regra área 60 confere tipo × situação; id = orçamento_tipo) · Home do prestador sem eventos/grupos da área (consulta por atividade negada) · valor acima do limite cortado em silêncio · fotos do "Pedir contato" ficavam soltas ao apagar o contato.
+
+## 3f. Correções de segurança no site real (26/11/2026, v0.8.7)
+- Contas: adm, cliente CPF (Teste001) e prestador (Teste Empresa 09). Regras v0.8.6 publicadas.
+- Aviso falso no sino: 8 tentativas negadas (cliente: escolhido, prestado, orçamento, para outra pessoa, id antigo · prestador: concluído, orçamento sem orçar, escolhido). Aviso verdadeiro chega com id `orçamento_tipo` e reenviar não duplica.
+- Home do prestador: evento do adm para Elétrica aparece para a Teste Empresa 09 (Elétrica); o de Marcenaria não. Cliente não lê eventos de prestador.
+- Orçamento: R$ 99.999.999.999 → "Máximo: R$ 10.000.000,00." e não salva; R$ 1.500 salva e avisa o cliente.
+- Telas da v0.8.7 (banco falso): Seus Serviços (blocos, 4 etapas, "Não fiz" → Encerrados, celular uma etapa por vez, adm vê aviso, cliente é levado ao Início), perfil sem quadro (concluídos = prestados), link antigo `#servicos`, sino e Home → Seus Serviços, Suporte (5 perguntas, 3 dicas, prazo), rodapé com 2 links. 140 aberturas (5 contas × 2 larguras × 14 páginas): 0 erros e 0 rolagem lateral.
 
 ## 4. Piores cenários e como contornar
 

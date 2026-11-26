@@ -1,6 +1,6 @@
 {
   "descricao": "Regras de acesso da S.D para o SERVIDOR. Manter igual a seguranca/acesso.js (versão da tela).",
-  "versao": 4,
+  "versao": 5,
   "regra_padrao": "negar",
   "perfis": [
     "visitante",
@@ -14,9 +14,6 @@
       "*"
     ],
     "servicos": [
-      "*"
-    ],
-    "sobre": [
       "*"
     ],
     "politicas": [
