@@ -26,5 +26,6 @@ Os avisos do sino (prestador) e o botão **Seus Serviços** da Home e do perfil 
 | Quadro | `componentes/kanban-servicos/` |
 
 ## Situação
+- Verificação se mantem ou descarta a página
 - ✅ Quadro com dados reais (v0.8.7; antes ficava no perfil).
 - ⬜ Mapa dos clientes (região aproximada) — **depois do MVP** (US45).
