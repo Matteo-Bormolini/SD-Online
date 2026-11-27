@@ -130,7 +130,7 @@ Regras visuais completas: [`padrao-global.md`](padrao-global.md) e [`prompt-mest
 
 ## 9. Modelo de README de pasta
 
-Todo README é curto, em tópicos e fácil de ler (de jovens a idosos):
+Todo README é curto, em tópicos e fácil de ler:
 
 ```markdown
 # Nome da pasta
