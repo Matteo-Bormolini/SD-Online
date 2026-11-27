@@ -4,9 +4,16 @@
 
 Site: **https://matteo-bormolini.github.io/SD-Online/**
 
+## Objetivo
+
+Ligar quem precisa de **manutenção** (casa, empresa ou condomínio) a **prestadores de serviço de confiança perto dele**, de um jeito simples, leve e seguro:
+- o cliente **não paga nada** no app;
+- a S.D **não** intermedeia o serviço nem o dinheiro;
+- tudo o que o site usa (servidor, banco, mapas) é **grátis e sem prazo**;
+- dados pessoais protegidos de acordo com a **LGPD**.
+
 ## Para que serve
 
-A S.D liga quem precisa de **manutenção** (casa, empresa ou condomínio) a **prestadores de serviço perto dele**.
 O cliente encontra, chama, compara orçamentos e combina tudo **direto com o prestador**.
 
 | Quem | Exemplo | O que ganha |
@@ -53,9 +60,9 @@ Detalhes de cada versão: [`docs/versoes.md`](docs/versoes.md).
 
 | Ciclo | Objetivo | Versão |
 |---|---|---|
-| 4 | Avaliar e finalizar (avaliação só de quem realizou, fotos do serviço finalizado); textos legais no Ciclo 4 ou 5 | v0.9.0 |
-| 5 | Segurança e LGPD (revisão completa) | v0.10.0 |
-| 6 | Lançamento fechado (revisão dos textos legais, domínio, poucos usuários reais) | v1.0.0 |
+| 4 | Avaliar e finalizar (avaliação só de quem realizou, fotos do serviço finalizado, filtro por avaliação na busca); textos legais no Ciclo 4 ou 5 | v0.9.0 |
+| 5 | Segurança e LGPD (revisão completa, textos legais revisados, canal de contato, "baixar meus dados") | v0.10.0 |
+| 6 | Lançamento fechado (domínio, poucos usuários reais) | v1.0.0 |
 
 Lista completa: [`docs/backlog.md`](docs/backlog.md). **Regra do MVP: nada pago.**
 
@@ -69,12 +76,12 @@ Lista completa: [`docs/backlog.md`](docs/backlog.md). **Regra do MVP: nada pago.
 | [`firebase/`](firebase/) | Login, banco e regras de segurança |
 | [`base-de-dados/`](base-de-dados/) | Mapa do banco (coleções e relações) |
 | [`seguranca/`](seguranca/) | Quem pode ver o quê |
-| [`servicos/`](servicos/) | Consultas externas (CEP, CNPJ) |
+| [`servicos/`](servicos/) | Nova senha, reconhecer o login e consultar o CNPJ |
 | [`home/`](home/) | Início (visitante, cliente e prestador) |
 | [`login-cadastro/`](login-cadastro/) | Entrar e criar conta |
 | [`perfil-cliente-cpf/`](perfil-cliente-cpf/) · [`perfil-cliente-cnpj/`](perfil-cliente-cnpj/) · [`perfil-prestador/`](perfil-prestador/) · [`perfil-adm/`](perfil-adm/) | Perfis |
 | [`localizar-prestador/`](localizar-prestador/) | Cliente encontra prestadores |
-| [`localizar-condominios/`](localizar-condominios/) | "Seus Serviços": quadro de contatos e orçamentos do prestador |
+| [`seus-servicos/`](seus-servicos/) | Seus Serviços: quadro de contatos e orçamentos do prestador |
 | [`avaliacoes/`](avaliacoes/) | Avaliações (Ciclo 4) |
 | [`suporte/`](suporte/) | Dúvidas, sugestões, perguntas frequentes e dicas |
 | [`politica-privacidade/`](politica-privacidade/) | Termos de uso e Privacidade (textos no Ciclo 4 ou 5) |

@@ -111,6 +111,12 @@ Chromium (Playwright) + Firebase FALSO em memória que imita a área 80 das regr
 - Orçamento: R$ 99.999.999.999 → "Máximo: R$ 10.000.000,00." e não salva; R$ 1.500 salva e avisa o cliente.
 - Telas da v0.8.7 (banco falso): Seus Serviços (blocos, 4 etapas, "Não fiz" → Encerrados, celular uma etapa por vez, adm vê aviso, cliente é levado ao Início), perfil sem quadro (concluídos = prestados), link antigo `#servicos`, sino e Home → Seus Serviços, Suporte (5 perguntas, 3 dicas, prazo), rodapé com 2 links. 140 aberturas (5 contas × 2 larguras × 14 páginas): 0 erros e 0 rolagem lateral.
 
+## 3g. Mapa e bloqueio do login no site publicado (27/11/2026, v0.8.7)
+- Navegador do app (Chrome 156, Windows), site publicado, sem entrar em conta.
+- **Mapa:** componente `componentes/mapa` carregado na página de login (mesmo CSP de Encontrar prestadores) e centrado em Indaiatuba. MapLibre 5.24.0 (jsDelivr) e mapas do OpenFreeMap carregaram em 2,7 s, sem erro; pontos Você, prestador e destaque e créditos no canto apareceram.
+- **Bloqueio de tentativas:** e-mail que não existe + senha errada 5 vezes → "E-mail ou senha incorretos."; na 6ª → "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." Na mesma hora, outro e-mail continuou recebendo "E-mail ou senha incorretos." → o bloqueio vale por e-mail, não trava o computador inteiro. Como ele acontece também com e-mail que não existe, não serve para descobrir se uma conta existe. (Não testado com conta real, para não travar nenhuma.)
+- Não medido: quanto tempo o Firebase mantém o bloqueio.
+
 ## 4. Piores cenários e como contornar
 
 | Cenário | Risco | Como contornar | Quando |

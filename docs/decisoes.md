@@ -4,6 +4,14 @@ Registro com data. **A decisão mais nova vale.** As em aberto ficam no fim da s
 
 ## 1. Registro datado
 
+### 27/11/2026 — v0.8.7 · verificação das páginas (pedidos do Matteo)
+- **Pasta renomeada:** `localizar-condominios/` → `seus-servicos/` (mesmo nome do menu). A ideia de ver onde ficam os clientes continua como o mapa de Seus Serviços (US45, depois do MVP).
+- **Filtro por avaliação** na busca volta (retirado em 18/11): entra **logo depois da página Avaliações**, no Ciclo 4.
+- **Segurança e LGPD terminam no Ciclo 5:** textos legais (Ciclo 4 ou 5), revisão final e canal de contato no Ciclo 5. O Ciclo 6 fica só com o lançamento.
+- **`CONTEXTO-PARA-IA.md` retirado** do GitHub: o objetivo foi para o README principal e as regras técnicas para `docs/guia-tecnico.md`.
+- **README do Firebase** só com o uso do dia a dia + o que faz e a situação; detalhes técnicos em `docs/guia-tecnico.md` (seção 13).
+- **Fotos e marca:** logo e fotos padrão continuam provisórias; a logo oficial será criada depois (não impede o MVP).
+
 ### 26/11/2026 — v0.8.7 (pedidos do Matteo)
 - **Quadro do prestador** sai do perfil e vai para a página **Seus Serviços** (`localizar-condominios/`), em blocos: Resumo (4 números) · Quadro · Encerrados (fechado). Celular: uma etapa aberta por vez. O perfil fica com empresa, fotos e avaliações.
 - **Suporte enxuto:** 5 perguntas frequentes em sanfona, 3 dicas de segurança e prazo de resposta. Assistente fica para depois (IA, US40).

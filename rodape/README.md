@@ -18,4 +18,4 @@ A faixa vinho no fim de todas as páginas.
 - Links e lojas → `configuracoes/config.js`.
 
 ## Situação
-- ✅ Pronto. ⬜ Os documentos legais ainda estão "em desenvolvimento" (Ciclo 6).
+- ✅ Pronto. ⬜ Os documentos legais ainda estão "em desenvolvimento" (textos no Ciclo 4 ou 5).

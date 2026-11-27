@@ -5,8 +5,8 @@ Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precis
 ## Arquivos
 | Arquivo | Para que serve |
 |---|---|
-| `acesso.js` | Regras usadas pela tela (demonstração). |
-| `permissoes.json` | As mesmas regras, para o servidor. **Manter igual ao `acesso.js`.** |
+| `acesso.js` | Regras usadas pela tela: esconde menus e páginas de quem não pode ver. |
+| `permissoes.json` | As mesmas regras em lista (para um servidor próprio no futuro). **Manter igual ao `acesso.js`.** |
 | `index.html` | Tabela de consulta das regras. |
 | `recuperacao-acesso.md` | Regras de "esqueci a senha / o login". |
 | `csp.md` | Lista do que o site pode carregar (proteção contra código malicioso). |
@@ -28,12 +28,20 @@ Define o que cada tipo de pessoa pode ver. Regra: **cada um vê só o que precis
 ## LGPD
 | Cuidado | Situação |
 |---|---|
-| Sem cookies e sem rastreadores **hoje** | ✅ (anúncios vão exigir aviso e consentimento) |
+| Sem cookies e sem rastreadores **hoje** | ✅ (anúncios vão exigir aviso e consentimento — depois do MVP) |
 | Autorização clara no cadastro | ✅ |
-| Avaliação anônima por padrão | 🟡 |
-| Botões de privacidade (localização, contatos, dados CPF) | 🟡 Na tela |
-| Pedidos encerrados apagados em 1 ano | 🟡 Regra definida; o servidor apaga |
-| Política de privacidade e canal de contato | ⬜ Ciclo 6 (com advogado) |
-| Ver, corrigir, baixar e apagar meus dados | 🟡 Editar e excluir na tela |
-| Fotos sem localização escondida (EXIF) | ⬜ Ciclo 5 |
+| Botões de privacidade (localização, contatos, dados do CPF) | ✅ Salvos no banco; a busca e os pedidos respeitam |
+| Fotos sem localização escondida (EXIF) | ✅ Redesenhadas antes de salvar · conferir no Ciclo 5 |
+| Pedidos encerrados apagados em 1 ano | ✅ O site apaga quando cliente ou prestador entra · apagar sem ninguém entrar = pago |
+| Avaliação anônima por padrão | ⬜ Ciclo 4 (junto com a página Avaliações) |
+| Ver, corrigir, baixar e apagar meus dados | 🟠 Ver, corrigir e apagar a conta ✅ · baixar ⬜ Ciclo 5 |
+| Política de privacidade e canal de contato | ⬜ Textos no Ciclo 4 ou 5 · revisão final no Ciclo 5 |
 | Plano de aviso de vazamento (ANPD) | ⬜ Ciclo 5 |
+
+## Situação
+✅ pronto · 🟠 em parte · ⬜ a fazer
+
+- ✅ Regras do banco publicadas (v0.8.6) e testadas no site publicado: 24 tentativas de ler ou mudar dados de outras pessoas negadas (25/11/2026) e avisos falsos negados (26/11).
+- ✅ Bloqueio de tentativas no login testado no site publicado (27/11/2026).
+- ⬜ **Ciclo 5:** revisão completa (US32–US34), os itens ⬜ da tabela LGPD e as correções de [`docs/testes-e-seguranca.md`](../docs/testes-e-seguranca.md).
+- Esta página termina no **Ciclo 5**. O Ciclo 6 (lançamento) não tem itens dela.

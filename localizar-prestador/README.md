@@ -25,8 +25,10 @@ O cliente escolhe o tipo de serviço e vê os prestadores daquela área, do mais
 | `index.html` / `localizar-prestador.css` / `localizar-prestador.js` | Página, visual e regras (dados reais). |
 
 ## Situação
-✅ pronto · 🟡 só na demonstração · ⬜ a fazer
+✅ pronto · ⬜ a fazer
 
-- ✅ Tela pronta (US11, US20) com dados reais e GPS (v0.7.9).
-- ✅ Filtros, aviso de cobrança, contato registrado e Pedir contato (v0.8.0).
-- ⬜ Filtros por nome e avaliação — depois do MVP (US12).
+- ✅ Tela pronta (US11) com dados reais e GPS (v0.7.9).
+- ✅ Filtros (nome, horário, distância, preço da visita), aviso de cobrança, contato registrado e Pedir contato (v0.8.0). Contato registrado testado no site publicado em 25/11/2026.
+- ✅ Mapa desenhado de verdade no site publicado (27/11/2026).
+- ⬜ Filtro por **avaliação** — logo depois da página Avaliações (**Ciclo 4**).
+- ⬜ Voltar à lista sem perder os filtros — **Ciclo 4** (US20; hoje o tipo e o prestador já ficam guardados).

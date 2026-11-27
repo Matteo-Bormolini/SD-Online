@@ -11,7 +11,6 @@ A porta de entrada: aqui a pessoa entra na conta ou cria uma nova.
 - E-mail obrigatório. Endereço com CEP automático. Senha com 6 caracteres ou mais.
 - Prestador: botão **Mostrar meus contatos** já vem **ligado** (com aviso se desligar).
 - **Esqueceu a senha / o login?** em pop-ups (o progresso não se perde ao fechar).
-- **Entrar como (Demonstração):** só aparece com `modoDemonstracao: true` em `configuracoes/config.js`.
 - Depois de criar a conta: aviso para **confirmar o e-mail** + botão de reenviar.
 
 ## Arquivos
@@ -24,9 +23,10 @@ A porta de entrada: aqui a pessoa entra na conta ou cria uma nova.
 - Os links dos e-mails do Firebase (nova senha e confirmação) abrem **esta página** (configurar a "URL de ação" no console).
 
 ## Situação
-✅ pronto · 🟡 só na demonstração · ⬜ a fazer
+✅ pronto · ⬜ a fazer
 
 - ✅ Login, cadastro, sair e nova senha reais pelo Firebase (US03, US04, US05) — 11/11/2026.
-- 🟡 Bloqueio por tentativas: o do próprio Firebase ("muitas tentativas").
+- ✅ Bloqueio por tentativas (do próprio Firebase) testado no site publicado em 27/11/2026: 5 senhas erradas seguidas → na 6ª aparece "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." O bloqueio vale só para aquele e-mail (outro e-mail continua podendo tentar) e acontece também com e-mail que não existe (não serve para descobrir se uma conta existe).
 - ✅ CPF/CNPJ conferidos conforme o botão do adm (modo teste desligado = só tamanho). Prestador: CNPJ consultado na Receita (`servicos/consulta-cnpj.js`); CNPJ inativo não entra (11/11/2026).
 - ✅ Cadastro que parou no meio não prende o e-mail: é reaproveitado ou apagado (11/11/2026).
+- ⬜ Entrar com CPF/CNPJ — depois do MVP (já preparado em `servicos/identificadores.js`).

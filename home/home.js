@@ -31,7 +31,7 @@
     cadastroCliente:   SD.urlPagina("cadastro") + "&perfil=cliente",
     cadastroPrestador: SD.urlPagina("cadastro") + "&perfil=prestador",
     buscarPrestador:   SD.caminho("localizar-prestador/index.html"),    // menu "Serviços" (clientes)
-    localizarCondominios: SD.caminho("localizar-condominios/index.html"), // menu "Seus Serviços" (prestador)
+    seusServicos:      SD.caminho("seus-servicos/index.html"),          // menu "Seus Serviços" (prestador)
     perfilPrestador:   SD.caminho("perfil-prestador/index.html")        // abre com ?visao=cliente
   };
 
@@ -93,7 +93,7 @@
 
     const atalhos = [
       `<a class="btn" href="${CAMINHOS.buscarPrestador}">Pedir orçamento</a>`,
-      !ehCliente && `<a class="btn" href="${CAMINHOS.localizarCondominios}">Seus Serviços</a>`
+      !ehCliente && `<a class="btn" href="${CAMINHOS.seusServicos}">Seus Serviços</a>`
     ].filter(Boolean).join("");
 
     alvo.innerHTML = `

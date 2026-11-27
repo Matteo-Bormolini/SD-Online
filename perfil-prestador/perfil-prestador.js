@@ -12,7 +12,7 @@
      - Avaliações recentes (públicas e anônimas; nome só com autorização de quem avaliou).
      - "Ver como cliente": mostra o perfil como o cliente vê (sem dados privados).
      - v0.8.7: o quadro de serviços saiu do perfil → página "Seus Serviços"
-       (localizar-condominios/). Aqui só o número de serviços concluídos.
+       (seus-servicos/). Aqui só o número de serviços concluídos.
      - Visita técnica (aviso de preço) e fotos de trabalhos SALVAS (firebase/fotos.js) — v0.8.0.
      - Visão do cliente: WhatsApp passa pelo aviso de cobrança e registra o contato;
        contatos escondidos → "Pedir contato".

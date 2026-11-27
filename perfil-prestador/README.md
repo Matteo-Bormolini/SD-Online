@@ -21,7 +21,7 @@ A "vitrine" do prestador: empresa, fotos e avaliações.
 - **Ver como cliente:** mostra o perfil como o cliente vê.
 
 ## Quadro de serviços
-- Desde a **v0.8.7** fica na página **Seus Serviços** (`localizar-condominios/`). Botão **Seus Serviços** na barra do perfil.
+- Desde a **v0.8.7** fica na página **Seus Serviços** (`seus-servicos/`). Botão **Seus Serviços** na barra do perfil.
 - Links antigos (`#servicos`) abrem a página nova sozinhos. No perfil fica só o número de **serviços concluídos**.
 
 ## Regras da tela
@@ -34,7 +34,7 @@ A "vitrine" do prestador: empresa, fotos e avaliações.
 | `index.html` / `perfil-prestador.css` / `perfil-prestador.js` | Página, visual e regras (dados reais da conta). |
 
 ## Situação
-✅ pronto · 🟡 só na demonstração · ⬜ a fazer
+✅ pronto · ⬜ a fazer
 
 - ✅ Perfil e visão do cliente com dados reais (US08, US09, US24).
 - ✅ Quadro movido para **Seus Serviços** (v0.8.7).

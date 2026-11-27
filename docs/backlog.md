@@ -20,7 +20,7 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 ## 2. Agora · Próximo · Depois
 
 ### ✅ Ciclo 1 · Fechar pendências e decidir (v0.6.0)
-> Os textos legais (US28) ficam para o Ciclo 4 ou 5 (decisão de 26/11; antes: Ciclo 6). Páginas com os títulos já existem (v0.8.7).
+> Os textos legais (US28) ficam para o Ciclo 4 ou 5 e a revisão final para o Ciclo 5 (decisões de 26/11 e 27/11; antes: Ciclo 6). Páginas com os títulos já existem (v0.8.7).
 - [x] READMEs reescritos para projeto individual (09/11).
 - [x] E-mail do Suporte definido (09/11).
 - [x] Regras de dinheiro decididas: sem intermediação; anúncios + destaque mensal (09/11).
@@ -74,9 +74,9 @@ Hoje (19/11/2026): **Ciclos 1 e 2 concluídos; Ciclo 3 entregue na v0.8.0 (falta
 - [x] Revisão dos Ciclos 1, 2 e 3.
 
 ### ⬜ Depois (na ordem)
-- **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
-- **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md).
-- **Ciclo 6 · Lançamento fechado (v1.0.0):** revisão final dos textos legais (US28), domínio, hospedagem de produção, marca registrada no INPI.
+- **Ciclo 4 · Avaliar e finalizar (v0.9.0):** US26 (avaliação só de quem realizou o serviço) e, logo depois, o **filtro por avaliação** na busca (US12, decisão de 27/11), US54 (fotos do serviço finalizado + avaliação), US20. *(US16, US17, US18, US22, US23 foram entregues na v0.8.0; US19 e US21 não são mais necessárias.)*
+- **Ciclo 5 · Segurança e LGPD (v0.10.0):** US32–US34 + correções de [`testes-e-seguranca.md`](testes-e-seguranca.md) + textos legais revisados e canal de contato (US28). **Segurança e LGPD terminam aqui** (decisão de 27/11).
+- **Ciclo 6 · Lançamento fechado (v1.0.0):** domínio, hospedagem de produção, marca registrada no INPI, poucos usuários reais.
 - **Depois do MVP:** Home do prestador paga/presença/capacitação (US64–US67), segunda verificação no login (US60), Sobre nós (US29), anúncios (US51), página de parceiros e ofertas (US55), destaque pago (US37), painel do adm (US35, US44, US47), mapa em Seus Serviços (US45), app nas lojas (US39) e as outras ideias da seção 4.
 
 ### ⏸️ Pós-MVP · precisa pagar (pausado)
@@ -122,7 +122,7 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | US01 | Todas as páginas com a mesma aparência e o mesmo menu. | M | — | ✅ |
 | US02 | Usar no celular, tablet, computador e TV, tema claro ou escuro. | M | — | ✅ |
 | US03 | Criar conta como Cliente CPF, Cliente CNPJ ou Prestador. | M | 2 | ✅ Real (11/11) |
-| US04 | Entrar e sair com segurança, vendo só as páginas do meu tipo. | M | 2 | ✅ Real, só e-mail no MVP (11/11) |
+| US04 | Entrar e sair com segurança, vendo só as páginas do meu tipo. | M | 2 | ✅ Real, só e-mail no MVP (11/11) · bloqueio de tentativas testado no site publicado (27/11) |
 | US05 | Recuperar senha ou login. | M | 2 | ✅ Senha real (11/11). "Esqueci o login" volta com login por CPF/CNPJ |
 | US56 | Adm liga/desliga a conferência de CPF/CNPJ (desligado = modo teste). | M | 2 | ✅ (11/11) |
 | US57 | CNPJ do prestador consultado na Receita (API pública grátis); selo dado pelo adm. | M | 2 | ✅ Consulta (11/11) · selo pelo console |
@@ -146,7 +146,7 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
 | US11 | Escolher a área e ver prestadores do mais perto ao mais longe, com mapa. | M | 3 | ✅ Dados reais (v0.7.9) |
-| US12 | Filtrar por nome, horário (1º horário / emergência), distância e preço da visita. *(Avaliação retirada: decisão de 18/11.)* | S | 3 | ✅ (v0.8.0) |
+| US12 | Filtrar por nome, horário (1º horário / emergência), distância e preço da visita. *(Avaliação: retirada em 18/11; volta logo depois da página Avaliações — decisão de 27/11.)* | S | 3 · 4 | ✅ (v0.8.0) · avaliação ⬜ Ciclo 4 |
 | US13 | Registrar o contato (WhatsApp) ou **Pedir contato** (descrição + fotos); vários prestadores no mesmo pedido. | M | 3 | ✅ (v0.8.0) · fotos opcionais 🟡 **PAGO** (Storage): voltam a ser obrigatórias (3) |
 | US14 | Prestador recebe o contato em **Contatos**, é avisado no site (sino + janela "Fez orçamento?") e responde em 10 dias. | M | 3 | ✅ No site (v0.8.0) · por e-mail 🟡 **PAGO** (Cloud Functions/extensão de e-mail) |
 | US15 | Prestador preenche o orçamento (informativo): valor, visita, visitas, materiais, mão de obra, funcionários, início, duração, validade. | M | 3 | ✅ (v0.8.0) |
@@ -175,7 +175,7 @@ Prioridade: **M** obrigatória no MVP · **S** importante · **C** desejável.
 | Nº | História | Prior. | Ciclo | Situação |
 |---|---|---|---|---|
 | US27 | Tirar dúvidas e enviar sugestões. | M | — | ✅ (e-mail definido em 09/11) |
-| US28 | Ler termos, privacidade e responsabilidades em linguagem simples (com advogado). | M | 4–5 | 🟡 páginas com títulos (v0.8.7) |
+| US28 | Ler termos, privacidade e responsabilidades em linguagem simples (com advogado). Textos no Ciclo 4 ou 5; revisão final e canal de contato no Ciclo 5. | M | 4–5 | 🟠 páginas com títulos (v0.8.7) |
 | US29 | Sobre nós (história da empresa). Página retirada na v0.8.7. | S | Depois | ⬜ |
 
 ### Servidor, segurança e LGPD

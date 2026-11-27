@@ -22,3 +22,11 @@ O "painel de controle" do site. Tudo que vale para o site inteiro fica aqui, **u
 
 ## Cuidado
 - O modo demonstração (dados fictícios) foi retirado na v0.7.9: o login é sempre o real (Firebase).
+- `config.js` → `api` fica vazio: é reservado para um servidor próprio no futuro (hoje o servidor é o Firebase).
+
+## Situação
+✅ pronto · ⬜ a fazer
+
+- ✅ Pronta e usada em todas as páginas.
+- ✅ Comandos do site (aba Administração do adm): **Conferir CPF e CNPJ** e **Mostrar destaques**.
+- ⬜ Comandos novos: quando precisar (passo a passo no README do `perfil-adm/`).

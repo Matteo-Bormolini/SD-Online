@@ -42,7 +42,7 @@
       privacidade: "politica-privacidade/privacidade.html",          // Política de privacidade + Política da empresa
       localizarPrestador: "localizar-prestador/index.html",
       perfilPrestador:    "perfil-prestador/index.html",             // abre com ?visao=cliente&id=...
-      seusServicos:       "localizar-condominios/index.html"         // quadro do prestador (v0.8.7)
+      seusServicos:       "seus-servicos/index.html"                 // quadro do prestador (v0.8.7; pasta renomeada em 27/11)
     },
 
     // "Meu perfil" abre a página do tipo de usuário (data-tipo no <body>)
@@ -60,7 +60,7 @@
     menu: [
       { id: "inicio",    texto: "Início",        href: "home/index.html" },
       { id: "clientes",  texto: "Serviços",      href: "localizar-prestador/index.html",   requerLogin: true },
-      { id: "prestador", texto: "Seus Serviços", href: "localizar-condominios/index.html", requerLogin: true },
+      { id: "prestador", texto: "Seus Serviços", href: "seus-servicos/index.html",         requerLogin: true },
       { id: "politicas", texto: "Políticas",     href: "politica-privacidade/index.html" },
       { id: "suporte",   texto: "Suporte",       href: "suporte/index.html" }
     ],
