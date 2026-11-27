@@ -42,4 +42,3 @@ Contatos, orçamentos e serviços ficam em **Seus Serviços** (v0.8.7; botão no
 - 🟠 Home do prestador (v0.8.2) — falta o teste com conta real e o 1º conteúdo cadastrado pelo adm.
 - 🟠 Avisos e anúncios da Home dos clientes + "Ver como" do adm (v0.8.5) — falta teste com as regras reais.
 - ⬜ Pós-MVP da Home do prestador (US64–US67): divulgação paga, capacitação, "Confirmar que vou". Ver `docs/backlog.md`.
-- ➖ Sobre nós — página retirada na v0.8.7 (volta depois do MVP, US29).
