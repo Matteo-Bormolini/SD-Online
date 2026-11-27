@@ -20,8 +20,8 @@ O cliente encontra, chama, compara orçamentos e combina tudo **direto com o pre
 
 1. **Encontrar:** o cliente escolhe o tipo de serviço, filtra (nome, horário, distância, preço da visita) e vê os prestadores do mais perto ao mais longe, na lista e no mapa.
 2. **Chamar:** antes de abrir o WhatsApp, o site mostra se o prestador cobra visita e que a S.D não participa do pagamento. Prestador com contatos escondidos recebe um **"Pedir contato"**.
-3. **Orçar:** o prestador responde **"Fez orçamento?"** e preenche um resumo informativo (valor, validade, visita, materiais, prazo).
-4. **Comparar e decidir:** o cliente vê os orçamentos lado a lado e marca **"Fechei com este"** ou **"Não fechei com nenhum"**.
+3. **Orçar:** o prestador responde **"Fez orçamento?"** e preenche um resumo informativo (valor, validade, visita, materiais, prazo) para colocar na sua planilha de acompanhamento.
+4. **Comparar e decidir:** o cliente vê os orçamentos lado a lado e marca **"Fechei com este"** ou **"Não fechei com nenhum"** para atualizar no sistema do cliente e do prestador.
 5. **Finalizar:** o prestador marca **Concluído** e o cliente confirma → **Serviços realizados**.
 
 Também: **sino de avisos**, página **Seus Serviços** (quadro do prestador), **Suporte** com perguntas frequentes, perfil completo de cada tipo de conta, **Home do prestador** (comunicados, divulgações, eventos e grupos da área dele), **Home do cliente** (comunicados e anúncios) e, para o adm, **comandos do site**, **divulgações** e a barra **"Ver como"** (mostra o site como cada conta vê).
