@@ -171,19 +171,3 @@ Uma ou duas frases: para que serve.
 1. Envie o conteúdo do projeto para a raiz do repositório.
 2. No GitHub: **Settings → Pages → Source: Deploy from a branch** → branch `main`, pasta `/ (root)`.
 3. O `index.html` da raiz abre a página inicial.
-
-
-## 13. Padrões aprovados em 09/11/2026
-
-**Confirmação antes de excluir ou editar**
-- Todo botão que exclui ou edita algo abre o pop-up "Tem certeza?" antes de agir.
-- Use: `const ok = await SDConfirmar({ titulo, texto, sim, tipo: "excluir" | "editar" });`
-- Carregar `componentes/confirmacao/confirmacao.js` depois de `componentes/utilidades/utilidades.js`.
-- Cancelar, Esc ou clique fora = nada muda.
-
-**Botões liga/desliga (interruptores)**
-- Desligado = cinza escuro (`--cor-interruptor-desligado`). Ligado = vinho (`--cor-interruptor-ligado`).
-- O estado também aparece escrito ("Ligado"/"Desligado").
-- Todo botão novo é cadastrado em `configuracoes/interruptores.js` (nome, o que faz, padrão, quem tem, onde fica).
-- No HTML basta: `<button class="interruptor" data-interruptor="id-do-botao"></button>`.
-- Perfil do adm → aba **Administração** mostra todos (os do site com botão; os de cada conta só para consulta).
