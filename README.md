@@ -11,8 +11,8 @@ O cliente encontra, chama, compara orçamentos e combina tudo **direto com o pre
 
 | Quem | Exemplo | O que ganha |
 |---|---|---|
-| **Cliente CPF** | Casas e apartamentos | Acha quem resolve perto de casa. **Não paga nada.** |
-| **Cliente CNPJ** | Empresas e condomínios | Organiza as manutenções do local. **Não paga nada.** |
+| **Cliente CPF** | Casas e apartamentos | Acha quem resolve perto de casa. **Não paga nada no app.** |
+| **Cliente CNPJ** | Empresas e condomínios | Organiza as manutenções do local. **Não paga nada no app.** |
 | **Prestador** (CNPJ ou MEI) | Eletricista, encanador, pintor | Mais clientes perto dele e um quadro para organizar o trabalho. |
 | **Administrador** | Equipe S.D | Publica comunicados e cuida do site. Nunca vê senhas. |
 
